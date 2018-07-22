@@ -26,8 +26,8 @@ void main () {
     vec3 R = reflect(-L, fragNormal);
 
     // the ambient part is not following the phong shading model
-    // here, kd is also used to compensate for blender not exporting
-    // a color in the ka value of .obj files
+    // here, instead kd is used to compensate for blender not
+    // exporting a color in the ka value of .obj files
     vec3 ambient = kd * ia; 
 
     vec3 diffuse = kd * id * max(dot(fragNormal, L), 0);

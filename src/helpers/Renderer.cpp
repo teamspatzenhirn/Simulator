@@ -1,6 +1,6 @@
 #include "Renderer.h"
 
-Renderer::Renderer(GLuint width, GLuint height) {
+Renderer::Renderer(std::string title, GLuint width, GLuint height) {
 
     if (!glfwInit()) {
         std::cout << "Could not initialize GLFW!" << std::endl;
@@ -8,7 +8,7 @@ Renderer::Renderer(GLuint width, GLuint height) {
     }
 
     window = glfwCreateWindow(
-        width, height, "Spatz Simulator", nullptr, nullptr);
+        width, height, title.c_str(), nullptr, nullptr);
 
     glfwMakeContextCurrent(window);
 

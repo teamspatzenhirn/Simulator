@@ -6,7 +6,7 @@
 
 int main () {
 
-    Renderer renderer(800, 600);
+    Renderer renderer("Spatz Simulator", 800, 600);
 
     Shader vertexShader("shaders/VertexShader.glsl", GL_VERTEX_SHADER);
     Shader fragmentShader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
@@ -22,9 +22,9 @@ int main () {
 
     PointLight light(10.0f, 10.0f, 20.0f);
 
-    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 modelMat = glm::mat4(1.0f);
     // markerModule.addMarker(model);
-    model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+    modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
@@ -37,6 +37,8 @@ int main () {
     glfwSwapInterval(1);
 
     while (!glfwWindowShouldClose(renderer.window)) {
+
+        glfwPollEvents();
                 
         renderer.beginFrame();
 
@@ -47,9 +49,12 @@ int main () {
 
         light.render(shaderProgram.id);
 
-        model = glm::rotate(model, 0.0025f, glm::vec3(0.0, 0.0f, 1.0f));
+        modelMat = glm::rotate(
+                modelMat,
+                0.0002f * renderer.dt.count(),
+                glm::vec3(0.0, 0.0f, 1.0f));
 
-        cube.render(shaderProgram.id, model);
+        cube.render(shaderProgram.id, modelMat);
 
         // markerModule.render(renderer.window, shaderProgram.id, camera);
 
@@ -57,8 +62,6 @@ int main () {
         //std::cout << glGetError() << std::endl;
 
         renderer.endFrame();
-
-        glfwPollEvents();
     }
 
     glfwTerminate();

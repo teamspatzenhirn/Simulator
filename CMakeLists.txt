@@ -25,4 +25,3 @@ add_custom_target(run
     COMMAND ${PROJECT_NAME}
     DEPENDS ${PROJECT_NAME}
     WORKING_DIRECTORY ../${CMAKE_PROJECT_DIR})
-

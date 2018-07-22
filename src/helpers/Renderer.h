@@ -17,7 +17,7 @@ public:
 
     GLFWwindow* window;
 
-    Renderer(GLuint width, GLuint height);
+    Renderer(std::string title, GLuint width, GLuint height);
     ~Renderer();
 
     void beginFrame();
