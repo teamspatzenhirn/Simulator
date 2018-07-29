@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "helpers/Helpers.h" 
-#include "Marker.h"
+#include "modules/MarkerModule.h"
 
 int main () {
 
@@ -12,10 +12,13 @@ int main () {
     Shader fragmentShader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
 
     ShaderProgram shaderProgram(vertexShader, fragmentShader);
-
-    // Marker markerModule;
-
     glUseProgram(shaderProgram.id);
+
+    FrameBuffer frameBuffer(800, 600);
+
+    MarkerModule markerModule;
+
+    ScreenQuad screenQuad(800, 600, "shaders/ScreenQuadFragment.glsl");
 
     FpsCamera camera(45, 4.0f/3.0f);
     camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
@@ -23,7 +26,7 @@ int main () {
     PointLight light(10.0f, 10.0f, 20.0f);
 
     glm::mat4 modelMat = glm::mat4(1.0f);
-    // markerModule.addMarker(model);
+    markerModule.addMarker(modelMat);
     modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
@@ -39,8 +42,14 @@ int main () {
     while (!glfwWindowShouldClose(renderer.window)) {
 
         glfwPollEvents();
-                
+
         renderer.beginFrame();
+
+        // actual scene rendered to framebuffer
+        
+        glUseProgram(shaderProgram.id);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -56,12 +65,27 @@ int main () {
 
         cube.render(shaderProgram.id, modelMat);
 
-        // markerModule.render(renderer.window, shaderProgram.id, camera);
+        markerModule.render(renderer.window, shaderProgram.id, camera);
+        
+        // render on screen quad
 
-        //std::cout << renderer->dt.count() << std::endl;
-        //std::cout << glGetError() << std::endl;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        screenQuad.render([&](GLuint shaderProgramId){
+
+            glUseProgram(shaderProgramId);
+    
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, frameBuffer.colorTextureId);
+            glUniform1i(glGetUniformLocation(screenQuad.shaderProgram->id, "tex"), 0);
+        });
 
         renderer.endFrame();
+
+        //std::cout << renderer.dt.count() << std::endl;
+        //std::cout << glGetError() << std::endl;
     }
 
     glfwTerminate();

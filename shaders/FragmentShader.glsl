@@ -15,7 +15,7 @@ in vec3 fragNormal;
 in vec2 fragTextureCoord;
 in vec3 fragCameraPosition;
 
-out vec4 fragColor;
+layout (location = 0) out vec4 fragColor;
 
 void main () {
 
