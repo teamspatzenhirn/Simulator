@@ -61,9 +61,11 @@ ScreenQuad::~ScreenQuad() {
     glDeleteBuffers(1, &vboId);
 }
 
-void ScreenQuad::render(std::function<void(GLuint)> renderFunction) {
+void ScreenQuad::render(std::function<void()> renderFunction) {
 
-    renderFunction(shaderProgram->id);
+    glUseProgram(shaderProgram->id);
+
+    renderFunction();
 
     glBindVertexArray(vaoId);
     glDrawArrays(GL_TRIANGLES, 0, 6);

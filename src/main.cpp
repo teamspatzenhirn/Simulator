@@ -71,10 +71,8 @@ int main () {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        screenQuad.render([&](GLuint shaderProgramId){
+        screenQuad.render([&](){
 
-            glUseProgram(shaderProgramId);
-    
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glActiveTexture(GL_TEXTURE0);
