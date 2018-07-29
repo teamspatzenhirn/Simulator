@@ -15,6 +15,7 @@ int main () {
     glUseProgram(shaderProgram.id);
 
     FrameBuffer frameBuffer(800, 600);
+    FrameBuffer markerFrameBuffer(800, 600);
 
     MarkerModule markerModule;
 
@@ -51,6 +52,7 @@ int main () {
 
         glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         camera.update(renderer.window, renderer.dt.count());
@@ -65,19 +67,35 @@ int main () {
 
         cube.render(shaderProgram.id, modelMat);
 
+        // render marker overlay 
+
+        glBindFramebuffer(GL_FRAMEBUFFER, markerFrameBuffer.id);
+
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
         markerModule.render(renderer.window, shaderProgram.id, camera);
         
-        // render on screen quad
+        // render on screen filling quad
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        screenQuad.render([&](){
+        // this is stupid!
+        // i really don't like doing this with a callback
+
+        screenQuad.render([&](GLuint shaderProgramId){
+
+            glUseProgram(shaderProgramId);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, frameBuffer.colorTextureId);
-            glUniform1i(glGetUniformLocation(screenQuad.shaderProgram->id, "tex"), 0);
+            glUniform1i(glGetUniformLocation(shaderProgramId, "tex0"), 0);
+
+            glActiveTexture(GL_TEXTURE0 + 1);
+            glBindTexture(GL_TEXTURE_2D, markerFrameBuffer.colorTextureId);
+            glUniform1i(glGetUniformLocation(shaderProgramId, "tex1"), 1);
         });
 
         renderer.endFrame();

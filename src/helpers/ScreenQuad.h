@@ -29,7 +29,7 @@ public:
     ScreenQuad(GLuint width, GLuint height, Shader fragmentShader);
     ~ScreenQuad();
 
-    void render(std::function<void()> renderFunction);
+    void render(std::function<void(GLuint)> renderFunction);
 };
 
 #endif
