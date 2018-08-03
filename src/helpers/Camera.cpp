@@ -1,9 +1,14 @@
 #include "Camera.h"
 
-Camera::Camera(float fov, float aspectRatio) {
+Camera::Camera(float fov, float aspectRatio) : fov{fov} {
 
     projection = glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
     view = glm::mat4(1.0f);
+}
+
+void Camera::setAspectRatio(float aspectRatio) {
+
+    projection = glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
 }
 
 void Camera::render(GLuint shaderProgramId) {

@@ -9,12 +9,16 @@
 
 class Camera {
 
+    float fov;
+
 public:
 
     Camera(float fov, float aspectRatio);
 
     glm::mat4 projection;
     glm::mat4 view;
+
+    void setAspectRatio(float aspectRatio);
 
     void render(GLuint shaderProgramId);
 

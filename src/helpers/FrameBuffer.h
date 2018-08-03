@@ -28,6 +28,8 @@ public:
 
     FrameBuffer(GLuint width, GLuint height);
     ~FrameBuffer();
+
+    void resize(GLuint width, GLuint height);
 };
 
 #endif
