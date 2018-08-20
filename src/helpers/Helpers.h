@@ -5,7 +5,7 @@
 #include "Model.h"
 #include "ObjLoader.h"
 #include "PointLight.h"
-#include "Renderer.h"
+#include "Timer.h"
 #include "ScreenQuad.h"
 #include "Shader.h"
 #include "ShaderProgram.h"
