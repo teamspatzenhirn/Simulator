@@ -16,7 +16,6 @@
 
 class MarkerModule {
 
-
     std::vector<glm::mat4*> modelMatrices;
 
     std::shared_ptr<Model> markerModel;
@@ -27,6 +26,7 @@ class MarkerModule {
     std::shared_ptr<Model> ringModel;
 
     bool isClick;
+    glm::vec2 mousePrev;
 
     glm::mat4* selectedMarker;
     enum SelectionMode { TRANSLATE = 0, SCALE = 1, ROTATE = 2 } selectionMode;
@@ -36,6 +36,19 @@ class MarkerModule {
             std::shared_ptr<Model> model,
             float scale, 
             float offset);
+
+    glm::vec3 intersectLineWithPlane(
+            glm::vec3& lineDirection,
+            glm::vec3& linePoint,
+            glm::vec3& planeNormal,
+            glm::vec3& planePoint);
+
+    bool updateTranslation(
+            glm::vec2& mousePosition,
+            glm::vec3& clickRay,
+            glm::vec3& cameraPosition,
+            glm::vec3& modelPosition);
+
 public:
 
     MarkerModule();
