@@ -5,9 +5,6 @@ MarkerModule::MarkerModule() {
     markerModel = std::make_shared<Model>("models/marker.obj");
     markerModel->upload();
 
-    markerModelSelected = std::make_shared<Model>("models/marker_selected.obj");
-    markerModelSelected->upload();
-
     arrowModel = std::make_shared<Model>("models/arrow.obj");
     arrowModel->upload();
 
@@ -27,8 +24,13 @@ void MarkerModule::addMarker(glm::mat4& model) {
 
 void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& camera) {
 
-    GLuint billboardLocation = glGetUniformLocation(shaderProgramId, "billboard");
+    GLuint billboardLocation =
+        glGetUniformLocation(shaderProgramId, "billboard");
     glUniform1i(billboardLocation, true);
+
+    GLuint lightingLocation =
+        glGetUniformLocation(shaderProgramId, "lighting");
+    glUniform1i(lightingLocation, false);
 
     glm::vec2 mousePosition;
 
@@ -52,76 +54,119 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
     glm::vec3 cameraPosition =
         glm::vec3(iv * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-    bool removeSelection = true;
+    bool handled = false;
 
     for (glm::mat4* modelPtr : modelMatrices) {
 
         glm::mat4& model = *modelPtr;
 
-        // TODO: inefficient!
         glm::vec3 modelPosition =
             glm::vec3(model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-        if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
+        float scale = glm::length(cameraPosition - modelPosition) / 20;
 
-            /*
-            float d = glm::length(modelPosition);
-            float t = -(glm::dot(cameraPosition, eye) + d) / glm::dot(eye, ray);
-            glm::vec3 intersectionPoint = cameraPosition + ray * t;
-            */
+        if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 
             glm::vec3 intersectionPoint = intersectLineWithPlane(
                     ray, cameraPosition, eye, modelPosition);
 
-            if (glm::length(modelPosition - intersectionPoint) < 0.1f) {
+            /*
+            std::cout << "Intersection:" << std::endl;
+            std::cout << intersectionPoint.x
+                      << " " << intersectionPoint.y
+                      << " " << intersectionPoint.z
+                      << std::endl;
+
+            std::cout << "Model:" << std::endl;
+            std::cout << modelPosition.x
+                      << " " << modelPosition.y
+                      << " " << modelPosition.z
+                      << std::endl;
+            */
+
+            if (glm::length(modelPosition - intersectionPoint) < 0.5f * scale) {
                 if (selectedMarker != modelPtr) {
                     selectedMarker = modelPtr;
                     selectionMode = TRANSLATE;
-                    removeSelection = false;
                 } else if (isClick) {
                     selectionMode = (SelectionMode)((selectionMode + 1) % 3);
-                    removeSelection = false;
                 }
+                handled = true;
             }
         }
+
+        glm::mat4 markerMat = glm::mat4(1.0f);
+        markerMat = glm::translate(markerMat, modelPosition);
+        markerMat = glm::scale(markerMat, glm::vec3(scale, scale, scale));
 
         if (selectedMarker == modelPtr) {
 
             glUniform1i(billboardLocation, false);
 
             switch(selectionMode) {
-                case TRANSLATE:
-                    removeSelection = updateTranslation(
-                            mousePosition,
+                case TRANSLATE: {
+                    glm::vec3 shift(0.0f, 0.0f, 0.0f);
+                    handled = updateTranslation(
+                            shift, 
+                            window,
                             ray,
                             cameraPosition,
-                            modelPosition);
-                    renderModifiers(shaderProgramId, arrowModel, 0.2f, 0.2f);
+                            modelPosition,
+                            scale);
+
+                    model[3][0] += shift.x;
+                    model[3][1] += shift.y;
+                    model[3][2] += shift.z;
+                    
+                    std::cout << shift.x << " " << shift.y << " " << shift.z << std::endl;
+                    renderModifiers(
+                            shaderProgramId,
+                            arrowModel,
+                            modelPosition, 
+                            scale,
+                            1.0f);
                     break;
+                }
                 case SCALE:
-                    renderModifiers(shaderProgramId, scaleArrowModel, 0.2f, 0.2f);
+                    renderModifiers(
+                            shaderProgramId,
+                            scaleArrowModel,
+                            modelPosition,
+                            scale,
+                            1.0f);
                     break;
                 case ROTATE:
-                    renderModifiers(shaderProgramId, ringModel, 0.6f, 0.0f);
+                    renderModifiers(
+                            shaderProgramId,
+                            ringModel,
+                            modelPosition,
+                            scale * 3,
+                            0.0f);
                     break;
             }
 
             glUniform1i(billboardLocation, true);
 
-            markerModelSelected->render(shaderProgramId, model);
+            markerModel->material.Ka = objl::Vector3(1.0f, 1.0f, 0.0f);
+            markerModel->material.Kd = objl::Vector3(1.0f, 1.0f, 0.0f);
+            markerModel->material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
+            markerModel->render(shaderProgramId, markerMat);
         } else {
-            markerModel->render(shaderProgramId, model);
+            markerModel->material.Ka = objl::Vector3(0.0f, 1.0f, 0.0f);
+            markerModel->material.Kd = objl::Vector3(0.0f, 1.0f, 0.0f);
+            markerModel->material.Ks = objl::Vector3(0.0f, 1.0f, 0.0f);
+            markerModel->render(shaderProgramId, markerMat);
         }
     }
 
     glUniform1i(billboardLocation, false);
+    glUniform1i(lightingLocation, true);
 
     if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-        if (isClick && removeSelection) {
+        if (isClick && !handled) {
             selectedMarker = 0;
         }
         isClick = false;
-        mousePrev = mousePosition;
     } else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
         isClick = true;
     }
@@ -131,12 +176,14 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
 
 void MarkerModule::renderModifiers(
             GLuint shaderProgramId,
-            std::shared_ptr<Model> model,
+            std::shared_ptr<Model>& model,
+            glm::vec3 position,
             float scale, 
             float offset) {
 
     glm::mat4 upMat = glm::mat4(1.0f);
-    upMat = glm::translate(upMat, glm::vec3(0.0f, offset, 0.0f));
+    upMat = glm::translate(upMat, position);
+    upMat = glm::translate(upMat, glm::vec3(0.0f, offset * scale, 0.0f));
     upMat = glm::scale(upMat, glm::vec3(scale, scale, scale));
 
     model->material.Ka = objl::Vector3(0.0f, 1.0f, 0.0f);
@@ -150,9 +197,10 @@ void MarkerModule::renderModifiers(
     model->material.Ks = objl::Vector3(1.0f, 0.0f, 0.0f);
 
     glm::mat4 rightMat = glm::mat4(1.0f);
+    rightMat = glm::translate(rightMat, position);
     rightMat = glm::rotate(rightMat,
             -(float)M_PI / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-    rightMat = glm::translate(rightMat, glm::vec3(0.0f, offset, 0.0f));
+    rightMat = glm::translate(rightMat, glm::vec3(0.0f, offset * scale, 0.0f));
     rightMat = glm::scale(rightMat, glm::vec3(scale, scale, scale));
 
     model->render(shaderProgramId, rightMat);
@@ -162,9 +210,10 @@ void MarkerModule::renderModifiers(
     model->material.Ks = objl::Vector3(0.0f, 0.0f, 1.0f);
 
     glm::mat4 forwardMat = glm::mat4(1.0f);
+    forwardMat = glm::translate(forwardMat, position);
     forwardMat = glm::rotate(forwardMat,
             (float)M_PI / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    forwardMat = glm::translate(forwardMat, glm::vec3(0.0f, offset, 0.0f));
+    forwardMat = glm::translate(forwardMat, glm::vec3(0.0f, offset * scale, 0.0f));
     forwardMat = glm::scale(forwardMat, glm::vec3(scale, scale, scale));
 
     model->render(shaderProgramId, forwardMat);
@@ -176,76 +225,126 @@ glm::vec3 MarkerModule::intersectLineWithPlane(
         glm::vec3& planeNormal,
         glm::vec3& planePoint) {
 
-    float t = -(glm::dot(linePoint, planeNormal) + glm::length(planePoint));
-    t /= glm::dot(planeNormal, lineDirection);
+    float t = glm::dot(planePoint - linePoint, planeNormal);
+    t /= glm::dot(lineDirection, planeNormal);
 
     return linePoint + lineDirection * t;
 }
 
+glm::vec3 MarkerModule::intersectionPointInPlaneCoord(
+        glm::vec3& lineDirection,
+        glm::vec3& linePoint,
+        glm::vec3& planeNormal,
+        glm::vec3& planePoint,
+        glm::vec3& planeRightVector) {
+
+    glm::vec3 intersectionPoint = intersectLineWithPlane(
+            lineDirection,
+            linePoint,
+            planeNormal,
+            planePoint);
+
+    glm::vec3 planeUpVector = glm::cross(planeNormal, planeRightVector);
+
+    glm::mat3 toPlaneCoords = glm::transpose(
+            glm::mat3(planeRightVector, planeUpVector, planeNormal));
+
+    glm::vec3 localPoint = toPlaneCoords * (intersectionPoint - planePoint);
+
+    return localPoint;
+}
+
 bool MarkerModule::updateTranslation(
-        glm::vec2& mousePosition,
+        glm::vec3& shift, 
+        GLFWwindow* window,
         glm::vec3& clickRay,
         glm::vec3& cameraPosition,
-        glm::vec3& modelPosition) {
+        glm::vec3& modelPosition,
+        float scale) {
 
-    glm::vec3 normal = modelPosition - cameraPosition;
+    if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 
-    glm::vec3 xNormal = glm::normalize(glm::vec3(0, normal.y, normal.z));
-    glm::vec3 xRight = glm::vec3(1.0f, 0.0f, 0.0f);
-    glm::vec3 xUp = glm::cross(xNormal, xRight);
+        bool handled = false;
 
-    glm::vec3 xIntersectionPoint = intersectLineWithPlane(
-            clickRay,
-            cameraPosition,
-            xNormal,
-            modelPosition);
+        glm::vec3 normal = modelPosition - cameraPosition;
 
-    glm::mat3 xToPlaneCoords =
-        glm::transpose(glm::mat3(xRight, xUp, xNormal));
+        float offset = 2.5f * scale;
+        float width = 1.75f * scale;
+        float height = 0.5f * scale;
 
-    glm::vec3 xLocalPoint = xToPlaneCoords * xIntersectionPoint;
-    xLocalPoint -= modelPosition + glm::vec3(0.5, 0.0f, 0.0f);
+        glm::vec3 xNormal = glm::normalize(glm::vec3(0.0f, normal.y, normal.z));
+        glm::vec3 xRight = glm::vec3(1.0f, 0.0f, 0.0f);
+        glm::vec3 yNormal = glm::normalize(glm::vec3(normal.x, 0.0f, normal.z));
+        glm::vec3 yRight = glm::vec3(0.0f, 1.0f, 0.0f);
+        glm::vec3 zNormal = glm::normalize(glm::vec3(normal.x, normal.y, 0.0f));
+        glm::vec3 zRight = glm::vec3(0.0f, 0.0f, 1.0f);
 
-    if (std::abs(xLocalPoint.x) < 0.4 && std::abs(xLocalPoint.y) < 0.1) {
-        return false;
-    }
+        glm::vec3 xLocalPoint = intersectionPointInPlaneCoord(
+                clickRay,
+                cameraPosition,
+                xNormal,
+                modelPosition,
+                xRight);
 
-    glm::vec3 yNormal = glm::normalize(glm::vec3(normal.x, 0, normal.z));
-    glm::vec3 yRight = glm::vec3(0.0f, 1.0f, 0.0f);
-    glm::vec3 yUp = glm::cross(yNormal, yRight);
+        std::cout << "xLocalPoint:" << std::endl;
+        std::cout << xLocalPoint.x
+                  << " " << xLocalPoint.y
+                  << " " << xLocalPoint.z
+                  << std::endl;
 
-    glm::vec3 yIntersectionPoint = intersectLineWithPlane(
-            clickRay,
-            cameraPosition,
-            yNormal,
-            modelPosition);
+        std::cout << width << " " << height << std::endl;
 
-    glm::mat3 yToPlaneCoords =
-        glm::transpose(glm::mat3(yRight, yUp, yNormal));
+        glm::vec3 yLocalPoint = intersectionPointInPlaneCoord(
+                clickRay,
+                cameraPosition,
+                yNormal,
+                modelPosition,
+                yRight);
 
-    glm::vec3 yLocalPoint = yToPlaneCoords * yIntersectionPoint;
-    yLocalPoint -= modelPosition + glm::vec3(0.0f, 0.5f, 0.0f);
+        glm::vec3 zLocalPoint = intersectionPointInPlaneCoord(
+                clickRay,
+                cameraPosition,
+                zNormal,
+                modelPosition,
+                zRight);
 
-    if (std::abs(yLocalPoint.x) < 0.4 && std::abs(yLocalPoint.y) < 0.1) {
-        return false;
-    }
+        xLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
+        yLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
+        zLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
 
+        if (isClick) {
+            if (std::abs(xLocalPoint.x) < width && std::abs(xLocalPoint.y) < height) {
+                selectedAxis = X_AXIS;
+                handled = true;
+            }
+            if (std::abs(yLocalPoint.x) < width && std::abs(yLocalPoint.y) < height) {
+                selectedAxis = Y_AXIS;
+                handled = true;
+            }
+            if (std::abs(zLocalPoint.x) < width && std::abs(zLocalPoint.y) < height) {
+                selectedAxis = Z_AXIS;
+                handled = true;
+            }
+        } else {
+            switch (selectedAxis) {
+                case X_AXIS:
+                    shift.x = xLocalPoint.x - mousePrevShift.x;
+                    break;
+                case Y_AXIS:
+                    shift.y = yLocalPoint.x - mousePrevShift.y;
+                    break;
+                case Z_AXIS:
+                    shift.z = zLocalPoint.x - mousePrevShift.z;
+                    break;
+            } 
+        }
+
+        mousePrevShift.x = xLocalPoint.x;
+        mousePrevShift.y = yLocalPoint.x;
+        mousePrevShift.z = zLocalPoint.x;
+
+        return handled;
+    } 
+    
     return true;
-
-    /*
-    glm::vec3 yxPoint = intersectLineWithPlane(
-            clickRay,
-            cameraPosition,
-            glm::vec3(0.0f, 0.0f, 1.0f),
-            modelPosition);
-
-    glm::vec3 zyPoint = intersectLineWithPlane(
-            clickRay,
-            cameraPosition,
-            glm::vec3(1.0f, 0.0f, 0.0f),
-            modelPosition);
-
-    yxPoint -= modelPosition;
-    zyPoint -= modelPosition;
-    */
 }
