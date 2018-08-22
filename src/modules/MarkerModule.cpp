@@ -48,6 +48,10 @@ void MarkerModule::updateMouseState(GLFWwindow* window) {
     mouse.pressed = GLFW_PRESS == buttonState;
     mouse.click = GLFW_RELEASE == prevButtonState && GLFW_PRESS == buttonState;
 
+    if (mouse.click) {
+        mouse.handled = false;
+    }
+
     prevButtonState = buttonState;
 }
 
@@ -83,12 +87,17 @@ void MarkerModule::updateSelectionState(Camera& camera) {
                 selectionMode = TRANSLATE;
             }
 
+            mouse.handled = true;
             selectedModelMatrix = modelPtr;
         }
     }
+
+    if (!mouse.handled) {
+        selectedModelMatrix = 0;
+    }
 }
 
-void updateModifiers(Camera& camera) {
+void MarkerModule::updateModifiers(Camera& camera) {
 }
 
 void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition) {
@@ -238,8 +247,8 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
     updateMouseState(window);
 
     if (hasSelection()) {
-        updateModifiers(camera);
         renderModifiers(shaderProgramId, cameraPosition);
+        updateModifiers(camera);
     }
 
     updateSelectionState(camera);
@@ -274,7 +283,6 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
                     glm::vec3 shift(0.0f, 0.0f, 0.0f);
                     calcShift(
                             shift, 
-                            window,
                             clickRay,
                             cameraPosition,
                             modelPosition,
@@ -291,7 +299,6 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
                     glm::vec3 shift;
                     calcShift(
                             shift, 
-                            window,
                             clickRay,
                             cameraPosition,
                             modelPosition,
@@ -350,22 +357,22 @@ glm::vec3 MarkerModule::intersectionPointInPlaneCoord(
     return localPoint;
 }
 
+void localAxisPoints(glm::vec2 xAxisPoint) {
+}
+
 bool MarkerModule::calcShift(
         glm::vec3& shift, 
-        GLFWwindow* window,
         glm::vec3& clickRay,
         glm::vec3& cameraPosition,
         glm::vec3& modelPosition,
         float scale) {
 
-    if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
+    if (mouse.click) {
+        startScale = scale;
+        startModelPosition = modelPosition;
+    }
 
-        if (mouse.click) {
-            startScale = scale;
-            startModelPosition = modelPosition;
-        }
-
-        bool handled = false;
+    if (mouse.pressed) {
 
         glm::vec3 normal = startModelPosition - cameraPosition;
 
@@ -407,16 +414,17 @@ bool MarkerModule::calcShift(
 
         if (mouse.click) {
             if (std::abs(xLocalPoint.x) < width && std::abs(xLocalPoint.y) < height) {
+                mouse.handled = true;
                 selectedAxis = X_AXIS;
-                handled = true;
-            }
-            if (std::abs(yLocalPoint.x) < width && std::abs(yLocalPoint.y) < height) {
+            } else if (std::abs(yLocalPoint.x) < width && std::abs(yLocalPoint.y) < height) {
+                mouse.handled = true;
                 selectedAxis = Y_AXIS;
-                handled = true;
-            }
-            if (std::abs(zLocalPoint.x) < width && std::abs(zLocalPoint.y) < height) {
+            } else if (std::abs(zLocalPoint.x) < width && std::abs(zLocalPoint.y) < height) {
+                mouse.handled = true;
                 selectedAxis = Z_AXIS;
-                handled = true;
+            } else {
+                mouse.handled = false;
+                selectedAxis = NONE;
             }
         } else {
             switch (selectedAxis) {
@@ -432,11 +440,7 @@ bool MarkerModule::calcShift(
             } 
         }
 
-        prevShift.x = xLocalPoint.x;
-        prevShift.y = yLocalPoint.x;
-        prevShift.z = zLocalPoint.x;
-
-        return handled;
+        return false;
     } 
     
     return true;
