@@ -20,6 +20,8 @@ public:
 
     void setAspectRatio(float aspectRatio);
 
+    glm::vec3 getPosition();
+
     void render(GLuint shaderProgramId);
 
     /*

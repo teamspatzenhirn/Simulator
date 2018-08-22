@@ -13,153 +13,101 @@ MarkerModule::MarkerModule() {
 
     ringModel = std::make_shared<Model>("models/ring.obj");
     ringModel->upload();
-
-    isClick = true;
 }
 
-void MarkerModule::addMarker(glm::mat4& model) {
+bool MarkerModule::hasSelection() {
 
-    modelMatrices.push_back(&model);
+    auto it = std::find(
+            modelMatrices.begin(), modelMatrices.end(), selectedModelMatrix);
+
+    return it != modelMatrices.end();
 }
 
-void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& camera) {
+float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition) {
+    
+    return glm::length(cameraPosition - modelPosition) * 0.05;
+}
+
+glm::vec3 MarkerModule::getModelPosition(glm::mat4* modelPtr) {
+
+    glm::mat4& modelMat = *modelPtr;
+    return glm::vec3(modelMat[3][0], modelMat[3][1], modelMat[3][2]);
+}
+
+void MarkerModule::updateMouseState(GLFWwindow* window) {
+
+    double mouseX;
+    double mouseY;
+    glfwGetCursorPos(window, &mouseX, &mouseY);
+    mouse.x = (float)mouseX;
+    mouse.y = (float)mouseY;
+
+    static int prevButtonState = GLFW_RELEASE;
+    int buttonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+
+    mouse.pressed = GLFW_PRESS == buttonState;
+    mouse.click = GLFW_RELEASE == prevButtonState && GLFW_PRESS == buttonState;
+
+    prevButtonState = buttonState;
+}
+
+void MarkerModule::updateSelectionState(Camera& camera) {
+
+    if (!mouse.click) {
+        return;
+    }
+
+    // TODO: handle width and height parameters properly
+    glm::vec3 clickRay =
+        camera.pickRay(mouse.x, mouse.y, 800, 600);
+
+    glm::vec3 eyeVector = glm::normalize(glm::vec3(
+            camera.view[0][2], camera.view[1][2], camera.view[2][2]));
+
+    glm::vec3 cameraPosition = camera.getPosition();
+
+    for (glm::mat4* modelPtr : modelMatrices) {
+
+        glm::vec3 modelPosition = getModelPosition(modelPtr);
+
+        float scale = getScale(cameraPosition, modelPosition);
+
+        glm::vec3 intersectionPoint = intersectLineWithPlane(
+                clickRay, cameraPosition, eyeVector, modelPosition);
+
+        if (glm::length(modelPosition - intersectionPoint) < 0.5f * scale) {
+
+            if (selectedModelMatrix == modelPtr) {
+                selectionMode = (SelectionMode)((selectionMode + 1) % 3);
+            } else {
+                selectionMode = TRANSLATE;
+            }
+
+            selectedModelMatrix = modelPtr;
+        }
+    }
+}
+
+void updateModifiers(Camera& camera) {
+}
+
+void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition) {
 
     GLuint billboardLocation =
         glGetUniformLocation(shaderProgramId, "billboard");
     glUniform1i(billboardLocation, true);
 
-    GLuint lightingLocation =
-        glGetUniformLocation(shaderProgramId, "lighting");
-    glUniform1i(lightingLocation, false);
-
-    glm::vec2 mousePosition;
-
-    /* load mouse position */ {
-        double mouseX, mouseY;
-        glfwGetCursorPos(window, &mouseX, &mouseY);
-        mousePosition.x = mouseX;
-        mousePosition.y = mouseY;
-    }
-
-    // TODO: handle width and height parameters properly
-    glm::vec3 ray = camera.pickRay(mousePosition.x, mousePosition.y, 800, 600);
-
-    // TODO: maybe choose another vector than the eye vector
-    // as the intersection surface normal here
-    glm::vec3 eye = glm::normalize(glm::vec3(
-            camera.view[0][2], camera.view[1][2], camera.view[2][2]));
-
-    // TODO: inefficient!
-    glm::mat4 iv = glm::inverse(camera.view);
-    glm::vec3 cameraPosition =
-        glm::vec3(iv * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-    bool handled = false;
-
     for (glm::mat4* modelPtr : modelMatrices) {
 
-        glm::mat4& model = *modelPtr;
+        glm::vec3 modelPosition = getModelPosition(modelPtr);
 
-        glm::vec3 modelPosition =
-            glm::vec3(model * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-        float scale = glm::length(cameraPosition - modelPosition) / 20;
-
-        if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-
-            glm::vec3 intersectionPoint = intersectLineWithPlane(
-                    ray, cameraPosition, eye, modelPosition);
-
-            if (glm::length(modelPosition - intersectionPoint) < 0.5f * scale) {
-                if (selectedMarker != modelPtr) {
-                    selectedMarker = modelPtr;
-                    selectionMode = TRANSLATE;
-                } else if (isClick) {
-                    selectionMode = (SelectionMode)((selectionMode + 1) % 3);
-                }
-                handled = true;
-            }
-        }
+        float scale = getScale(cameraPosition, modelPosition);
 
         glm::mat4 markerMat = glm::mat4(1.0f);
         markerMat = glm::translate(markerMat, modelPosition);
         markerMat = glm::scale(markerMat, glm::vec3(scale, scale, scale));
 
-        if (selectedMarker == modelPtr) {
-
-            glm::mat4 translationMat;
-            glm::mat4 scaleMat;
-            glm::mat4 rotationMat;
-
-            decomposeTransformationMatrix(
-                    model,
-                    translationMat,
-                    scaleMat,
-                    rotationMat);
-
-            glUniform1i(billboardLocation, false);
-
-            switch(selectionMode) {
-                case TRANSLATE: {
-                    glm::vec3 shift(0.0f, 0.0f, 0.0f);
-                    handled |= calcShift(
-                            shift, 
-                            window,
-                            ray,
-                            cameraPosition,
-                            modelPosition,
-                            scale);
-
-                    if (!isClick) {
-                        shift -= prevShift;
-                    }
-
-                    translationMat = glm::translate(translationMat, shift);
-
-                    renderModifiers(
-                            shaderProgramId,
-                            arrowModel,
-                            modelPosition, 
-                            scale,
-                            1.0f);
-                    break;
-                }
-                case SCALE: {
-                    glm::vec3 shift;
-                    handled |= calcShift(
-                            shift, 
-                            window,
-                            ray,
-                            cameraPosition,
-                            modelPosition,
-                            scale);
-
-                    shift = glm::abs(shift) + glm::vec3(1.0f, 1.0f, 1.0f);
-
-                    scaleMat = glm::scale(scaleMat, shift);
-
-                    renderModifiers(
-                            shaderProgramId,
-                            scaleArrowModel,
-                            modelPosition,
-                            scale,
-                            1.0f);
-                    break;
-                }
-                case ROTATE:
-                    renderModifiers(
-                            shaderProgramId,
-                            ringModel,
-                            modelPosition,
-                            scale * 3,
-                            0.0f);
-                    break;
-            }
-
-            model = translationMat * rotationMat * scaleMat;
-
-            glUniform1i(billboardLocation, true);
-
+        if (selectedModelMatrix == modelPtr) {
             markerModel->material.Ka = objl::Vector3(1.0f, 1.0f, 0.0f);
             markerModel->material.Kd = objl::Vector3(1.0f, 1.0f, 0.0f);
             markerModel->material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
@@ -167,27 +115,49 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
         } else {
             markerModel->material.Ka = objl::Vector3(0.0f, 1.0f, 0.0f);
             markerModel->material.Kd = objl::Vector3(0.0f, 1.0f, 0.0f);
-            markerModel->material.Ks = objl::Vector3(0.0f, 1.0f, 0.0f);
+            markerModel->material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
             markerModel->render(shaderProgramId, markerMat);
         }
     }
 
     glUniform1i(billboardLocation, false);
-    glUniform1i(lightingLocation, true);
-
-    if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-        if (isClick && !handled) {
-            selectedMarker = 0;
-        }
-        isClick = false;
-    } else if (GLFW_RELEASE == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
-        isClick = true;
-    }
-
-    modelMatrices.clear();
 }
 
-void MarkerModule::renderModifiers(
+void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosition) {
+    
+    glm::vec3 modelPosition = getModelPosition(selectedModelMatrix);
+
+    float scale = getScale(cameraPosition, modelPosition);
+
+    switch(selectionMode) {
+        case TRANSLATE:
+            renderGlyphTriplet(
+                    shaderProgramId,
+                    arrowModel,
+                    modelPosition, 
+                    scale,
+                    1.0f);
+            break;
+        case SCALE: 
+            renderGlyphTriplet(
+                    shaderProgramId,
+                    scaleArrowModel,
+                    modelPosition,
+                    scale,
+                    1.0f);
+            break;
+        case ROTATE:
+            renderGlyphTriplet(
+                    shaderProgramId,
+                    ringModel,
+                    modelPosition,
+                    scale * 3,
+                    0.0f);
+            break;
+    }
+}
+
+void MarkerModule::renderGlyphTriplet(
             GLuint shaderProgramId,
             std::shared_ptr<Model>& model,
             glm::vec3 position,
@@ -230,6 +200,119 @@ void MarkerModule::renderModifiers(
     forwardMat = glm::scale(forwardMat, glm::vec3(scale, scale, scale));
 
     model->render(shaderProgramId, forwardMat);
+}
+
+void MarkerModule::addMarker(glm::mat4& model) {
+
+    modelMatrices.push_back(&model);
+}
+
+void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& camera) {
+
+    GLuint lightingLocation =
+        glGetUniformLocation(shaderProgramId, "lighting");
+    glUniform1i(lightingLocation, false);
+
+
+    /*
+
+     has the user clicked on a marker?
+
+     render all markers
+
+     if there is a selected marker
+
+        render glyphs for that marker
+
+        has the use clicked on a selected marker? 
+
+            update the selection mode of the marker
+
+        if the user is interacting with the glyphs
+            
+            update the model mat accordingly
+    */
+
+    glm::vec3 cameraPosition = camera.getPosition();
+
+    updateMouseState(window);
+
+    if (hasSelection()) {
+        updateModifiers(camera);
+        renderModifiers(shaderProgramId, cameraPosition);
+    }
+
+    updateSelectionState(camera);
+
+    renderMarkers(shaderProgramId, cameraPosition);
+
+    // TODO: handle width and height parameters properly
+    glm::vec3 clickRay =
+        camera.pickRay(mouse.x, mouse.y, 800, 600);
+
+    for (glm::mat4* modelPtr : modelMatrices) {
+
+        glm::mat4& modelMat = *modelPtr;
+        glm::vec3 modelPosition = getModelPosition(modelPtr);
+
+        float scale = getScale(cameraPosition, modelPosition);
+
+        if (selectedModelMatrix == modelPtr) {
+
+            glm::mat4 translationMat;
+            glm::mat4 scaleMat;
+            glm::mat4 rotationMat;
+
+            decomposeTransformationMatrix(
+                    modelMat,
+                    translationMat,
+                    scaleMat,
+                    rotationMat);
+
+            switch(selectionMode) {
+                case TRANSLATE: {
+                    glm::vec3 shift(0.0f, 0.0f, 0.0f);
+                    calcShift(
+                            shift, 
+                            window,
+                            clickRay,
+                            cameraPosition,
+                            modelPosition,
+                            scale);
+
+                    if (!mouse.click) {
+                        shift -= prevShift;
+                    }
+
+                    //translationMat = glm::translate(translationMat, shift);
+                    break;
+                }
+                case SCALE: {
+                    glm::vec3 shift;
+                    calcShift(
+                            shift, 
+                            window,
+                            clickRay,
+                            cameraPosition,
+                            modelPosition,
+                            scale);
+
+                    shift = glm::abs(shift) + glm::vec3(1.0f, 1.0f, 1.0f);
+
+                    scaleMat = glm::scale(scaleMat, shift);
+                    break;
+                }
+                case ROTATE:
+                    break;
+            }
+
+            modelMat = translationMat * rotationMat * scaleMat;
+        }
+    }
+
+    glUniform1i(lightingLocation, true);
+
+    modelMatrices.clear();
 }
 
 glm::vec3 MarkerModule::intersectLineWithPlane(
@@ -277,7 +360,7 @@ bool MarkerModule::calcShift(
 
     if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 
-        if (isClick) {
+        if (mouse.click) {
             startScale = scale;
             startModelPosition = modelPosition;
         }
@@ -322,7 +405,7 @@ bool MarkerModule::calcShift(
         yLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
         zLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
 
-        if (isClick) {
+        if (mouse.click) {
             if (std::abs(xLocalPoint.x) < width && std::abs(xLocalPoint.y) < height) {
                 selectedAxis = X_AXIS;
                 handled = true;

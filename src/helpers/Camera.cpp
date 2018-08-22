@@ -11,6 +11,12 @@ void Camera::setAspectRatio(float aspectRatio) {
     projection = glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
 }
 
+glm::vec3 Camera::getPosition() {
+
+    glm::mat3 rotation(view);
+    return -glm::transpose(rotation) * glm::vec3(view[3]);
+}
+
 void Camera::render(GLuint shaderProgramId) {
 
     GLint viewLocation =
@@ -21,9 +27,7 @@ void Camera::render(GLuint shaderProgramId) {
         glGetUniformLocation(shaderProgramId, "projection");
     glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
-    // TODO: inefficient!
-    glm::mat4 iv = glm::inverse(view);
-    glm::vec4 cameraPosition = iv * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec3 cameraPosition = getPosition();
 
     GLint posLocation =
         glGetUniformLocation(shaderProgramId, "cameraPosition");
