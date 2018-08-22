@@ -24,8 +24,10 @@ class MarkerModule {
     std::shared_ptr<Model> ringModel;
 
     bool isClick;
-    glm::vec3 mousePrevShift;
 
+    glm::vec3 prevShift;
+    glm::vec3 startModelPosition;
+    float startScale;
     enum SelectedAxis { X_AXIS, Y_AXIS, Z_AXIS } selectedAxis;
 
     glm::mat4* selectedMarker;
@@ -51,13 +53,19 @@ class MarkerModule {
             glm::vec3& planePoint,
             glm::vec3& planeRightVector);
 
-    bool updateTranslation(
+    bool calcShift(
             glm::vec3& shift,
             GLFWwindow* window,
             glm::vec3& clickRay,
             glm::vec3& cameraPosition,
             glm::vec3& modelPosition,
             float scale);
+
+    void decomposeTransformationMatrix(
+            glm::mat4& matrix,
+            glm::mat4& translationMatrix,
+            glm::mat4& scaleMatrix,
+            glm::mat4& rotationMatrix);
 
 public:
 

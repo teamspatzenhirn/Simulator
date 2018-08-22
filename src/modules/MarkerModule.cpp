@@ -70,20 +70,6 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
             glm::vec3 intersectionPoint = intersectLineWithPlane(
                     ray, cameraPosition, eye, modelPosition);
 
-            /*
-            std::cout << "Intersection:" << std::endl;
-            std::cout << intersectionPoint.x
-                      << " " << intersectionPoint.y
-                      << " " << intersectionPoint.z
-                      << std::endl;
-
-            std::cout << "Model:" << std::endl;
-            std::cout << modelPosition.x
-                      << " " << modelPosition.y
-                      << " " << modelPosition.z
-                      << std::endl;
-            */
-
             if (glm::length(modelPosition - intersectionPoint) < 0.5f * scale) {
                 if (selectedMarker != modelPtr) {
                     selectedMarker = modelPtr;
@@ -101,12 +87,22 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
 
         if (selectedMarker == modelPtr) {
 
+            glm::mat4 translationMat;
+            glm::mat4 scaleMat;
+            glm::mat4 rotationMat;
+
+            decomposeTransformationMatrix(
+                    model,
+                    translationMat,
+                    scaleMat,
+                    rotationMat);
+
             glUniform1i(billboardLocation, false);
 
             switch(selectionMode) {
                 case TRANSLATE: {
                     glm::vec3 shift(0.0f, 0.0f, 0.0f);
-                    handled = updateTranslation(
+                    handled |= calcShift(
                             shift, 
                             window,
                             ray,
@@ -114,11 +110,12 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
                             modelPosition,
                             scale);
 
-                    model[3][0] += shift.x;
-                    model[3][1] += shift.y;
-                    model[3][2] += shift.z;
-                    
-                    std::cout << shift.x << " " << shift.y << " " << shift.z << std::endl;
+                    if (!isClick) {
+                        shift -= prevShift;
+                    }
+
+                    translationMat = glm::translate(translationMat, shift);
+
                     renderModifiers(
                             shaderProgramId,
                             arrowModel,
@@ -127,7 +124,20 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
                             1.0f);
                     break;
                 }
-                case SCALE:
+                case SCALE: {
+                    glm::vec3 shift;
+                    handled |= calcShift(
+                            shift, 
+                            window,
+                            ray,
+                            cameraPosition,
+                            modelPosition,
+                            scale);
+
+                    shift = glm::abs(shift) + glm::vec3(1.0f, 1.0f, 1.0f);
+
+                    scaleMat = glm::scale(scaleMat, shift);
+
                     renderModifiers(
                             shaderProgramId,
                             scaleArrowModel,
@@ -135,6 +145,7 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
                             scale,
                             1.0f);
                     break;
+                }
                 case ROTATE:
                     renderModifiers(
                             shaderProgramId,
@@ -144,6 +155,8 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
                             0.0f);
                     break;
             }
+
+            model = translationMat * rotationMat * scaleMat;
 
             glUniform1i(billboardLocation, true);
 
@@ -254,7 +267,7 @@ glm::vec3 MarkerModule::intersectionPointInPlaneCoord(
     return localPoint;
 }
 
-bool MarkerModule::updateTranslation(
+bool MarkerModule::calcShift(
         glm::vec3& shift, 
         GLFWwindow* window,
         glm::vec3& clickRay,
@@ -264,13 +277,18 @@ bool MarkerModule::updateTranslation(
 
     if (GLFW_PRESS == glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT)) {
 
+        if (isClick) {
+            startScale = scale;
+            startModelPosition = modelPosition;
+        }
+
         bool handled = false;
 
-        glm::vec3 normal = modelPosition - cameraPosition;
+        glm::vec3 normal = startModelPosition - cameraPosition;
 
-        float offset = 2.5f * scale;
-        float width = 1.75f * scale;
-        float height = 0.5f * scale;
+        float offset = 2.5f * startScale;
+        float width = 1.75f * startScale;
+        float height = 0.5f * startScale;
 
         glm::vec3 xNormal = glm::normalize(glm::vec3(0.0f, normal.y, normal.z));
         glm::vec3 xRight = glm::vec3(1.0f, 0.0f, 0.0f);
@@ -283,29 +301,21 @@ bool MarkerModule::updateTranslation(
                 clickRay,
                 cameraPosition,
                 xNormal,
-                modelPosition,
+                startModelPosition,
                 xRight);
-
-        std::cout << "xLocalPoint:" << std::endl;
-        std::cout << xLocalPoint.x
-                  << " " << xLocalPoint.y
-                  << " " << xLocalPoint.z
-                  << std::endl;
-
-        std::cout << width << " " << height << std::endl;
 
         glm::vec3 yLocalPoint = intersectionPointInPlaneCoord(
                 clickRay,
                 cameraPosition,
                 yNormal,
-                modelPosition,
+                startModelPosition,
                 yRight);
 
         glm::vec3 zLocalPoint = intersectionPointInPlaneCoord(
                 clickRay,
                 cameraPosition,
                 zNormal,
-                modelPosition,
+                startModelPosition,
                 zRight);
 
         xLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
@@ -328,23 +338,45 @@ bool MarkerModule::updateTranslation(
         } else {
             switch (selectedAxis) {
                 case X_AXIS:
-                    shift.x = xLocalPoint.x - mousePrevShift.x;
+                    shift.x = xLocalPoint.x;
                     break;
                 case Y_AXIS:
-                    shift.y = yLocalPoint.x - mousePrevShift.y;
+                    shift.y = yLocalPoint.x;
                     break;
                 case Z_AXIS:
-                    shift.z = zLocalPoint.x - mousePrevShift.z;
+                    shift.z = zLocalPoint.x;
                     break;
             } 
         }
 
-        mousePrevShift.x = xLocalPoint.x;
-        mousePrevShift.y = yLocalPoint.x;
-        mousePrevShift.z = zLocalPoint.x;
+        prevShift.x = xLocalPoint.x;
+        prevShift.y = yLocalPoint.x;
+        prevShift.z = zLocalPoint.x;
 
         return handled;
     } 
     
     return true;
+}
+
+void MarkerModule::decomposeTransformationMatrix(
+        glm::mat4& matrix,
+        glm::mat4& translationMatrix,
+        glm::mat4& scaleMatrix,
+        glm::mat4& rotationMatrix) {
+
+    translationMatrix = glm::mat4(1.0f);
+    translationMatrix[3][0] = matrix[3][0];
+    translationMatrix[3][1] = matrix[3][1];
+    translationMatrix[3][2] = matrix[3][2];
+
+    scaleMatrix = glm::mat4(1.0f);
+    scaleMatrix[0][0] = glm::length(matrix[0]);
+    scaleMatrix[1][1] = glm::length(matrix[1]);
+    scaleMatrix[2][2] = glm::length(matrix[2]);
+
+    rotationMatrix = glm::mat4(1.0f);
+    rotationMatrix[0] = matrix[0] / scaleMatrix[0][0];
+    rotationMatrix[1] = matrix[1] / scaleMatrix[1][1];
+    rotationMatrix[2] = matrix[2] / scaleMatrix[2][2];
 }
