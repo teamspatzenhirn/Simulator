@@ -9,8 +9,10 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
+#define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/io.hpp>
 
 #include "helpers/Helpers.h"
 
@@ -31,10 +33,22 @@ class MarkerModule {
         bool handled;
     } mouse;
 
+    struct {
+        glm::vec3 dragStartModelPosition;
+        float dragStartScale;
+        glm::vec3 prevDragState;
+    } mod;
+
     glm::vec3 prevShift;
     glm::vec3 startModelPosition;
     float startScale;
-    enum SelectedAxis { X_AXIS, Y_AXIS, Z_AXIS, NONE } selectedAxis;
+
+    enum Axis {
+        X_AXIS,
+        Y_AXIS,
+        Z_AXIS,
+        NONE,
+    } selectedAxis;
 
     glm::mat4* selectedModelMatrix;
     enum SelectionMode { TRANSLATE = 0, SCALE = 1, ROTATE = 2 } selectionMode;
@@ -81,12 +95,9 @@ class MarkerModule {
             glm::mat4& scaleMatrix,
             glm::mat4& rotationMatrix);
 
-    bool calcShift(
-            glm::vec3& shift,
-            glm::vec3& clickRay,
-            glm::vec3& cameraPosition,
-            glm::vec3& modelPosition,
-            float scale);
+    glm::vec3 mousePosInRotateCoords(Camera& camera, Axis axis);
+
+    glm::vec3 mousePosInArrowCoords(Camera& camera, Axis axis);
 
 public:
 

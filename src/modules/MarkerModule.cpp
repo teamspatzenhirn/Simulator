@@ -98,6 +98,98 @@ void MarkerModule::updateSelectionState(Camera& camera) {
 }
 
 void MarkerModule::updateModifiers(Camera& camera) {
+
+    if (!mouse.pressed) {
+        return;
+    }
+
+    glm::mat4& modelMat = *selectedModelMatrix;
+    glm::vec3 cameraPosition = camera.getPosition();
+
+    if (mouse.click) {
+        mod.dragStartModelPosition = getModelPosition(selectedModelMatrix);
+        mod.dragStartScale = getScale(cameraPosition, mod.dragStartModelPosition);
+
+        float arrowLength = 4.5f * mod.dragStartScale;
+        float arrowHeight = 0.5f * mod.dragStartScale;
+
+        if (selectionMode == TRANSLATE || selectionMode == SCALE) {
+            glm::vec3 xLocalPoint = mousePosInArrowCoords(camera, X_AXIS);
+            glm::vec3 yLocalPoint = mousePosInArrowCoords(camera, Y_AXIS);
+            glm::vec3 zLocalPoint = mousePosInArrowCoords(camera, Z_AXIS);
+
+            mouse.handled = true;
+
+            if (xLocalPoint.x < arrowLength && xLocalPoint.x > 0
+                    && std::abs(xLocalPoint.y) < arrowHeight) {
+                selectedAxis = X_AXIS;
+            } else if (yLocalPoint.x < arrowLength && yLocalPoint.x > 0
+                    && std::abs(yLocalPoint.y) < arrowHeight) {
+                selectedAxis = Y_AXIS;
+            } else if (zLocalPoint.x < arrowLength && zLocalPoint.x > 0
+                    && std::abs(zLocalPoint.y) < arrowHeight) {
+                selectedAxis = Z_AXIS;
+            } else {
+                mouse.handled = false;
+                selectedAxis = NONE;
+            }
+
+            mod.prevDragState.x = selectedAxis == X_AXIS ? xLocalPoint.x : 0;
+            mod.prevDragState.y = selectedAxis == Y_AXIS ? yLocalPoint.x : 0;
+            mod.prevDragState.z = selectedAxis == Z_AXIS ? zLocalPoint.x : 0;
+        } else {
+            // TODO
+        }
+    } else {
+        glm::mat4 translationMat;
+        glm::mat4 scaleMat;
+        glm::mat4 rotationMat;
+
+        decomposeTransformationMatrix(
+                modelMat,
+                translationMat,
+                scaleMat,
+                rotationMat);
+
+        glm::vec3 dragState;
+
+        if (selectionMode == TRANSLATE || selectionMode == SCALE) {
+            dragState.x = selectedAxis == X_AXIS ?
+                mousePosInArrowCoords(camera, X_AXIS).x : 0;
+            dragState.y = selectedAxis == Y_AXIS ?
+                mousePosInArrowCoords(camera, Y_AXIS).x : 0;
+            dragState.z = selectedAxis == Z_AXIS ?
+                mousePosInArrowCoords(camera, Z_AXIS).x : 0;
+        } else {
+            // TODO
+        }
+
+        switch(selectionMode) {
+            case TRANSLATE: {
+                glm::vec3 translation = dragState - mod.prevDragState;
+                translationMat = glm::translate(translationMat, translation);
+                break;
+            }
+            case SCALE: {
+                glm::vec3 scale = dragState - mod.prevDragState;
+                scale.x = std::tanh(scale.x);
+                scale.y = std::tanh(scale.y);
+                scale.z = std::tanh(scale.z);
+                scale += glm::vec3(1.0f, 1.0f, 1.0f);
+                scaleMat = glm::scale(scaleMat, scale);
+                break;
+            }
+            case ROTATE: {
+                break;
+            }
+        }
+
+        std::cout << scaleMat << std::endl;
+
+        mod.prevDragState = dragState;
+
+        modelMat = translationMat * rotationMat * scaleMat;
+    }
 }
 
 void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition) {
@@ -222,26 +314,6 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
         glGetUniformLocation(shaderProgramId, "lighting");
     glUniform1i(lightingLocation, false);
 
-
-    /*
-
-     has the user clicked on a marker?
-
-     render all markers
-
-     if there is a selected marker
-
-        render glyphs for that marker
-
-        has the use clicked on a selected marker? 
-
-            update the selection mode of the marker
-
-        if the user is interacting with the glyphs
-            
-            update the model mat accordingly
-    */
-
     glm::vec3 cameraPosition = camera.getPosition();
 
     updateMouseState(window);
@@ -256,6 +328,7 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
     renderMarkers(shaderProgramId, cameraPosition);
 
     // TODO: handle width and height parameters properly
+    /*
     glm::vec3 clickRay =
         camera.pickRay(mouse.x, mouse.y, 800, 600);
 
@@ -316,6 +389,7 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
             modelMat = translationMat * rotationMat * scaleMat;
         }
     }
+    */
 
     glUniform1i(lightingLocation, true);
 
@@ -357,93 +431,75 @@ glm::vec3 MarkerModule::intersectionPointInPlaneCoord(
     return localPoint;
 }
 
-void localAxisPoints(glm::vec2 xAxisPoint) {
-}
+glm::vec3 MarkerModule::mousePosInArrowCoords(Camera& camera, Axis axis) {
 
-bool MarkerModule::calcShift(
-        glm::vec3& shift, 
-        glm::vec3& clickRay,
-        glm::vec3& cameraPosition,
-        glm::vec3& modelPosition,
-        float scale) {
+    glm::vec3 cameraPosition = camera.getPosition();
+    glm::vec3 normal = cameraPosition - mod.dragStartModelPosition;
+    glm::vec3 right;
 
-    if (mouse.click) {
-        startScale = scale;
-        startModelPosition = modelPosition;
+    // TODO: handle width and height parameters properly
+    glm::vec3 clickRay =
+        camera.pickRay(mouse.x, mouse.y, 800, 600);
+
+    switch (axis) {
+        case X_AXIS:
+            normal = glm::normalize(glm::vec3(0.0f, normal.y, normal.z));
+            right = glm::vec3(1.0f, 0.0f, 0.0f);
+            break;
+        case Y_AXIS:
+            normal = glm::normalize(glm::vec3(normal.x, 0.0f, normal.z));
+            right = glm::vec3(0.0f, 1.0f, 0.0f);
+            break;
+        case Z_AXIS:
+            normal = glm::normalize(glm::vec3(normal.x, normal.y, 0.0f));
+            right = glm::vec3(0.0f, 0.0f, 1.0f);
+            break;
     }
 
-    if (mouse.pressed) {
+    glm::vec3 localPoint = intersectionPointInPlaneCoord(
+            clickRay,
+            cameraPosition,
+            normal,
+            mod.dragStartModelPosition,
+            right);
 
-        glm::vec3 normal = startModelPosition - cameraPosition;
+    return localPoint;
+}
 
-        float offset = 2.5f * startScale;
-        float width = 1.75f * startScale;
-        float height = 0.5f * startScale;
+glm::vec3 MarkerModule::mousePosInRotateCoords(Camera& camera, Axis axis) {
 
-        glm::vec3 xNormal = glm::normalize(glm::vec3(0.0f, normal.y, normal.z));
-        glm::vec3 xRight = glm::vec3(1.0f, 0.0f, 0.0f);
-        glm::vec3 yNormal = glm::normalize(glm::vec3(normal.x, 0.0f, normal.z));
-        glm::vec3 yRight = glm::vec3(0.0f, 1.0f, 0.0f);
-        glm::vec3 zNormal = glm::normalize(glm::vec3(normal.x, normal.y, 0.0f));
-        glm::vec3 zRight = glm::vec3(0.0f, 0.0f, 1.0f);
+    glm::vec3 normal;
+    glm::vec3 right;
 
-        glm::vec3 xLocalPoint = intersectionPointInPlaneCoord(
-                clickRay,
-                cameraPosition,
-                xNormal,
-                startModelPosition,
-                xRight);
+    switch (axis) {
+        case X_AXIS:
+            normal = glm::vec3(1.0f, 0.0f, 0.0f);
+            right = glm::vec3(0.0f, 0.0f, 1.0f);
+            break;
+        case Y_AXIS:
+            normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            right = glm::vec3(1.0f, 0.0f, 0.0f);
+            break;
+        case Z_AXIS:
+            normal = glm::vec3(0.0f, 0.0f, 0.1f);
+            right = glm::vec3(1.0f, 0.0f, 0.0f);
+            break;
+    }
 
-        glm::vec3 yLocalPoint = intersectionPointInPlaneCoord(
-                clickRay,
-                cameraPosition,
-                yNormal,
-                startModelPosition,
-                yRight);
+    glm::vec3 cameraPosition = camera.getPosition();
 
-        glm::vec3 zLocalPoint = intersectionPointInPlaneCoord(
-                clickRay,
-                cameraPosition,
-                zNormal,
-                startModelPosition,
-                zRight);
+    // TODO: handle width and height parameters properly
+    glm::vec3 clickRay =
+        camera.pickRay(mouse.x, mouse.y, 800, 600);
 
-        xLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
-        yLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
-        zLocalPoint -= glm::vec3(offset, 0.0f, 0.0f);
+    glm::vec3 localPoint = intersectionPointInPlaneCoord(
+            clickRay,
+            cameraPosition,
+            normal,
+            mod.dragStartModelPosition,
+            right);
 
-        if (mouse.click) {
-            if (std::abs(xLocalPoint.x) < width && std::abs(xLocalPoint.y) < height) {
-                mouse.handled = true;
-                selectedAxis = X_AXIS;
-            } else if (std::abs(yLocalPoint.x) < width && std::abs(yLocalPoint.y) < height) {
-                mouse.handled = true;
-                selectedAxis = Y_AXIS;
-            } else if (std::abs(zLocalPoint.x) < width && std::abs(zLocalPoint.y) < height) {
-                mouse.handled = true;
-                selectedAxis = Z_AXIS;
-            } else {
-                mouse.handled = false;
-                selectedAxis = NONE;
-            }
-        } else {
-            switch (selectedAxis) {
-                case X_AXIS:
-                    shift.x = xLocalPoint.x;
-                    break;
-                case Y_AXIS:
-                    shift.y = yLocalPoint.x;
-                    break;
-                case Z_AXIS:
-                    shift.z = zLocalPoint.x;
-                    break;
-            } 
-        }
-
-        return false;
-    } 
-    
-    return true;
+    return localPoint;
 }
 
 void MarkerModule::decomposeTransformationMatrix(
