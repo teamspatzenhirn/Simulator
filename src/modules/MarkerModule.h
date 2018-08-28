@@ -13,6 +13,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include "helpers/Helpers.h"
 
@@ -38,10 +40,6 @@ class MarkerModule {
         float dragStartScale;
         glm::vec3 prevDragState;
     } mod;
-
-    glm::vec3 prevShift;
-    glm::vec3 startModelPosition;
-    float startScale;
 
     enum Axis {
         X_AXIS,

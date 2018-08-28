@@ -15,7 +15,7 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
 
     camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
 
-    modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
+    modelMat = glm::mat4(1.0f);
 
     cube.upload();
 }
@@ -46,10 +46,16 @@ void Loop::loop() {
         glfwPollEvents();
 
         // update model
+        
+        static rotation = 0.0f;
 
+        rotation += 0.00002 * timer.dt.count();
+        
+        modelMat = glm::mat4(1.0f);
+        modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
         modelMat = glm::rotate(
                 modelMat,
-                0.0002f * timer.dt.count(),
+                rotate
                 glm::vec3(0.0, 0.0f, 1.0f));
 
         /*modelMat = glm::translate(

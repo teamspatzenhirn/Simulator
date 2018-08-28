@@ -151,6 +151,40 @@ void MarkerModule::updateModifiers(Camera& camera) {
                 scaleMat,
                 rotationMat);
 
+        glm::mat4 invRotationMat = glm::inverse(rotationMat);
+
+        float scaleX = glm::length(
+                glm::vec3(modelMat[0][0], modelMat[1][0], modelMat[2][0]));
+        float scaleY = glm::length(
+                glm::vec3(modelMat[0][1], modelMat[1][1], modelMat[2][1]));
+        float scaleZ = glm::length(
+                glm::vec3(modelMat[0][2], modelMat[1][2], modelMat[2][2]));
+
+        scaleMat = glm::mat4(1.0f);
+        scaleMat = glm::scale(scaleMat, glm::vec3(scaleX, scaleY, scaleZ));
+
+        std::cout << scaleMat << std::endl;
+
+        /*decompose
+            std::cout << "Model Mat" << std::endl;
+            std::cout << modelMat << std::endl;
+
+            std::cout << "Translation" << std::endl;
+            std::cout << translation << std::endl;
+
+            std::cout << "Orientation" << std::endl;
+            std::cout << orientation << std::endl;
+
+            std::cout << "Scale" << std::endl;
+            std::cout << scale << std::endl;
+
+            std::cout << "Skew" << std::endl;
+            std::cout << skew << std::endl;
+
+            std::cout << "Perspective" << std::endl;
+            std::cout << perspective << std::endl;
+        */
+
         glm::vec3 dragState;
 
         if (selectionMode == TRANSLATE || selectionMode == SCALE) {
@@ -184,11 +218,9 @@ void MarkerModule::updateModifiers(Camera& camera) {
             }
         }
 
-        std::cout << scaleMat << std::endl;
-
         mod.prevDragState = dragState;
 
-        modelMat = translationMat * rotationMat * scaleMat;
+        //modelMat = translationMat * rotationMat * scaleMat;
     }
 }
 
