@@ -18,20 +18,14 @@ MarkerModule::MarkerModule() {
 bool MarkerModule::hasSelection() {
 
     auto it = std::find(
-            modelMatrices.begin(), modelMatrices.end(), selectedModelMatrix);
+            modelPoses.begin(), modelPoses.end(), selectedModelPose);
 
-    return it != modelMatrices.end();
+    return it != modelPoses.end();
 }
 
 float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition) {
     
     return glm::length(cameraPosition - modelPosition) * 0.05;
-}
-
-glm::vec3 MarkerModule::getModelPosition(glm::mat4* modelPtr) {
-
-    glm::mat4& modelMat = *modelPtr;
-    return glm::vec3(modelMat[3][0], modelMat[3][1], modelMat[3][2]);
 }
 
 void MarkerModule::updateMouseState(GLFWwindow* window) {
@@ -42,17 +36,16 @@ void MarkerModule::updateMouseState(GLFWwindow* window) {
     mouse.x = (float)mouseX;
     mouse.y = (float)mouseY;
 
-    static int prevButtonState = GLFW_RELEASE;
     int buttonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 
     mouse.pressed = GLFW_PRESS == buttonState;
-    mouse.click = GLFW_RELEASE == prevButtonState && GLFW_PRESS == buttonState;
+    mouse.click = GLFW_RELEASE == mouse.prevButtonState && GLFW_PRESS == buttonState;
 
     if (mouse.click) {
         mouse.handled = false;
     }
 
-    prevButtonState = buttonState;
+    mouse.prevButtonState = buttonState;
 }
 
 void MarkerModule::updateSelectionState(Camera& camera) {
@@ -70,30 +63,24 @@ void MarkerModule::updateSelectionState(Camera& camera) {
 
     glm::vec3 cameraPosition = camera.getPosition();
 
-    for (glm::mat4* modelPtr : modelMatrices) {
+    for (Pose* pose : modelPoses) {
 
-        glm::vec3 modelPosition = getModelPosition(modelPtr);
-
-        float scale = getScale(cameraPosition, modelPosition);
+        float scale = getScale(cameraPosition, pose->position);
 
         glm::vec3 intersectionPoint = intersectLineWithPlane(
-                clickRay, cameraPosition, eyeVector, modelPosition);
+                clickRay, cameraPosition, eyeVector, pose->position);
 
-        if (glm::length(modelPosition - intersectionPoint) < 0.5f * scale) {
+        if (glm::length(pose->position - intersectionPoint) < 0.5f * scale) {
 
-            if (selectedModelMatrix == modelPtr) {
+            if (selectedModelPose == pose) {
                 selectionMode = (SelectionMode)((selectionMode + 1) % 3);
             } else {
                 selectionMode = TRANSLATE;
             }
 
             mouse.handled = true;
-            selectedModelMatrix = modelPtr;
+            selectedModelPose = pose;
         }
-    }
-
-    if (!mouse.handled) {
-        selectedModelMatrix = 0;
     }
 }
 
@@ -103,11 +90,10 @@ void MarkerModule::updateModifiers(Camera& camera) {
         return;
     }
 
-    glm::mat4& modelMat = *selectedModelMatrix;
     glm::vec3 cameraPosition = camera.getPosition();
 
     if (mouse.click) {
-        mod.dragStartModelPosition = getModelPosition(selectedModelMatrix);
+        mod.dragStartModelPosition = selectedModelPose->position;
         mod.dragStartScale = getScale(cameraPosition, mod.dragStartModelPosition);
 
         float arrowLength = 4.5f * mod.dragStartScale;
@@ -141,50 +127,6 @@ void MarkerModule::updateModifiers(Camera& camera) {
             // TODO
         }
     } else {
-        glm::mat4 translationMat;
-        glm::mat4 scaleMat;
-        glm::mat4 rotationMat;
-
-        decomposeTransformationMatrix(
-                modelMat,
-                translationMat,
-                scaleMat,
-                rotationMat);
-
-        glm::mat4 invRotationMat = glm::inverse(rotationMat);
-
-        float scaleX = glm::length(
-                glm::vec3(modelMat[0][0], modelMat[1][0], modelMat[2][0]));
-        float scaleY = glm::length(
-                glm::vec3(modelMat[0][1], modelMat[1][1], modelMat[2][1]));
-        float scaleZ = glm::length(
-                glm::vec3(modelMat[0][2], modelMat[1][2], modelMat[2][2]));
-
-        scaleMat = glm::mat4(1.0f);
-        scaleMat = glm::scale(scaleMat, glm::vec3(scaleX, scaleY, scaleZ));
-
-        std::cout << scaleMat << std::endl;
-
-        /*decompose
-            std::cout << "Model Mat" << std::endl;
-            std::cout << modelMat << std::endl;
-
-            std::cout << "Translation" << std::endl;
-            std::cout << translation << std::endl;
-
-            std::cout << "Orientation" << std::endl;
-            std::cout << orientation << std::endl;
-
-            std::cout << "Scale" << std::endl;
-            std::cout << scale << std::endl;
-
-            std::cout << "Skew" << std::endl;
-            std::cout << skew << std::endl;
-
-            std::cout << "Perspective" << std::endl;
-            std::cout << perspective << std::endl;
-        */
-
         glm::vec3 dragState;
 
         if (selectionMode == TRANSLATE || selectionMode == SCALE) {
@@ -201,26 +143,22 @@ void MarkerModule::updateModifiers(Camera& camera) {
         switch(selectionMode) {
             case TRANSLATE: {
                 glm::vec3 translation = dragState - mod.prevDragState;
-                translationMat = glm::translate(translationMat, translation);
+                selectedModelPose->position += translation;
                 break;
             }
             case SCALE: {
                 glm::vec3 scale = dragState - mod.prevDragState;
-                scale.x = std::tanh(scale.x);
-                scale.y = std::tanh(scale.y);
-                scale.z = std::tanh(scale.z);
-                scale += glm::vec3(1.0f, 1.0f, 1.0f);
-                scaleMat = glm::scale(scaleMat, scale);
+                selectedModelPose->scale += scale;
                 break;
             }
             case ROTATE: {
+                glm::vec3 scale = dragState - mod.prevDragState;
+                selectedModelPose->scale += scale;
                 break;
             }
         }
 
         mod.prevDragState = dragState;
-
-        //modelMat = translationMat * rotationMat * scaleMat;
     }
 }
 
@@ -230,17 +168,15 @@ void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPositi
         glGetUniformLocation(shaderProgramId, "billboard");
     glUniform1i(billboardLocation, true);
 
-    for (glm::mat4* modelPtr : modelMatrices) {
+    for (Pose* pose : modelPoses) {
 
-        glm::vec3 modelPosition = getModelPosition(modelPtr);
-
-        float scale = getScale(cameraPosition, modelPosition);
+        float scale = getScale(cameraPosition, pose->position);
 
         glm::mat4 markerMat = glm::mat4(1.0f);
-        markerMat = glm::translate(markerMat, modelPosition);
+        markerMat = glm::translate(markerMat, pose->position);
         markerMat = glm::scale(markerMat, glm::vec3(scale, scale, scale));
 
-        if (selectedModelMatrix == modelPtr) {
+        if (selectedModelPose == pose) {
             markerModel->material.Ka = objl::Vector3(1.0f, 1.0f, 0.0f);
             markerModel->material.Kd = objl::Vector3(1.0f, 1.0f, 0.0f);
             markerModel->material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
@@ -258,16 +194,14 @@ void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPositi
 
 void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosition) {
     
-    glm::vec3 modelPosition = getModelPosition(selectedModelMatrix);
-
-    float scale = getScale(cameraPosition, modelPosition);
+    float scale = getScale(cameraPosition, selectedModelPose->position);
 
     switch(selectionMode) {
         case TRANSLATE:
             renderGlyphTriplet(
                     shaderProgramId,
                     arrowModel,
-                    modelPosition, 
+                    selectedModelPose->position, 
                     scale,
                     1.0f);
             break;
@@ -275,7 +209,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
             renderGlyphTriplet(
                     shaderProgramId,
                     scaleArrowModel,
-                    modelPosition,
+                    selectedModelPose->position,
                     scale,
                     1.0f);
             break;
@@ -283,7 +217,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
             renderGlyphTriplet(
                     shaderProgramId,
                     ringModel,
-                    modelPosition,
+                    selectedModelPose->position,
                     scale * 3,
                     0.0f);
             break;
@@ -335,9 +269,9 @@ void MarkerModule::renderGlyphTriplet(
     model->render(shaderProgramId, forwardMat);
 }
 
-void MarkerModule::addMarker(glm::mat4& model) {
+void MarkerModule::add(Pose& pose) {
 
-    modelMatrices.push_back(&model);
+    modelPoses.push_back(&pose);
 }
 
 void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& camera) {
@@ -350,82 +284,22 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
 
     updateMouseState(window);
 
+    updateSelectionState(camera);
+
     if (hasSelection()) {
         renderModifiers(shaderProgramId, cameraPosition);
         updateModifiers(camera);
     }
 
-    updateSelectionState(camera);
+    if (!mouse.handled) {
+        selectedModelPose = 0;
+    }
 
     renderMarkers(shaderProgramId, cameraPosition);
 
-    // TODO: handle width and height parameters properly
-    /*
-    glm::vec3 clickRay =
-        camera.pickRay(mouse.x, mouse.y, 800, 600);
-
-    for (glm::mat4* modelPtr : modelMatrices) {
-
-        glm::mat4& modelMat = *modelPtr;
-        glm::vec3 modelPosition = getModelPosition(modelPtr);
-
-        float scale = getScale(cameraPosition, modelPosition);
-
-        if (selectedModelMatrix == modelPtr) {
-
-            glm::mat4 translationMat;
-            glm::mat4 scaleMat;
-            glm::mat4 rotationMat;
-
-            decomposeTransformationMatrix(
-                    modelMat,
-                    translationMat,
-                    scaleMat,
-                    rotationMat);
-
-            switch(selectionMode) {
-                case TRANSLATE: {
-                    glm::vec3 shift(0.0f, 0.0f, 0.0f);
-                    calcShift(
-                            shift, 
-                            clickRay,
-                            cameraPosition,
-                            modelPosition,
-                            scale);
-
-                    if (!mouse.click) {
-                        shift -= prevShift;
-                    }
-
-                    //translationMat = glm::translate(translationMat, shift);
-                    break;
-                }
-                case SCALE: {
-                    glm::vec3 shift;
-                    calcShift(
-                            shift, 
-                            clickRay,
-                            cameraPosition,
-                            modelPosition,
-                            scale);
-
-                    shift = glm::abs(shift) + glm::vec3(1.0f, 1.0f, 1.0f);
-
-                    scaleMat = glm::scale(scaleMat, shift);
-                    break;
-                }
-                case ROTATE:
-                    break;
-            }
-
-            modelMat = translationMat * rotationMat * scaleMat;
-        }
-    }
-    */
-
     glUniform1i(lightingLocation, true);
 
-    modelMatrices.clear();
+    modelPoses.clear();
 }
 
 glm::vec3 MarkerModule::intersectLineWithPlane(
@@ -532,26 +406,4 @@ glm::vec3 MarkerModule::mousePosInRotateCoords(Camera& camera, Axis axis) {
             right);
 
     return localPoint;
-}
-
-void MarkerModule::decomposeTransformationMatrix(
-        glm::mat4& matrix,
-        glm::mat4& translationMatrix,
-        glm::mat4& scaleMatrix,
-        glm::mat4& rotationMatrix) {
-
-    translationMatrix = glm::mat4(1.0f);
-    translationMatrix[3][0] = matrix[3][0];
-    translationMatrix[3][1] = matrix[3][1];
-    translationMatrix[3][2] = matrix[3][2];
-
-    scaleMatrix = glm::mat4(1.0f);
-    scaleMatrix[0][0] = glm::length(matrix[0]);
-    scaleMatrix[1][1] = glm::length(matrix[1]);
-    scaleMatrix[2][2] = glm::length(matrix[2]);
-
-    rotationMatrix = glm::mat4(1.0f);
-    rotationMatrix[0] = matrix[0] / scaleMatrix[0][0];
-    rotationMatrix[1] = matrix[1] / scaleMatrix[1][1];
-    rotationMatrix[2] = matrix[2] / scaleMatrix[2][2];
 }

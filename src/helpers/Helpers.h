@@ -5,6 +5,7 @@
 #include "Model.h"
 #include "ObjLoader.h"
 #include "PointLight.h"
+#include "Pose.h"
 #include "Timer.h"
 #include "ScreenQuad.h"
 #include "Shader.h"
@@ -12,5 +13,5 @@
 
 /*
  * This header file can be used as an include shortcut.
- * In should include all helpers. 
+ * It should include all helpers. 
  */

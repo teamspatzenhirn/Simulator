@@ -45,7 +45,7 @@ private:
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
-    glm::mat4 modelMat{1.0f};
+    Pose modelPose;
 
     CarModule car{glm::vec3(0.0f, 0.0f, 2.0f), M_PI * 0.5f, carCameraAspect};
 

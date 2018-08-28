@@ -15,8 +15,6 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
 
     camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
 
-    modelMat = glm::mat4(1.0f);
-
     cube.upload();
 }
 
@@ -47,22 +45,21 @@ void Loop::loop() {
 
         // update model
         
-        static rotation = 0.0f;
+        modelPose.rotation.z += 0.002;
 
-        rotation += 0.00002 * timer.dt.count();
+        std::cout << modelPose.rotation << std::endl;
         
-        modelMat = glm::mat4(1.0f);
-        modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
-        modelMat = glm::rotate(
+        //modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
+        /*modelMat = glm::rotate(
                 modelMat,
                 rotate
-                glm::vec3(0.0, 0.0f, 1.0f));
+                glm::vec3(0.0, 0.0f, 1.0f))*/
 
         /*modelMat = glm::translate(
                 modelMat,
                 glm::vec3(0.001f, 0.0f, 0.0f));*/
 
-        markerModule.addMarker(modelMat);
+        markerModule.add(modelPose);
 
         // render
 
@@ -86,7 +83,7 @@ void Loop::loop() {
 
             light.render(shaderProgram.id);
 
-            cube.render(shaderProgram.id, modelMat);
+            cube.render(shaderProgram.id, modelPose.getMatrix());
 
             // render marker overlay 
 
@@ -111,7 +108,7 @@ void Loop::loop() {
 
         light.render(shaderProgram.id);
 
-        cube.render(shaderProgram.id, modelMat);
+        cube.render(shaderProgram.id, modelPose.getMatrix());
 
         // render on screen filling quad
 
