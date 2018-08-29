@@ -45,10 +45,9 @@ void Loop::loop() {
 
         // update model
         
-        modelPose.rotation.z += 0.002;
+        modelPose.rotation = glm::rotate(
+                modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
 
-        std::cout << modelPose.rotation << std::endl;
-        
         //modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
         /*modelMat = glm::rotate(
                 modelMat,

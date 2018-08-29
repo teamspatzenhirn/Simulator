@@ -3,13 +3,14 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 class Pose {
 
 public:
 
     glm::vec3 position;
-    glm::vec3 rotation;
+    glm::quat rotation;
     glm::vec3 scale;
 
     Pose();

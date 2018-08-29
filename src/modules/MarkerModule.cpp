@@ -96,27 +96,28 @@ void MarkerModule::updateModifiers(Camera& camera) {
         mod.dragStartModelPosition = selectedModelPose->position;
         mod.dragStartScale = getScale(cameraPosition, mod.dragStartModelPosition);
 
-        float arrowLength = 4.5f * mod.dragStartScale;
-        float arrowHeight = 0.5f * mod.dragStartScale;
-
         if (selectionMode == TRANSLATE || selectionMode == SCALE) {
+
+            float arrowLength = 4.5f * mod.dragStartScale;
+            float arrowHeight = 0.5f * mod.dragStartScale;
+
             glm::vec3 xLocalPoint = mousePosInArrowCoords(camera, X_AXIS);
             glm::vec3 yLocalPoint = mousePosInArrowCoords(camera, Y_AXIS);
             glm::vec3 zLocalPoint = mousePosInArrowCoords(camera, Z_AXIS);
 
-            mouse.handled = true;
-
             if (xLocalPoint.x < arrowLength && xLocalPoint.x > 0
                     && std::abs(xLocalPoint.y) < arrowHeight) {
+                mouse.handled = true;
                 selectedAxis = X_AXIS;
             } else if (yLocalPoint.x < arrowLength && yLocalPoint.x > 0
                     && std::abs(yLocalPoint.y) < arrowHeight) {
+                mouse.handled = true;
                 selectedAxis = Y_AXIS;
             } else if (zLocalPoint.x < arrowLength && zLocalPoint.x > 0
                     && std::abs(zLocalPoint.y) < arrowHeight) {
+                mouse.handled = true;
                 selectedAxis = Z_AXIS;
             } else {
-                mouse.handled = false;
                 selectedAxis = NONE;
             }
 
@@ -124,7 +125,37 @@ void MarkerModule::updateModifiers(Camera& camera) {
             mod.prevDragState.y = selectedAxis == Y_AXIS ? yLocalPoint.x : 0;
             mod.prevDragState.z = selectedAxis == Z_AXIS ? zLocalPoint.x : 0;
         } else {
-            // TODO
+            float innerRadius = 2.3f * mod.dragStartScale;
+            float outerRadius = 3.3f * mod.dragStartScale;
+
+            glm::vec3 xLocalPoint = mousePosInRotateCoords(camera, X_AXIS);
+            glm::vec3 yLocalPoint = mousePosInRotateCoords(camera, Y_AXIS);
+            glm::vec3 zLocalPoint = mousePosInRotateCoords(camera, Z_AXIS);
+
+            float xLength = glm::length(glm::vec2(xLocalPoint.x, xLocalPoint.y));
+            float yLength = glm::length(glm::vec2(yLocalPoint.x, yLocalPoint.y));
+            float zLength = glm::length(glm::vec2(zLocalPoint.x, zLocalPoint.y));
+
+            if (innerRadius < xLength && xLength < outerRadius) {
+                mouse.handled = true;
+                selectedAxis = X_AXIS;
+            } else if (innerRadius < yLength && yLength < outerRadius) {
+                mouse.handled = true;
+                selectedAxis = Y_AXIS;
+            } else if (innerRadius < zLength && zLength < outerRadius) {
+                mouse.handled = true;
+                selectedAxis = Z_AXIS;
+            } else {
+                selectedAxis = NONE;
+            }
+
+            float xAngle = std::atan2(xLocalPoint.x, xLocalPoint.y);
+            float yAngle = std::atan2(yLocalPoint.x, yLocalPoint.y);
+            float zAngle = std::atan2(zLocalPoint.x, zLocalPoint.y);
+
+            mod.prevDragState.x = selectedAxis == X_AXIS ? xAngle : 0;
+            mod.prevDragState.y = selectedAxis == Y_AXIS ? yAngle : 0;
+            mod.prevDragState.z = selectedAxis == Z_AXIS ? zAngle : 0;
         }
     } else {
         glm::vec3 dragState;
@@ -137,7 +168,17 @@ void MarkerModule::updateModifiers(Camera& camera) {
             dragState.z = selectedAxis == Z_AXIS ?
                 mousePosInArrowCoords(camera, Z_AXIS).x : 0;
         } else {
-            // TODO
+            glm::vec3 xLocalPoint = mousePosInRotateCoords(camera, X_AXIS);
+            glm::vec3 yLocalPoint = mousePosInRotateCoords(camera, Y_AXIS);
+            glm::vec3 zLocalPoint = mousePosInRotateCoords(camera, Z_AXIS);
+
+            float xAngle = std::atan2(xLocalPoint.x, xLocalPoint.y);
+            float yAngle = std::atan2(yLocalPoint.x, yLocalPoint.y);
+            float zAngle = std::atan2(zLocalPoint.x, zLocalPoint.y);
+
+            dragState.x = selectedAxis == X_AXIS ? xAngle : 0;
+            dragState.y = selectedAxis == Y_AXIS ? yAngle : 0;
+            dragState.z = selectedAxis == Z_AXIS ? zAngle : 0;
         }
 
         switch(selectionMode) {
@@ -152,8 +193,33 @@ void MarkerModule::updateModifiers(Camera& camera) {
                 break;
             }
             case ROTATE: {
-                glm::vec3 scale = dragState - mod.prevDragState;
-                selectedModelPose->scale += scale;
+                glm::vec3 rotation = dragState - mod.prevDragState;
+
+                glm::vec3 axis(1.0f, 0.0f, 0.0f);
+                float angle = 0.0f;
+
+                switch (selectedAxis) {
+                    case X_AXIS:
+                        axis = glm::vec3(1, 0, 0);
+                        angle = rotation.x;
+                        break;
+                    case Y_AXIS:
+                        axis = glm::vec3(0, 1, 0);
+                        angle = rotation.y;
+                        break;
+                    case Z_AXIS:
+                        axis = glm::vec3(0, 0, 1);
+                        angle = rotation.z;
+                        break;
+                }
+
+                glm::mat4 invModelMat =
+                    glm::inverse(selectedModelPose->getMatrix());
+                axis = glm::normalize(glm::vec3(
+                            invModelMat * glm::vec4(axis, 0)));
+
+                selectedModelPose->rotation = glm::rotate(
+                        selectedModelPose->rotation, angle, axis);
                 break;
             }
         }
@@ -379,15 +445,15 @@ glm::vec3 MarkerModule::mousePosInRotateCoords(Camera& camera, Axis axis) {
 
     switch (axis) {
         case X_AXIS:
-            normal = glm::vec3(1.0f, 0.0f, 0.0f);
+            normal = glm::vec3(-1.0f, 0.0f, 0.0f);
             right = glm::vec3(0.0f, 0.0f, 1.0f);
             break;
         case Y_AXIS:
-            normal = glm::vec3(0.0f, 1.0f, 0.0f);
+            normal = glm::vec3(0.0f, -1.0f, 0.0f);
             right = glm::vec3(1.0f, 0.0f, 0.0f);
             break;
         case Z_AXIS:
-            normal = glm::vec3(0.0f, 0.0f, 0.1f);
+            normal = glm::vec3(0.0f, 0.0f, -1.0f);
             right = glm::vec3(1.0f, 0.0f, 0.0f);
             break;
     }
