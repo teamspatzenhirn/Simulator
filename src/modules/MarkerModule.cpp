@@ -213,8 +213,8 @@ void MarkerModule::updateModifiers(Camera& camera) {
                         break;
                 }
 
-                glm::mat4 invModelMat =
-                    glm::inverse(selectedModelPose->getMatrix());
+                glm::mat4 invModelMat = glm::inverse(
+                        glm::mat4_cast(selectedModelPose->rotation));
                 axis = glm::normalize(glm::vec3(
                             invModelMat * glm::vec4(axis, 0)));
 
