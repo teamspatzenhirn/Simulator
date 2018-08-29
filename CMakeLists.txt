@@ -7,6 +7,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-unused-function -Wno-unused-p
 include_directories(src/)
 
 file(GLOB SOURCE_FILES
+        src/imgui/*.cpp
+        src/imgui/*.h
         src/helpers/*.cpp
         src/helpers/*.h
         src/modules/*.cpp

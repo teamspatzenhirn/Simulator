@@ -7,6 +7,7 @@
 #include "helpers/Helpers.h" 
 #include "modules/MarkerModule.h"
 #include "modules/CarModule.h"
+#include "modules/GuiModule.h"
 
 class Loop {
 
@@ -40,6 +41,7 @@ private:
     ScreenQuad screenQuadCar;
 
     MarkerModule markerModule;
+    GuiModule guiModule;
 
     FpsCamera camera{M_PI * 0.3f, 4.0f/3.0f};
 

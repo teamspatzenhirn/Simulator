@@ -11,7 +11,8 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , frameBuffer{windowWidth, windowHeight}
     , markerFrameBuffer{windowWidth, windowHeight}
     , screenQuad{windowWidth, windowHeight, "shaders/ScreenQuadFragment.glsl"}
-    , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"} {
+    , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"}
+    , guiModule{window} {
 
     camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
 
@@ -43,20 +44,12 @@ void Loop::loop() {
 
         glfwPollEvents();
 
+        guiModule.begin();
+
         // update model
         
-        //modelPose.rotation = glm::rotate(
-        //       modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
-
-        //modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
-        /*modelMat = glm::rotate(
-                modelMat,
-                rotate
-                glm::vec3(0.0, 0.0f, 1.0f))*/
-
-        /*modelMat = glm::translate(
-                modelMat,
-                glm::vec3(0.001f, 0.0f, 0.0f));*/
+        modelPose.rotation = glm::rotate(
+               modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
 
         markerModule.add(modelPose);
 
@@ -155,6 +148,8 @@ void Loop::loop() {
                 glUniform1i(glGetUniformLocation(shaderProgramId, "tex"), 0);
             });
         }
+
+        guiModule.end();
 
         glfwSwapBuffers(window);
 
