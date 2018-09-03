@@ -3,11 +3,13 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <iostream>
 
 #include "helpers/Helpers.h" 
 #include "modules/MarkerModule.h"
 #include "modules/CarModule.h"
 #include "modules/GuiModule.h"
+#include "sharedmem/shmcomm.h"
 
 class Loop {
 
@@ -43,15 +45,23 @@ private:
     MarkerModule markerModule;
     GuiModule guiModule;
 
-    FpsCamera camera{M_PI * 0.3f, 4.0f/3.0f};
-
     PointLight light{10.0f, 10.0f, 20.0f};
-
     Pose modelPose;
-
-    CarModule car{glm::vec3(0.0f, 0.0f, 2.0f), M_PI * 0.5f, carCameraAspect};
-
     Model cube{"models/test_cube.obj"};
+
+    FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
+
+    CarModule car{glm::vec3(0.0f, 1.0f, 2.0f), M_PI * 0.5f, carCameraAspect};
+
+    Capture capture{carCameraWidth, carCameraHeight, 3};
+
+    struct ImageObject {
+        unsigned char buffer[carCameraWidth * carCameraHeight * 3];
+        int imageWidth;
+        int imageHeight;
+    };
+
+    SimulatorSHM::SHMComm<ImageObject> tx; 
 
 public:
 
@@ -61,6 +71,10 @@ public:
     static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     void loop();
+
+    void renderScene();
+    void renderFpsView();
+    void renderCarView();
 };
 
 #endif

@@ -17,12 +17,12 @@ Capture::Capture(GLuint width, GLuint height, GLuint channels = 3)
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
-void Capture::capture(GLubyte* buffer) {
+bool Capture::capture(GLubyte* buffer, GLenum mode) {
 
     pboIndex = (pboIndex + 1) % 2;
     int nextIndex = (pboIndex + 1) % 2;
 
-    glReadBuffer(GL_FRONT);
+    glReadBuffer(mode);
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboIndex]);
     glReadPixels(
@@ -44,4 +44,6 @@ void Capture::capture(GLubyte* buffer) {
     }
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    return ptr != nullptr;
 }

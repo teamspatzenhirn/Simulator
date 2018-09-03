@@ -19,7 +19,7 @@ public:
 
     Capture(GLuint width, GLuint height, GLuint channels);
 
-    void capture(GLubyte* buffer);
+    bool capture(GLubyte* buffer, GLenum mode = GL_FRONT);
 };
 
 #endif

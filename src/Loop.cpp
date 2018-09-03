@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "Loop.h"
 
 std::shared_ptr<Loop> Loop::instance;
@@ -12,11 +10,20 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , markerFrameBuffer{windowWidth, windowHeight}
     , screenQuad{windowWidth, windowHeight, "shaders/ScreenQuadFragment.glsl"}
     , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"}
-    , guiModule{window} {
+    , guiModule{window}
+    , tx(SimulatorSHM::SERVER, 428769){
 
-    camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
+    fpsCamera.view = glm::translate(fpsCamera.view, glm::vec3(0.0f, 0.0f, -4.0f));
 
     cube.upload();
+
+    if(!tx.attach()) {
+        tx.destroy();
+        if(!tx.attach()) {
+            std::cout << "Shared memory init failed!" << std::endl;
+            std::exit(-1);
+        }
+    }
 }
 
 void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -27,7 +34,7 @@ void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     instance->frameBuffer.resize(width, height);
     instance->markerFrameBuffer.resize(width, height);
 
-    instance->camera.setAspectRatio(((float) width) / height);
+    instance->fpsCamera.setAspectRatio(((float) width) / height);
 }
 
 void Loop::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -52,55 +59,16 @@ void Loop::loop() {
                modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
 
         markerModule.add(modelPose);
-
-        // render
-
+        
         glUseProgram(shaderProgram.id);
 
         // render scene for fps camera
 
         if (fpsCameraActive) {
-            // actual scene rendered to framebuffer
-
-            glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
-
-            glViewport(0, 0, windowWidth, windowHeight);
-
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            camera.update(window, timer.dt.count());
-
-            camera.render(shaderProgram.id);
-
-            light.render(shaderProgram.id);
-
-            cube.render(shaderProgram.id, modelPose.getMatrix());
-
-            // render marker overlay 
-
-            glBindFramebuffer(GL_FRAMEBUFFER, markerFrameBuffer.id);
-
-            glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            markerModule.render(window, shaderProgram.id, camera);
+            renderFpsView();
         }
 
-        // render scene for car camera
-
-        glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
-
-        glViewport(0, 0, carCameraWidth, carCameraHeight);
-
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        car.camera.render(shaderProgram.id);
-
-        light.render(shaderProgram.id);
-
-        cube.render(shaderProgram.id, modelPose.getMatrix());
+        renderCarView();
 
         // render on screen filling quad
 
@@ -157,5 +125,62 @@ void Loop::loop() {
 
         //std::cout << timer.dt.count() << std::endl;
         //std::cout << glGetError() << std::endl;
+    }
+}
+
+void Loop::renderScene() {
+
+    light.render(shaderProgram.id);
+    cube.render(shaderProgram.id, modelPose.getMatrix());
+}
+
+void Loop::renderFpsView() {
+
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
+
+    glViewport(0, 0, windowWidth, windowHeight);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    fpsCamera.update(window, timer.dt.count());
+    fpsCamera.render(shaderProgram.id);
+
+    renderScene();
+
+    // render marker overlay 
+
+    glBindFramebuffer(GL_FRAMEBUFFER, markerFrameBuffer.id);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    markerModule.render(window, shaderProgram.id, fpsCamera);
+}
+
+void Loop::renderCarView() {
+
+    glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
+
+    glViewport(0, 0, carCameraWidth, carCameraHeight);
+
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    car.camera.render(shaderProgram.id);
+
+    renderScene();
+
+    // download image from opengl to ram
+
+    ImageObject* obj = tx.lock(SimulatorSHM::WRITE_NO_OVERWRITE); 
+
+    if (obj != NULL) {
+        capture.capture(obj->buffer, GL_COLOR_ATTACHMENT0);
+        obj->imageWidth = carCameraWidth;
+        obj->imageHeight = carCameraHeight;
+        tx.unlock(obj);
+    } else {
+        std::cout << "ADTF down!" << std::endl;
     }
 }
