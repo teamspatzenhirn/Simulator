@@ -108,11 +108,11 @@ env::Spatz SpatzSimulator::step(ControlVarsVESC ctrlVars, double dt, bool pacejk
     double acc_x = dx.v_lon - x.v_lat * x.d_psi;
     double acc_y = dx.v_lat + x.v_lon * x.d_psi;
 
-    env::Spatz spatz(0, cv::Point3d{x.x1, x.x2, x.psi});
-    spatz.setVel(cv::Point3d{dx.x1, dx.x2, 0});
+    env::Spatz spatz(0, glm::vec3(x.x1, x.x2, x.psi));
+    spatz.setVel(glm::vec3(dx.x1, dx.x2, 0));
     spatz.setSteerAngle(x.delta);
-    spatz.setdRot(cv::Point3d(0,0,x.d_psi));
-    spatz.setAcc(cv::Point3d{acc_x, acc_y, 0});
+    spatz.setdRot(glm::vec3(0,0,x.d_psi));
+    spatz.setAcc(glm::vec3(acc_x, acc_y, 0));
     spatz.alpha_front = alpha_front;
     spatz.alpha_rear = alpha_rear;
 

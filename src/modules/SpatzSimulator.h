@@ -2,6 +2,7 @@
 #define SPATZ_SIM_H
 
 #include <cmath>
+#include <iostream>
 
 #include "Spatz.h"
 
