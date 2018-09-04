@@ -36,10 +36,21 @@ bool Capture::capture(GLubyte* buffer, GLenum mode) {
     GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
     if (ptr) {
-        std::memcpy(
-            (void*)buffer,
-            ptr,
-            imageWidth * imageHeight * imageChannels);
+        const unsigned char * source = ptr;
+        unsigned char * dest = buffer;
+        int row;
+        for(int y = 0; y < imageHeight; y++){
+            row = y*imageWidth;
+            for(int x = 0; x < imageWidth; x++){
+                dest[row+x] = source[((row+x)*3)+x%2]; // BGBGBGBG...
+            }
+            y++;
+            row = y*imageWidth;
+            for(int x = 0; x < imageWidth; x++){
+                dest[row+x] = source[((row+x)*3)+1+x%2]; // GRGRGRGRGR...
+            }
+        }
+
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
 
