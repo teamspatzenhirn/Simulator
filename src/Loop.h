@@ -13,6 +13,7 @@
 
 class Loop {
 
+    static constexpr int sharedMemId = 428769;
     static constexpr int carCameraWidth = 2064;
     static constexpr int carCameraHeight = 1544;
     static constexpr float carCameraAspect = ((float) carCameraWidth) / carCameraHeight;

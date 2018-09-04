@@ -33,6 +33,7 @@
 
 // GLFW
 #include <GLFW/glfw3.h>
+#include <iostream>
 #ifdef _WIN32
 #undef APIENTRY
 #define GLFW_EXPOSE_NATIVE_WIN32

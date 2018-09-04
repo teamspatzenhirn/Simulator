@@ -45,11 +45,13 @@ void Loop::keyCallback(GLFWwindow* window, int key, int scancode, int action, in
 
 void Loop::loop() {
 
+    initInput(window);
+
     while (!glfwWindowShouldClose(window)) {
 
         timer.beginFrame();
 
-        glfwPollEvents();
+        updateInput();
 
         guiModule.begin();
 
@@ -73,6 +75,12 @@ void Loop::loop() {
         // render on screen filling quad
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        for(KeyEvent& e : getKeyEvents()) {
+            if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
+                fpsCameraActive = !fpsCameraActive;
+            }
+        }
 
         if (fpsCameraActive) {
 
@@ -181,6 +189,6 @@ void Loop::renderCarView() {
         obj->imageHeight = carCameraHeight;
         tx.unlock(obj);
     } else {
-        std::cout << "ADTF down!" << std::endl;
+        //std::cout << "ADTF down!" << std::endl;
     }
 }

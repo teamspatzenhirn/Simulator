@@ -7,7 +7,7 @@ GuiModule::GuiModule(GLFWwindow* window) {
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplGlfw_InitForOpenGL(window, false);
     ImGui_ImplOpenGL3_Init("#version 330");
 
     ImGui::StyleColorsDark();
@@ -21,6 +21,28 @@ GuiModule::~GuiModule() {
 }
 
 void GuiModule::begin() {
+
+    for (KeyEvent& e : getKeyEvents()) {
+        ImGui_ImplGlfw_KeyCallback(e.window, e.key, e.scancode, e.action, e.mods);
+    }
+    for (CharEvent& e : getCharEvents()) {
+        ImGui_ImplGlfw_CharCallback(e.window, e.codepoint);
+    }
+    for (ScrollEvent& e : getScrollEvents()) {
+        ImGui_ImplGlfw_ScrollCallback(e.window, e.xoffset, e.yoffset);
+    }
+    for (MouseButtonEvent& e : getMouseButtonEvents()) {
+        ImGui_ImplGlfw_MouseButtonCallback(e.window, e.button, e.action, e.mods);
+    }
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    if (io.WantCaptureMouse) {
+        getMouseButtonEvents().clear();
+    }
+    if (io.WantCaptureKeyboard) {
+        getKeyEvents().clear();
+    }
 
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -39,8 +61,6 @@ void GuiModule::end() {
     glfwGetFramebufferSize(window, &display_w, &display_h);
 
     glViewport(0, 0, display_w, display_h);
-    //glClearColor(0, 0, 0, 0);
-    //glClear(GL_COLOR_BUFFER_BIT);
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
