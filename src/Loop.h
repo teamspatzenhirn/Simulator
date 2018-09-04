@@ -56,7 +56,7 @@ private:
     Capture capture{carCameraWidth, carCameraHeight, 3};
 
     struct ImageObject {
-        unsigned char buffer[carCameraWidth * carCameraHeight * 3];
+        unsigned char buffer[carCameraWidth * carCameraHeight];
         int imageWidth;
         int imageHeight;
     };
