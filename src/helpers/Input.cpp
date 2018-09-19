@@ -1,6 +1,9 @@
 #include "Input.h"
 
 int lastKeyState[400];
+double cursorPosX = 0;
+double cursorPosY = 0;
+int lastMouseButtonState[8];
 
 std::vector<KeyEvent> keyEvents;
 std::vector<CharEvent> charEvents;
@@ -14,7 +17,9 @@ std::vector<DropEvent> dropEvents;
 void keyEventsCallback(
         GLFWwindow* window, int key, int scancode, int action, int mods) {
 
-    lastKeyState[key] = action;
+    if (action != GLFW_REPEAT) {
+        lastKeyState[key] = action;
+    }
     keyEvents.push_back({window, key, scancode, action, mods});
 }
 
@@ -33,11 +38,16 @@ void charModsEventsCallback(
 void mouseButtonEventsCallback(
         GLFWwindow* window, int button, int action, int mods) {
 
+    lastMouseButtonState[button] = action;
+
     mouseButtonEvents.push_back({window, button, action, mods});
 }
 
 void cursorPosEventsCallback(
         GLFWwindow* window, double xpos, double ypos) {
+
+    cursorPosX = xpos;
+    cursorPosY = ypos;
 
     cursorPosEvents.push_back({window, xpos, ypos});
 }
@@ -63,9 +73,15 @@ void dropEventsCallback(
 void initInput(GLFWwindow* window) {
 
     for (int i = 0; i < 400; i++) {
-        lastKeyState[i] = GLFW_RELEASE;
+        lastKeyState[i] = glfwGetKey(window, i);
     }
-   
+
+    glfwGetCursorPos(window, &cursorPosX, &cursorPosY);
+
+    for (int i = 0; i < 8; i++) {
+        lastMouseButtonState[i] = glfwGetMouseButton(window, i);
+    }
+
     glfwSetKeyCallback(window, keyEventsCallback);
     glfwSetCharCallback(window, charEventsCallback);
     glfwSetCharModsCallback(window, charModsEventsCallback);
@@ -88,6 +104,46 @@ void updateInput() {
     dropEvents.clear();
 
     glfwPollEvents();
+}
+
+void clearKeyboardInput() {
+
+    for (int i = 0; i < 400; ++i) {
+        lastKeyState[i] = GLFW_RELEASE;
+    }
+
+    keyEvents.clear();
+    charEvents.clear();
+    charModsEvents.clear();
+}
+
+void clearMouseInput() {
+
+    for (int i = 0; i < 8; ++i) {
+        lastMouseButtonState[i] = GLFW_RELEASE;
+    }
+
+    mouseButtonEvents.clear();
+    cursorPosEvents.clear();
+    cursorEnterEvents.clear();
+    scrollEvents.clear();
+    dropEvents.clear();
+}
+
+int getKey(int key) {
+    return lastKeyState[key];
+}
+
+double getCursorX() {
+    return cursorPosX;
+}
+
+double getCursorY() {
+    return cursorPosY;
+}
+
+int getMouseButton(int button) {
+    return lastMouseButtonState[button];
 }
 
 std::vector<KeyEvent>& getKeyEvents() {

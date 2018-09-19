@@ -1,13 +1,28 @@
 #include "Timer.h"
 
-void Timer::beginFrame() {
+Timer::Timer () {
 
-    beforeRender = std::chrono::system_clock::now();    
+    currentTime = std::chrono::system_clock::now();
 }
 
-void Timer::endFrame() { 
+void Timer::frameStep() {
 
-    auto afterRender = std::chrono::system_clock::now();
-    dt = std::chrono::duration_cast<std::chrono::milliseconds>(
-        afterRender - beforeRender);
+    auto newTime = std::chrono::system_clock::now();
+    frameTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+            newTime - currentTime).count();
+    currentTime = newTime;
+
+    accumulator += frameTime;
+}
+
+bool Timer::updateStep(double deltaTimeMilliSeconds) {
+
+    if (accumulator >= deltaTimeMilliSeconds) {
+        accumulator -= deltaTimeMilliSeconds;
+        return true;
+    } else {
+        return false;
+    }
+
+    time += deltaTimeMilliSeconds;
 }

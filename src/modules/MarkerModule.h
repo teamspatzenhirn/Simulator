@@ -11,9 +11,12 @@
 
 #define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
 
+#include "imgui/imgui.h"
+#include "modules/GuiModule.h"
 #include "helpers/Helpers.h"
 
 class MarkerModule {
@@ -24,6 +27,10 @@ class MarkerModule {
     std::shared_ptr<Model> arrowModel;
     std::shared_ptr<Model> scaleArrowModel;
     std::shared_ptr<Model> ringModel;
+
+    struct {
+        bool show = true;
+    } gui;
 
     struct {
         float x;
@@ -49,6 +56,8 @@ class MarkerModule {
 
     Pose* selectedModelPose;
     enum SelectionMode { TRANSLATE = 0, SCALE = 1, ROTATE = 2 } selectionMode;
+
+    void renderGui(GuiModule& guiModule);
 
     float getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition);
 
@@ -94,7 +103,10 @@ public:
 
     void add(Pose& modelPose);
 
-    void render(GLFWwindow* window, GLuint shaderProgramId, Camera& cameraMatrix);
+    void render(GLFWwindow* window,
+            GLuint shaderProgramId,
+            Camera& cameraMatrix,
+            GuiModule& guiModule);
 };
 
 #endif

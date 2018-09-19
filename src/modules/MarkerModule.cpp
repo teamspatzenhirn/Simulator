@@ -15,17 +15,33 @@ MarkerModule::MarkerModule() {
     ringModel->upload();
 }
 
+void MarkerModule::renderGui(GuiModule& guiModule) {
+
+    guiModule.addShowMenuItem("Pose", &gui.show);
+
+    if (gui.show) {
+
+        ImGui::Begin("Pose", &gui.show);
+
+        ImGui::InputFloat3("position", glm::value_ptr(selectedModelPose->position));
+        ImGui::InputFloat3("scale", glm::value_ptr(selectedModelPose->scale));
+        // ImGui::InputFloat3("rotation", &selectedModelPose->rotation);
+
+        ImGui::End();
+    }
+}
+
+float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition) {
+    
+    return glm::length(cameraPosition - modelPosition) * 0.05;
+}
+
 bool MarkerModule::hasSelection() {
 
     auto it = std::find(
             modelPoses.begin(), modelPoses.end(), selectedModelPose);
 
     return it != modelPoses.end();
-}
-
-float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition) {
-    
-    return glm::length(cameraPosition - modelPosition) * 0.05;
 }
 
 void MarkerModule::updateMouseState(GLFWwindow* window) {
@@ -36,7 +52,7 @@ void MarkerModule::updateMouseState(GLFWwindow* window) {
     mouse.x = (float)mouseX;
     mouse.y = (float)mouseY;
 
-    int buttonState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+    int buttonState = getMouseButton(GLFW_MOUSE_BUTTON_LEFT);
 
     mouse.pressed = GLFW_PRESS == buttonState;
     mouse.click = GLFW_RELEASE == mouse.prevButtonState && GLFW_PRESS == buttonState;
@@ -340,7 +356,11 @@ void MarkerModule::add(Pose& pose) {
     modelPoses.push_back(&pose);
 }
 
-void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& camera) {
+void MarkerModule::render(
+        GLFWwindow* window,
+        GLuint shaderProgramId,
+        Camera& camera,
+        GuiModule& guiModule) {
 
     GLuint lightingLocation =
         glGetUniformLocation(shaderProgramId, "lighting");
@@ -349,10 +369,10 @@ void MarkerModule::render(GLFWwindow* window, GLuint shaderProgramId, Camera& ca
     glm::vec3 cameraPosition = camera.getPosition();
 
     updateMouseState(window);
-
     updateSelectionState(camera);
 
     if (hasSelection()) {
+        renderGui(guiModule);
         renderModifiers(shaderProgramId, cameraPosition);
         updateModifiers(camera);
     }

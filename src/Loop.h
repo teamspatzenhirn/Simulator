@@ -69,9 +69,10 @@ public:
     Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight);
 
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-    static void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     void loop();
+
+    void update(double deltaTime);
 
     void renderScene();
     void renderFpsView();

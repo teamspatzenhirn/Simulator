@@ -55,6 +55,13 @@ struct DropEvent {
 
 void initInput(GLFWwindow* window);
 void updateInput();
+void clearKeyboardInput();
+void clearMouseInput();
+
+int getKey(int key);
+double getCursorX();
+double getCursorY();
+int getMouseButton(int key);
 
 std::vector<KeyEvent>& getKeyEvents();
 std::vector<CharEvent>& getCharEvents();

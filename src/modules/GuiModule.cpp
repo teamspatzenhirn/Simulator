@@ -20,6 +20,30 @@ GuiModule::~GuiModule() {
     ImGui::DestroyContext();
 }
 
+void GuiModule::renderRootWindow() {
+
+    ImGui::Begin("", NULL, ImGuiWindowFlags_MenuBar);
+
+    if (ImGui::BeginMenuBar()) {
+
+        if (ImGui::BeginMenu("Show")) {
+            for (ShowMenuItem& i : showMenuItems) {
+                ImGui::MenuItem(i.title.c_str(), NULL, i.show);
+            }
+            ImGui::EndMenu();
+        }
+
+        ImGui::EndMenuBar();
+    }
+
+    ImGui::Text("Carolo Simulator v0.1");
+    ImGui::End();
+        
+    showMenuItems.clear();
+
+    ImGui::ShowDemoWindow(NULL);
+}
+
 void GuiModule::begin() {
 
     for (KeyEvent& e : getKeyEvents()) {
@@ -38,10 +62,10 @@ void GuiModule::begin() {
     ImGuiIO& io = ImGui::GetIO();
 
     if (io.WantCaptureMouse) {
-        getMouseButtonEvents().clear();
+        clearMouseInput();
     }
     if (io.WantCaptureKeyboard) {
-        getKeyEvents().clear();
+        clearKeyboardInput();
     }
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -51,8 +75,7 @@ void GuiModule::begin() {
 
 void GuiModule::end() {
 
-    bool show = true;
-    ImGui::ShowDemoWindow(&show);
+    renderRootWindow();
 
     ImGui::Render();
 
@@ -65,4 +88,9 @@ void GuiModule::end() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwMakeContextCurrent(window);
+}
+
+void GuiModule::addShowMenuItem(std::string title, bool* show) {
+
+    showMenuItems.push_back({ title, show });
 }

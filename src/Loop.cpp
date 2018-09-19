@@ -11,7 +11,7 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , screenQuad{windowWidth, windowHeight, "shaders/ScreenQuadFragment.glsl"}
     , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"}
     , guiModule{window}
-    , tx(SimulatorSHM::SERVER, 428769){
+    , tx(SimulatorSHM::SERVER, 428769) {
 
     fpsCamera.view = glm::translate(fpsCamera.view, glm::vec3(0.0f, 0.0f, -4.0f));
 
@@ -37,50 +37,45 @@ void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     instance->fpsCamera.setAspectRatio(((float) width) / height);
 }
 
-void Loop::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_C && action == GLFW_PRESS) {
-        instance->fpsCameraActive = !instance->fpsCameraActive;
-    }
-}
-
 void Loop::loop() {
 
     initInput(window);
 
     while (!glfwWindowShouldClose(window)) {
 
-        timer.beginFrame();
+        timer.frameStep(); 
 
         updateInput();
 
         guiModule.begin();
 
-        // update model
-        
-        modelPose.rotation = glm::rotate(
-               modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
+        while (timer.updateStep(16)) {
+            update(16);
+        }
 
         markerModule.add(modelPose);
         
         glUseProgram(shaderProgram.id);
 
-        // render scene for fps camera
-
-        if (fpsCameraActive) {
-            renderFpsView();
-        }
-
-        renderCarView();
-
-        // render on screen filling quad
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // render fps / editor camera view if needed
 
         for(KeyEvent& e : getKeyEvents()) {
             if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
                 fpsCameraActive = !fpsCameraActive;
             }
         }
+
+        if (fpsCameraActive) {
+            renderFpsView();
+        }
+
+        // render from main car camera perspective
+
+        renderCarView();
+
+        // render on screen filling quad
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         if (fpsCameraActive) {
 
@@ -128,11 +123,6 @@ void Loop::loop() {
         guiModule.end();
 
         glfwSwapBuffers(window);
-
-        timer.endFrame();
-
-        //std::cout << timer.dt.count() << std::endl;
-        //std::cout << glGetError() << std::endl;
     }
 }
 
@@ -140,6 +130,14 @@ void Loop::renderScene() {
 
     light.render(shaderProgram.id);
     cube.render(shaderProgram.id, modelPose.getMatrix());
+}
+
+void Loop::update(double deltaTime) {
+
+    modelPose.rotation = glm::rotate(
+           modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
+
+    fpsCamera.update(window, deltaTime);
 }
 
 void Loop::renderFpsView() {
@@ -151,7 +149,6 @@ void Loop::renderFpsView() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    fpsCamera.update(window, timer.dt.count());
     fpsCamera.render(shaderProgram.id);
 
     renderScene();
@@ -163,7 +160,7 @@ void Loop::renderFpsView() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    markerModule.render(window, shaderProgram.id, fpsCamera);
+    markerModule.render(window, shaderProgram.id, fpsCamera, guiModule);
 }
 
 void Loop::renderCarView() {
@@ -179,7 +176,7 @@ void Loop::renderCarView() {
 
     renderScene();
 
-    // download image from opengl to ram
+    // download image from opengl to shared memory buffer
 
     ImageObject* obj = tx.lock(SimulatorSHM::WRITE_NO_OVERWRITE); 
 
