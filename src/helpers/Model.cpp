@@ -22,8 +22,12 @@ Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
 
     objl::Mesh mesh = loader.LoadedMeshes.at(0);
 
-    material = mesh.MeshMaterial;
-    vertices = mesh.Vertices;
+    // TODO: handle multiple matrials properly
+
+    for (objl::Mesh& mesh : loader.LoadedMeshes) {
+        vertices.insert(vertices.end(), mesh.Vertices.begin(), mesh.Vertices.end());
+        material = mesh.MeshMaterial;
+    }
 }
 
 Model::~Model() {

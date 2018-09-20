@@ -3,20 +3,24 @@
 
 #include <glm/glm.hpp>
 
-#include "helpers/Helpers.h"
-
 #include "Scene.h"
+#include "helpers/Helpers.h"
+#include "modules/MarkerModule.h"
 
 class CarModule {
 
 public:
 
-    CarModule();
+    Model carModel{"models/spatz.obj"};
 
     Camera mainCamera;
     FrameBuffer frameBuffer{1, 1};
 
-    void update(Scene::Car& car);
+    CarModule();
+
+    void update(Scene::Car& car, float deltaTime);
+
+    void render(Scene::Car& car, GLuint shaderProgramId, MarkerModule& markerModule);
 };
 
 #endif

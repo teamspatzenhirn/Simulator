@@ -353,7 +353,11 @@ void MarkerModule::renderGlyphTriplet(
 
 void MarkerModule::add(Pose& pose) {
 
-    modelPoses.push_back(&pose);
+    auto it = std::find(modelPoses.begin(), modelPoses.end(), &pose);
+
+    if (it == modelPoses.end()) {
+        modelPoses.push_back(&pose);
+    }
 }
 
 void MarkerModule::render(

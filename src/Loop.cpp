@@ -130,12 +130,6 @@ void Loop::loop() {
     }
 }
 
-void Loop::renderScene() {
-
-    light.render(shaderProgram.id);
-    cube.render(shaderProgram.id, modelPose.getMatrix());
-}
-
 void Loop::update(double deltaTime) {
 
     modelPose.rotation = glm::rotate(
@@ -143,7 +137,16 @@ void Loop::update(double deltaTime) {
 
     fpsCamera.update(window, deltaTime);
 
-    car.update(scene.car);
+    car.update(scene.car, deltaTime);
+}
+
+void Loop::renderScene() {
+
+    light.render(shaderProgram.id);
+
+    cube.render(shaderProgram.id, modelPose.getMatrix());
+
+    car.render(scene.car, shaderProgram.id, markerModule);
 }
 
 void Loop::renderFpsView() {
