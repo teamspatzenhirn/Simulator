@@ -7,20 +7,17 @@
 
 #include <glm/glm.hpp>
 
+#include <helpers/Helpers.h>
+
 /*
  * In order to make simulation state propagration and retention
- * as simple as possible the complete state of the simulator should
- * be encapsulated in this Scene object.
+ * as simple as possible the complete simulation state should be
+ * encapsulated in this Scene object.
  *
  * That means, that a Scene could contain, for example, the state of the car,
  * the state of all track elements, the position, scale, rotation of obstacles
  * or simply all other relevant information that should be retained between
  * simulator runs or is used by different module.
- *
- * Note that the Scene may only contain simple datatypes, as the
- * object is written AS-IS into a binary file for saving.
- * Saving objects of more complicated derived classes this way will
- * mess with the objects v-tables and corrupt them when loaded again.
  */
 struct Scene {
 
@@ -34,6 +31,40 @@ struct Scene {
      * This is the actual version of the scene object.
      */
     unsigned int version = 0;
+
+    struct Car {
+
+        Pose pose{0, 1.0f, 2.0f};
+
+        double delta = 0;
+        double v = 0;
+        double v_lon = 0;
+        double v_lat = 0; 
+        double d_psi = 0;     
+
+        struct MainCamera {
+
+            Pose pose{0, 0, 0};
+
+            unsigned int imageWidth = 800;
+            unsigned int imageHeight = 600;
+
+            float fovy = M_PI * 0.5f;
+
+            struct DistortionCoefficients {
+
+                double radial[3];
+                double tangential[3];
+
+            } distortionCoefficients;
+
+            float getAspectRatio() {
+                return (float)imageWidth / (float)imageHeight;
+            }
+
+        } mainCamera;
+
+    } car;
 
     Scene();
     Scene(std::string path);

@@ -34,7 +34,7 @@ void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     instance->frameBuffer.resize(width, height);
     instance->markerFrameBuffer.resize(width, height);
 
-    instance->fpsCamera.setAspectRatio(((float) width) / height);
+    instance->fpsCamera.aspectRatio = ((float) width) / height;
 }
 
 void Loop::loop() {
@@ -49,8 +49,9 @@ void Loop::loop() {
 
         guiModule.begin();
 
-        while (timer.updateStep(16)) {
-            update(16);
+        double deltaTime = 16;
+        while (timer.updateStep(deltaTime)) {
+            update(deltaTime);
         }
 
         markerModule.add(modelPose);
@@ -99,6 +100,9 @@ void Loop::loop() {
                 glUniform1i(glGetUniformLocation(shaderProgramId, "tex1"), 1);
             });
         } else {
+
+            float carCameraAspect = scene.car.mainCamera.getAspectRatio();
+
             if (((float) windowWidth) / windowHeight > carCameraAspect) {
                 int width = windowHeight * carCameraAspect;
                 glViewport((windowWidth - width) / 2, 0, width, windowHeight);
@@ -138,6 +142,8 @@ void Loop::update(double deltaTime) {
            modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
 
     fpsCamera.update(window, deltaTime);
+
+    car.update(scene.car);
 }
 
 void Loop::renderFpsView() {
@@ -167,12 +173,14 @@ void Loop::renderCarView() {
 
     glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
 
-    glViewport(0, 0, carCameraWidth, carCameraHeight);
+    glViewport(0, 0,
+            scene.car.mainCamera.imageWidth,
+            scene.car.mainCamera.imageHeight);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    car.camera.render(shaderProgram.id);
+    car.mainCamera.render(shaderProgram.id);
 
     renderScene();
 
@@ -181,9 +189,12 @@ void Loop::renderCarView() {
     ImageObject* obj = tx.lock(SimulatorSHM::WRITE_NO_OVERWRITE); 
 
     if (obj != NULL) {
-        capture.capture(obj->buffer, GL_COLOR_ATTACHMENT0);
-        obj->imageWidth = carCameraWidth;
-        obj->imageHeight = carCameraHeight;
+        capture.capture(obj->buffer,
+                scene.car.mainCamera.imageWidth,
+                scene.car.mainCamera.imageHeight,
+                GL_COLOR_ATTACHMENT0);
+        obj->imageWidth = scene.car.mainCamera.imageWidth;
+        obj->imageHeight = scene.car.mainCamera.imageHeight;
         tx.unlock(obj);
     } else {
         //std::cout << "ADTF down!" << std::endl;

@@ -4,14 +4,13 @@ SpatzSimulator::SpatzSimulator() {
 
     this->sys = {0};
     this->limits = {0};
-    reset();
 }
 
-void SpatzSimulator::reset() {
+void SpatzSimulator::reset(double x1, double x2, double psi) {
 
-    x.x1 = 0;
-    x.x2 = 0;
-    x.psi = 0;
+    x.x1 = x1;
+    x.x2 = x2;
+    x.psi = psi;
     x.delta = 0;
     x.v = 0;
     x.v_lon = 0;

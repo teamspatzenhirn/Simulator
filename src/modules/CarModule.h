@@ -5,17 +5,18 @@
 
 #include "helpers/Helpers.h"
 
+#include "Scene.h"
+
 class CarModule {
 
 public:
 
-    glm::vec3 position;
+    CarModule();
 
-    Camera camera;
-    FrameBuffer frameBuffer{2064, 1544};
+    Camera mainCamera;
+    FrameBuffer frameBuffer{1, 1};
 
-    CarModule(glm::vec3 position, float fovy, float cameraAspect);
-
+    void update(Scene::Car& car);
 };
 
 #endif

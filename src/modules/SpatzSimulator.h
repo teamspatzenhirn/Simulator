@@ -33,7 +33,7 @@ public:
 
     SpatzSimulator();
 
-    void reset();
+    void reset(double x1, double x2, double psi);
     void setSystemParams(env::Spatz::SystemParams system);
     void setWheelParams(WheelParams wheelParams);
     void setLimits(Limits limits);

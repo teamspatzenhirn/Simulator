@@ -13,42 +13,40 @@ namespace env {
 
     public:
 
-        struct SystemParams {
+        static const struct SystemParams {
             double l,
             gamma,
             J, m, M,
             lambda; // Lage des Schwerpunkts
-        };
+        } sysParams;
 
-        static const SystemParams sysParams;
+        static constexpr double WIDTH = 0.190;
+        static constexpr double LENGTH = 0.295;
+        static constexpr double ORIGIN_X = 0.032;
+        static constexpr double ORIGIN_Y = 0;
+        static constexpr double AXESDISTANCE = 0.225; // radabstand (m)
+        static constexpr double MASS = 3.875; // masse (kg)
+        static constexpr double WHEELRADIUS = 0.020; // rad radius (m)
 
-        static const double WIDTH;
-        static const double LENGTH;
-        static const double ORIGIN_X;
-        static const double ORIGIN_Y;
-        static const double AXESDISTANCE; // radabstand (m)
-        static const double MASS; // masse (kg)
-        static const double WHEELRADIUS; // rad radius (m)
+        static constexpr double SCHRAEGLAUFUEBERSETZUNG = 2;
+        static constexpr double INERTIA = 0.042; // kg*m^2
+        static constexpr double FRICTIONCOEFF = 3;
+        static constexpr double AIREFFCW = 0.2; // m^2
+        static constexpr double COM_X = Spatz::AXESDISTANCE/2;
+        static constexpr double COM_Y = 0;
+        static constexpr double GEARRATIO = 4000;
+        static constexpr double STEERT = 0.01; // Lenkwinkelverzögerungskonstante, eingangsaffines System mit PT1 (s)
+        static constexpr double MAX_STEERING_ANGLE = 22.5*M_PI/180; // maximal 18.5 Grad, um Reibung an Feder zu vermeiden
+        static constexpr double AXESMOMENTRATIO = 0.5; // Verhältnis des Moments vorder/hinter Achse
 
-        static const double SCHRAEGLAUFUEBERSETZUNG;
-        static const double INERTIA; // kg*m^2
-        static const double FRICTIONCOEFF;
-        static const double AIREFFCW; // m^2
-        static const double COM_X;
-        static const double COM_Y;
-        static const double GEARRATIO;
-        static const double STEERT; // Lenkwinkelverzögerungskonstante, eingangsaffines System mit PT1 (s)
-        static const double MAX_STEERING_ANGLE; // maximal 18.5 Grad, um Reibung an Feder zu vermeiden
-        static const double AXESMOMENTRATIO; // Verhältnis des Moments vorder/hinter Achse
+        static constexpr double ACC_TO_CURRENT_RATIO = 0.4338; // Verhältnis Beschleunigung zum vorgegebenen Strom
+        static constexpr double STATIC_FRICTION = 0.2536; // constant negative acceleration (m/s^2)
+        static constexpr double STATIC_STEER_FRICTION = 5.086; // constant negative acceleration per squared steering angle (m/s^2 per rad^2)
+        static constexpr double DYNAMIC_FRICTION = 0.3990; // negative acceleration per speed (m/s^2 per m/s)
+        static constexpr double DYNAMIC_STEER_FRICTION = 0.5964; // negative acceleration per speed and steering angle (m/s^2 per rad*m/s)
 
-        static const double ACC_TO_CURRENT_RATIO; // Verhältnis Beschleunigung zum vorgegebenen Strom
-        static const double STATIC_FRICTION; // constant negative acceleration (m/s^2)
-        static const double STATIC_STEER_FRICTION; // constant negative acceleration per squared steering angle (m/s^2 per rad^2)
-        static const double DYNAMIC_FRICTION; // negative acceleration per speed (m/s^2 per m/s)
-        static const double DYNAMIC_STEER_FRICTION; // negative acceleration per speed and steering angle (m/s^2 per rad*m/s)
-
-        static const double DIST_COG_TO_FRONT_AXLE; // center of gravity to front axle
-        static const double DIST_COG_TO_REAR_AXLE; // center of gravity to rear axle
+        static constexpr double DIST_COG_TO_FRONT_AXLE = AXESDISTANCE/2; // center of gravity to front axle
+        static constexpr double DIST_COG_TO_REAR_AXLE = AXESDISTANCE - DIST_COG_TO_FRONT_AXLE; // center of gravity to rear axle
         static const std::vector<glm::vec2> CAM_REGION;
 
     private:

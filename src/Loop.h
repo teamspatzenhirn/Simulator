@@ -14,9 +14,6 @@
 class Loop {
 
     static constexpr int sharedMemId = 428769;
-    static constexpr int carCameraWidth = 2064;
-    static constexpr int carCameraHeight = 1544;
-    static constexpr float carCameraAspect = ((float) carCameraWidth) / carCameraHeight;
 
 public:
 
@@ -37,6 +34,8 @@ private:
         Shader("shaders/VertexShader.glsl", GL_VERTEX_SHADER),
         Shader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER)};
 
+    Scene scene;
+
     FrameBuffer frameBuffer;
     FrameBuffer markerFrameBuffer;
 
@@ -52,12 +51,13 @@ private:
 
     FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
 
-    CarModule car{glm::vec3(0.0f, 1.0f, 2.0f), M_PI * 0.5f, carCameraAspect};
+    CarModule car;
 
-    Capture capture{carCameraWidth, carCameraHeight, 3};
+    Capture capture;
 
     struct ImageObject {
-        unsigned char buffer[carCameraWidth * carCameraHeight];
+        // assuming 2064x1544 RGB as the maximum possible image size
+        unsigned char buffer[9560448];
         int imageWidth;
         int imageHeight;
     };

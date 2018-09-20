@@ -1,7 +1,17 @@
 #include "CarModule.h"
 
-CarModule::CarModule(glm::vec3 position, float fovy, float cameraAspect)
-    : position(position), camera{fovy, cameraAspect} {
+CarModule::CarModule() {
 
-    camera.view = glm::translate(camera.view, -position);
+}
+
+void CarModule::update(Scene::Car& car) {
+
+    mainCamera.fov = car.mainCamera.fovy;
+    mainCamera.aspectRatio = car.mainCamera.getAspectRatio();
+
+    if (frameBuffer.width != car.mainCamera.imageWidth
+            || frameBuffer.height != car.mainCamera.imageHeight) {
+        frameBuffer.resize(car.mainCamera.imageWidth,
+                car.mainCamera.imageHeight);
+    }
 }

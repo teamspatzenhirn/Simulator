@@ -2,6 +2,7 @@
 #include "Capture.h"
 #include "FpsCamera.h"
 #include "FrameBuffer.h"
+#include "Json.h"
 #include "Model.h"
 #include "ObjLoader.h"
 #include "PointLight.h"

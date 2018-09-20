@@ -57,6 +57,9 @@ FrameBuffer::FrameBuffer(GLuint width, GLuint height) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    this->width = width;
+    this->height = height;
 }
 
 FrameBuffer::~FrameBuffer() {
@@ -93,5 +96,8 @@ void FrameBuffer::resize(GLuint width, GLuint height) {
                  0);
 
     glBindTexture(GL_TEXTURE_2D, 0);
+
+    this->width = width;
+    this->height = height;
 }
 
