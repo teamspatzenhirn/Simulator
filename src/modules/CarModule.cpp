@@ -10,6 +10,8 @@ void CarModule::update(Scene::Car& car, float deltaTime) {
     float dt = deltaTime / 1000; // in seconds, input is milli seconds
 
     Scene::Car::SimulatorState& x = car.simulatorState;
+    x.x1 = car.modelPose.position.z;
+    x.x2 = -car.modelPose.position.x;
 
     double acc = (car.vesc.velocity - x.v_lon) / dt;
     acc = std::min(acc, car.limits.max_F * car.systemParams.mass / car.systemParams.mass);

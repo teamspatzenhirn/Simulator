@@ -6,6 +6,8 @@
 #include <fstream>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/quaternion.hpp>
 
 #include <helpers/Helpers.h>
 
@@ -33,6 +35,8 @@ struct Scene {
     unsigned int version = 0;
 
     struct Car {
+
+        Pose modelPose{0.0, 0.0, 0.0};
 
         glm::vec3 velocity{0, 0, 0};
         glm::vec3 acceleration{0, 0, 0};
@@ -110,6 +114,10 @@ struct Scene {
 
         } wheels;
 
+        /*
+         * These are the parameters that are send to the VESC motor
+         * controller.
+         */
         struct Vesc {
 
             double velocity = 1.5;
@@ -117,6 +125,10 @@ struct Scene {
 
         } vesc;
 
+        /*
+         * This contains important paramters of the main
+         * color camera of the vehicle.
+         */
         struct MainCamera {
 
             Pose pose{0, 0, 0};
@@ -139,16 +151,13 @@ struct Scene {
 
         } mainCamera;
 
-        Pose modelPose{simulatorState.x1, 0.0, simulatorState.x2};
-
     } car;
 
     Scene();
-    Scene(std::string path);
-
     ~Scene();
 
-    void save(std::string path);
+    bool save(std::string path);
+    bool load(std::string path);
 };
 
 #endif
