@@ -124,7 +124,7 @@ void Loop::loop() {
             });
         }
 
-        guiModule.end();
+        guiModule.end(scene);
 
         glfwSwapBuffers(window);
     }
@@ -161,6 +161,10 @@ void Loop::renderFpsView() {
     fpsCamera.render(shaderProgram.id);
 
     renderScene();
+
+    // render module guis
+
+    car.renderCarPropertiesGui(scene.car, guiModule);
 
     // render marker overlay 
 

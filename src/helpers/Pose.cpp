@@ -1,6 +1,6 @@
 #include "Pose.h"
 
-Pose::Pose() : position{0, 0, 0}, rotation{0, 0, 0, 1}, scale{1, 1, 1} {
+Pose::Pose() : position{0, 0, 0}, rotation{1, 0, 0, 0}, scale{1, 1, 1} {
 }
 
 Pose::Pose(glm::vec3 position)
@@ -8,7 +8,7 @@ Pose::Pose(glm::vec3 position)
 }
 
 Pose::Pose(float x, float y, float z) 
-    : position{position}, rotation{0, 0, 0, 1}, scale{1, 1, 1} {
+    : position{position}, rotation{1, 0, 0, 0}, scale{1, 1, 1} {
 }
 
 glm::mat4 Pose::getMatrix() {

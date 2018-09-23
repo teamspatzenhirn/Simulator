@@ -105,6 +105,7 @@ void CarModule::render(Scene::Car& car, GLuint shaderProgramId, MarkerModule& ma
 
     mainCamera.fov = car.mainCamera.fovy;
     mainCamera.aspectRatio = car.mainCamera.getAspectRatio();
+    mainCamera.view = glm::inverse(car.modelPose.getMatrix() * car.mainCamera.pose.getMatrix());
 
     if (frameBuffer.width != car.mainCamera.imageWidth
             || frameBuffer.height != car.mainCamera.imageHeight) {
@@ -115,3 +116,77 @@ void CarModule::render(Scene::Car& car, GLuint shaderProgramId, MarkerModule& ma
     markerModule.add(car.modelPose);
     carModel.render(shaderProgramId, car.modelPose.getMatrix());
 }
+
+void CarModule::renderCarPropertiesGui(Scene::Car& car, GuiModule& guiModule) {
+
+    guiModule.addShowMenuItem("Car Properties", &showMenu);
+
+    if (showMenu) {
+
+        ImGui::Begin("Car Properties", &showMenu); 
+
+        if (ImGui::TreeNode("System Parameters")) {
+
+            ImGui::InputDouble("axesDistance", &car.systemParams.axesDistance);
+            ImGui::InputDouble("axesMomentRatio", &car.systemParams.axesMomentRatio);
+            ImGui::InputDouble("inertia", &car.systemParams.inertia);
+            ImGui::InputDouble("mass", &car.systemParams.mass);
+            ImGui::InputDouble("distCogToFrontAxle", &car.systemParams.distCogToFrontAxle);
+            ImGui::InputDouble("distCogToRearAxle", &car.systemParams.distCogToRearAxle);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Limits")) {
+
+            ImGui::InputDouble("max F", &car.limits.max_F);
+            ImGui::InputDouble("max delta", &car.limits.max_delta);
+            ImGui::InputDouble("max d delta", &car.limits.max_d_delta);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Vesc")) {
+
+            ImGui::InputDouble("velocity", &car.vesc.velocity);
+            ImGui::InputDouble("steeringAngle", &car.vesc.steeringAngle);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Wheels")) {
+
+            ImGui::Checkbox("use pacejka model", &car.wheels.usePacejkaModel);
+
+            ImGui::InputDouble("B_front", &car.wheels.B_front);
+            ImGui::InputDouble("B_rear", &car.wheels.B_rear);
+            ImGui::InputDouble("C_front", &car.wheels.C_front);
+            ImGui::InputDouble("C_rear", &car.wheels.C_rear);
+            ImGui::InputDouble("D_front", &car.wheels.D_front);
+            ImGui::InputDouble("D_rear", &car.wheels.D_rear);
+            ImGui::InputDouble("k_front", &car.wheels.k_front);
+            ImGui::InputDouble("k_rear", &car.wheels.k_rear);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Main Camera")) {
+
+            ImGui::InputFloat3("position", (float*)&car.mainCamera.pose.position);
+            ImGui::InputFloat3("rotation", (float*)&car.mainCamera.pose.position);
+
+            ImGui::InputInt("image width", (int*)&car.mainCamera.imageWidth);
+            ImGui::InputInt("image height", (int*)&car.mainCamera.imageHeight);
+            ImGui::InputFloat("fov", &car.mainCamera.fovy);
+            ImGui::InputFloat3("radial distortion",
+                    car.mainCamera.distortionCoefficients.radial);
+            ImGui::InputFloat3("tangential distortion",
+                    car.mainCamera.distortionCoefficients.radial);
+
+            ImGui::TreePop();
+        }
+
+        ImGui::End(); 
+    }
+}
+

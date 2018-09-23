@@ -4,6 +4,9 @@ GuiModule::GuiModule(GLFWwindow* window) {
 
     this->window = window;
 
+    currentPath = fs::absolute(fs::path("."));
+    selection = "";
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
@@ -20,15 +23,28 @@ GuiModule::~GuiModule() {
     ImGui::DestroyContext();
 }
 
-void GuiModule::renderRootWindow() {
+void GuiModule::renderRootWindow(Scene& scene) {
+
+    bool showOpenFileDialog = false;
+    bool showSaveFileDialog = false;
 
     ImGui::Begin("", NULL, ImGuiWindowFlags_MenuBar);
 
     if (ImGui::BeginMenuBar()) {
 
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Open")) {
+                showOpenFileDialog = true;
+            }
+            if (ImGui::MenuItem("Save")) {
+                showSaveFileDialog = true;
+            }
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Show")) {
-            for (ShowMenuItem& i : showMenuItems) {
-                ImGui::MenuItem(i.title.c_str(), NULL, i.show);
+            for (const auto & i : showMenuItems) {
+                ImGui::MenuItem(i.first.c_str(), NULL, i.second);
             }
             ImGui::EndMenu();
         }
@@ -36,12 +52,128 @@ void GuiModule::renderRootWindow() {
         ImGui::EndMenuBar();
     }
 
+    renderOpenFileDialog(scene, showOpenFileDialog);
+    renderSaveFileDialog(scene, showSaveFileDialog);
+
     ImGui::Text("Carolo Simulator v0.1");
     ImGui::End();
         
     showMenuItems.clear();
 
-    ImGui::ShowDemoWindow(NULL);
+    //ImGui::ShowDemoWindow(NULL);
+}
+
+void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
+
+    if (show) {
+        ImGui::OpenPopup("Open File");
+    }
+
+    if (ImGui::BeginPopupModal("Open File", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+        renderDirectoryListing();
+
+        if (ImGui::Button("Open", ImVec2(120, 0))) {
+            scene.load(selection.string());
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SetItemDefaultFocus();
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void GuiModule::renderSaveFileDialog(Scene& scene, bool show) {
+
+    if (show) {
+        ImGui::OpenPopup("Save File");
+    }
+
+    if (ImGui::BeginPopupModal("Save File", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+        renderDirectoryListing();
+
+        if (ImGui::Button("Save", ImVec2(120, 0))) {
+            scene.save(selection.string());
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::SetItemDefaultFocus();
+
+        ImGui::SameLine();
+
+        if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
+void GuiModule::renderDirectoryListing() {
+
+    ImGui::BeginChild("Dir Listing",
+            ImVec2(500, 400),
+            false,
+            ImGuiWindowFlags_HorizontalScrollbar);
+
+    if (ImGui::Selectable("[dir] ..", false)) {
+        currentPath = currentPath.parent_path();
+    }
+
+    for (auto& i : fs::directory_iterator(currentPath)) {
+
+        if (i.path().stem().string().empty()) {
+            continue;
+        }
+
+        std::string name = "";
+
+        if (fs::is_regular_file(i)) {
+            name = i.path().filename();
+        }
+
+        if (fs::is_directory(i)) {
+            name = "[dir] ";
+            name += i.path().stem();
+        }
+
+        if (!name.empty()) {
+            if (ImGui::Selectable(name.c_str(),
+                        selection == fs::absolute(i.path()))) {
+                if (fs::is_directory(i)) {
+                    currentPath = i.path();
+                } else {
+                    selection = fs::absolute(i.path());
+                }
+            }
+        }
+    }
+
+    ImGui::EndChild();
+
+    char filenameInputBuf[256];
+
+    strncpy(filenameInputBuf,
+            selection.filename().c_str(),
+            sizeof(filenameInputBuf));
+
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.8);
+    ImGui::InputText("Selected File",
+            filenameInputBuf, IM_ARRAYSIZE(filenameInputBuf));
+    ImGui::PopItemWidth();
+
+    if (!fs::is_directory(selection)) {
+        selection = selection.remove_filename(); 
+    }
+    selection /= fs::path(filenameInputBuf);
 }
 
 void GuiModule::begin() {
@@ -73,9 +205,9 @@ void GuiModule::begin() {
     ImGui::NewFrame();
 }
 
-void GuiModule::end() {
+void GuiModule::end(Scene& scene) {
 
-    renderRootWindow();
+    renderRootWindow(scene);
 
     ImGui::Render();
 
@@ -92,5 +224,5 @@ void GuiModule::end() {
 
 void GuiModule::addShowMenuItem(std::string title, bool* show) {
 
-    showMenuItems.push_back({ title, show });
+    showMenuItems[title] = show;
 }

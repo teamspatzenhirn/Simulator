@@ -3,10 +3,16 @@
 
 #include <vector>
 #include <functional>
+#include <experimental/filesystem>
+
+namespace fs = std::experimental::filesystem;
+
+#include "Scene.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
+#include "imgui/ImGuiFileDialog.h"
 
 #include "helpers/Helpers.h"
 
@@ -17,13 +23,16 @@ class GuiModule {
 
     GLFWwindow* window;
 
-    struct ShowMenuItem {
-        std::string title;
-        bool* show;
-    };
-    std::vector<ShowMenuItem> showMenuItems;
+    std::map<std::string, bool*> showMenuItems;
 
-    void renderRootWindow();
+    fs::path currentPath;
+    fs::path selection;
+
+    void renderRootWindow(Scene& scene);
+
+    void renderOpenFileDialog(Scene& scene, bool show);
+    void renderSaveFileDialog(Scene& scene, bool show);
+    void renderDirectoryListing();
 
 public:
 
@@ -31,7 +40,7 @@ public:
     ~GuiModule();
 
     void begin();
-    void end();
+    void end(Scene& scene);
 
     void addShowMenuItem(std::string title, bool* show);
 };
