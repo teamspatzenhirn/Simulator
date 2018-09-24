@@ -125,6 +125,13 @@ void CarModule::renderCarPropertiesGui(Scene::Car& car, GuiModule& guiModule) {
 
         ImGui::Begin("Car Properties", &showMenu); 
 
+        if (ImGui::TreeNode("Pose")) { 
+
+            ImGui::InputFloat3("position", (float*)&car.modelPose);
+
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("System Parameters")) {
 
             ImGui::InputDouble("axesDistance", &car.systemParams.axesDistance);

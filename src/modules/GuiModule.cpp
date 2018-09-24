@@ -27,17 +27,25 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
     bool showOpenFileDialog = false;
     bool showSaveFileDialog = false;
+    bool showSaveAsFileDialog = false;
 
     ImGui::Begin("", NULL, ImGuiWindowFlags_MenuBar);
 
     if (ImGui::BeginMenuBar()) {
 
         if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("New")) {
+                scene = Scene();
+                openedPath = "";
+            }
             if (ImGui::MenuItem("Open")) {
                 showOpenFileDialog = true;
             }
             if (ImGui::MenuItem("Save")) {
                 showSaveFileDialog = true;
+            }
+            if (ImGui::MenuItem("Save as")) {
+                showSaveAsFileDialog = true;
             }
             ImGui::EndMenu();
         }
@@ -53,9 +61,18 @@ void GuiModule::renderRootWindow(Scene& scene) {
     }
 
     renderOpenFileDialog(scene, showOpenFileDialog);
-    renderSaveFileDialog(scene, showSaveFileDialog);
+    renderSaveFileDialog(scene, showSaveFileDialog, showSaveAsFileDialog);
 
-    ImGui::Text("Carolo Simulator v0.1");
+    ImGui::Text("Carolo Simulator v0.2");
+
+    std::string msg = "Config: ";
+    if (openedPath.empty()) { 
+        msg += "none";
+    } else {
+        msg += openedPath.filename().string();
+    }
+    ImGui::Text(msg.c_str());
+
     ImGui::End();
         
     showMenuItems.clear();
@@ -74,7 +91,9 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
         renderDirectoryListing();
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
-            scene.load(selection.string());
+            if(scene.load(selection.string())) {
+                openedPath = selection.string();
+            }
             ImGui::CloseCurrentPopup();
         }
 
@@ -90,9 +109,14 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
     }
 }
 
-void GuiModule::renderSaveFileDialog(Scene& scene, bool show) {
+void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
-    if (show) {
+    if (!openedPath.empty() && !showSaveAs) {
+        scene.save(openedPath.string());
+        return;
+    }
+
+    if (show || showSaveAs) {
         ImGui::OpenPopup("Save File");
     }
 
@@ -101,7 +125,9 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show) {
         renderDirectoryListing();
 
         if (ImGui::Button("Save", ImVec2(120, 0))) {
-            scene.save(selection.string());
+            if (scene.save(selection.string())) {
+                openedPath = selection;
+            }
             ImGui::CloseCurrentPopup();
         }
 

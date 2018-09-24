@@ -12,7 +12,6 @@ namespace fs = std::experimental::filesystem;
 #include "imgui/imgui.h"
 #include "imgui/imgui_impl_glfw.h"
 #include "imgui/imgui_impl_opengl3.h"
-#include "imgui/ImGuiFileDialog.h"
 
 #include "helpers/Helpers.h"
 
@@ -25,13 +24,14 @@ class GuiModule {
 
     std::map<std::string, bool*> showMenuItems;
 
+    fs::path openedPath;
     fs::path currentPath;
     fs::path selection;
 
     void renderRootWindow(Scene& scene);
 
     void renderOpenFileDialog(Scene& scene, bool show);
-    void renderSaveFileDialog(Scene& scene, bool show);
+    void renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs);
     void renderDirectoryListing();
 
 public:

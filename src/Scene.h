@@ -140,8 +140,8 @@ struct Scene {
 
             struct DistortionCoefficients {
 
-                float radial[3];
-                float tangential[3];
+                float radial[3] = {0, 0, 0};
+                float tangential[3] = {0, 0, 0};
 
             } distortionCoefficients;
 

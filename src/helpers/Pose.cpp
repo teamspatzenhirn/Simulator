@@ -8,7 +8,7 @@ Pose::Pose(glm::vec3 position)
 }
 
 Pose::Pose(float x, float y, float z) 
-    : position{position}, rotation{1, 0, 0, 0}, scale{1, 1, 1} {
+    : position{x, y, z}, rotation{1, 0, 0, 0}, scale{1, 1, 1} {
 }
 
 glm::mat4 Pose::getMatrix() {
