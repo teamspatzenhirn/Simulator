@@ -38,6 +38,7 @@ class MarkerModule {
         bool click;
         bool pressed;
         bool handled;
+        glm::vec3 clickRay;
         int prevButtonState = GLFW_RELEASE;
     } mouse;
 
@@ -63,7 +64,7 @@ class MarkerModule {
 
     bool hasSelection();
 
-    void updateMouseState(GLFWwindow* window);
+    void updateMouseState(GLFWwindow* window, Camera& camera);
 
     void updateSelectionState(Camera& camera);
 

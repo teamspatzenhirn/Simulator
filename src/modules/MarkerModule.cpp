@@ -23,9 +23,138 @@ void MarkerModule::renderGui(GuiModule& guiModule) {
 
         ImGui::Begin("Pose", &gui.show);
 
-        ImGui::InputFloat3("position", glm::value_ptr(selectedModelPose->position));
+        ImGui::InputFloat3("position",
+                glm::value_ptr(selectedModelPose->position));
+
         ImGui::InputFloat3("scale", glm::value_ptr(selectedModelPose->scale));
-        // ImGui::InputFloat3("rotation", &selectedModelPose->rotation);
+        
+        /*
+         * We are using an alternative quaternion to euler conversion here, as
+         * the glm implementation does not output full continuous 360 degrees.
+         *
+         * Source:
+         * http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
+         */
+        glm::vec3 eulerAngles;
+        { 
+            glm::quat q1 = selectedModelPose->rotation;
+
+            double attitude;
+            double bank;
+            double heading;
+
+            double test = q1.x*q1.y + q1.z*q1.w;
+            //double test = 0;
+
+            if (test > 0.499) { // singularity at north pole
+                heading = 2 * atan2(q1.x,q1.w);
+                attitude = M_PI / 2.0f;
+                bank = 0;
+            } else if (test < -0.499) { // singularity at south pole
+                heading = -2 * atan2(q1.x,q1.w);
+                attitude = -M_PI / 2.0f;
+                bank = 0;
+            } else {
+                double sqx = q1.x*q1.x;
+                double sqy = q1.y*q1.y;
+                double sqz = q1.z*q1.z;
+
+                attitude = asin(2*test);
+                heading = atan2(2*q1.y*q1.w-2*q1.x*q1.z , 1 - 2*sqy - 2*sqz);
+                bank = atan2(2*q1.x*q1.w-2*q1.y*q1.z , 1 - 2*sqx - 2*sqz);
+
+                eulerAngles.x = bank;
+                eulerAngles.y = heading;
+                eulerAngles.z = attitude;
+
+                float eps = 0.0000001;
+
+                if (std::abs(eulerAngles.x) < eps) {
+                    eulerAngles.x = 0.0f;
+                }
+                if (std::abs(eulerAngles.y) < eps) {
+                    eulerAngles.y = 0.0f;
+                }
+                if (std::abs(eulerAngles.z) < eps) {
+                    eulerAngles.z = 0.0f;
+                }
+            }
+
+            eulerAngles.x = glm::degrees(eulerAngles.x);
+            eulerAngles.y = glm::degrees(eulerAngles.y);
+            eulerAngles.z = glm::degrees(eulerAngles.z);
+
+            //std::cout << eulerAngles << std::endl;
+        }
+
+        eulerAngles = glm::eulerAngles(selectedModelPose->rotation);
+
+        eulerAngles.x = glm::degrees(eulerAngles.x);
+        eulerAngles.y = glm::degrees(eulerAngles.y);
+        eulerAngles.z = glm::degrees(eulerAngles.z);
+
+        if (eulerAngles.x == 180.0f && eulerAngles.z == 180.0f) { 
+            eulerAngles.x = 0;
+            eulerAngles.z = 0;
+            if (eulerAngles.y < 0) {
+                eulerAngles.y = -eulerAngles.y - 180;
+            } else {
+                eulerAngles.y = 180 - eulerAngles.y;
+            }
+        } else if (eulerAngles.x == -180.0f && eulerAngles.z == -180.0f) {
+            eulerAngles.x = 0;
+            eulerAngles.z = 0;
+            eulerAngles.y = 180 - eulerAngles.y;
+        }
+
+        ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles));
+
+        float eps = 0.0001;
+
+        if (std::abs(eulerAngles.x) == 180.0f) {
+            eulerAngles.x += eps;
+        }
+        if (std::abs(eulerAngles.y) == 180.0f) {
+            eulerAngles.y += eps;
+        }
+        if (std::abs(eulerAngles.z) == 180.0f) {
+            eulerAngles.z += eps;
+        }
+
+        eulerAngles.x = glm::radians(eulerAngles.x);
+        eulerAngles.y = glm::radians(eulerAngles.y);
+        eulerAngles.z = glm::radians(eulerAngles.z);
+
+        selectedModelPose->rotation = glm::quat(eulerAngles);
+
+        /*
+         * Also the glm conversion from euler angles to quaternion seems instable.
+         * So we are using an alternative conversion here as well.
+         *
+         * Source:
+         * http://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToQuaternion/
+         */
+        glm::quat q;
+        {
+            double c1 = cos(eulerAngles.y / 2.0f);
+            double s1 = sin(eulerAngles.y / 2.0f);
+            double c2 = cos(eulerAngles.z / 2.0f);
+            double s2 = sin(eulerAngles.z / 2.0f);
+            double c3 = cos(eulerAngles.x / 2.0f);
+            double s3 = sin(eulerAngles.x / 2.0f);
+            double c1c2 = c1*c2;
+            double s1s2 = s1*s2;
+
+            q.w = c1c2*c3 - s1s2*s3;
+            q.x = c1c2*s3 + s1s2*c3;
+            q.y = s1*c2*c3 + c1*s2*s3;
+            q.z = c1*s2*c3 - s1*c2*s3;
+        }
+
+
+        //std::cout << q << std::endl;
+
+        //selectedModelPose->rotation = q;
 
         ImGui::End();
     }
@@ -44,7 +173,7 @@ bool MarkerModule::hasSelection() {
     return it != modelPoses.end();
 }
 
-void MarkerModule::updateMouseState(GLFWwindow* window) {
+void MarkerModule::updateMouseState(GLFWwindow* window, Camera& camera) {
 
     double mouseX;
     double mouseY;
@@ -56,6 +185,14 @@ void MarkerModule::updateMouseState(GLFWwindow* window) {
 
     mouse.pressed = GLFW_PRESS == buttonState;
     mouse.click = GLFW_RELEASE == mouse.prevButtonState && GLFW_PRESS == buttonState;
+
+    if (mouse.pressed) {
+        int windowWidth;
+        int windowHeight;
+        glfwGetWindowSize(window, &windowWidth, &windowHeight);
+        mouse.clickRay = camera.pickRay(
+                mouse.x, mouse.y, windowWidth, windowHeight);
+    }
 
     if (mouse.click) {
         mouse.handled = false;
@@ -70,10 +207,6 @@ void MarkerModule::updateSelectionState(Camera& camera) {
         return;
     }
 
-    // TODO: handle width and height parameters properly
-    glm::vec3 clickRay =
-        camera.pickRay(mouse.x, mouse.y, 800, 600);
-
     glm::vec3 eyeVector = glm::normalize(glm::vec3(
             camera.view[0][2], camera.view[1][2], camera.view[2][2]));
 
@@ -84,7 +217,7 @@ void MarkerModule::updateSelectionState(Camera& camera) {
         float scale = getScale(cameraPosition, pose->position);
 
         glm::vec3 intersectionPoint = intersectLineWithPlane(
-                clickRay, cameraPosition, eyeVector, pose->position);
+                mouse.clickRay, cameraPosition, eyeVector, pose->position);
 
         if (glm::length(pose->position - intersectionPoint) < 0.5f * scale) {
 
@@ -372,7 +505,7 @@ void MarkerModule::render(
 
     glm::vec3 cameraPosition = camera.getPosition();
 
-    updateMouseState(window);
+    updateMouseState(window, camera);
     updateSelectionState(camera);
 
     if (hasSelection()) {
@@ -433,10 +566,6 @@ glm::vec3 MarkerModule::mousePosInArrowCoords(Camera& camera, Axis axis) {
     glm::vec3 normal = cameraPosition - mod.dragStartModelPosition;
     glm::vec3 right;
 
-    // TODO: handle width and height parameters properly
-    glm::vec3 clickRay =
-        camera.pickRay(mouse.x, mouse.y, 800, 600);
-
     switch (axis) {
         case X_AXIS:
             normal = glm::normalize(glm::vec3(0.0f, normal.y, normal.z));
@@ -453,7 +582,7 @@ glm::vec3 MarkerModule::mousePosInArrowCoords(Camera& camera, Axis axis) {
     }
 
     glm::vec3 localPoint = intersectionPointInPlaneCoord(
-            clickRay,
+            mouse.clickRay,
             cameraPosition,
             normal,
             mod.dragStartModelPosition,
@@ -484,12 +613,8 @@ glm::vec3 MarkerModule::mousePosInRotateCoords(Camera& camera, Axis axis) {
 
     glm::vec3 cameraPosition = camera.getPosition();
 
-    // TODO: handle width and height parameters properly
-    glm::vec3 clickRay =
-        camera.pickRay(mouse.x, mouse.y, 800, 600);
-
     glm::vec3 localPoint = intersectionPointInPlaneCoord(
-            clickRay,
+            mouse.clickRay,
             cameraPosition,
             normal,
             mod.dragStartModelPosition,

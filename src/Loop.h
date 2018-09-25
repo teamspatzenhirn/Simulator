@@ -47,7 +47,7 @@ private:
 
     PointLight light{10.0f, 10.0f, 20.0f};
     Pose modelPose;
-    Model cube{"models/test_cube.obj"};
+    Model cube{"models/arrow.obj"};
 
     FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
 

@@ -132,8 +132,8 @@ void Loop::loop() {
 
 void Loop::update(double deltaTime) {
 
-    modelPose.rotation = glm::rotate(
-           modelPose.rotation, 0.002f, glm::vec3(0, 0, 1));
+    /* modelPose.rotation = glm::rotate(
+           modelPose.rotation, 0.002f, glm::vec3(0, 0, 1)); */
 
     fpsCamera.update(window, deltaTime);
 
