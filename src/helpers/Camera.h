@@ -27,7 +27,7 @@ public:
      * given point (x, y) on the near plane. Here w and h are the width and
      * height of the current viewport in pixels.
      */
-    glm::vec3 pickRay(GLuint x, GLuint y, GLuint viewportWidth, GLuint viewportHeight);
+    glm::vec3 pickRay(double x, double y, int windowWidth, int windowHeight);
 };
 
 #endif

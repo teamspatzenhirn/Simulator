@@ -30,17 +30,17 @@ void Camera::render(GLuint shaderProgramId) {
     glUniform3fv(posLocation, 1, &cameraPosition[0]);
 }
 
-glm::vec3 Camera::pickRay(GLuint x, GLuint y, GLuint viewportWidth, GLuint viewportHeight) {
+glm::vec3 Camera::pickRay(double x, double y, int windowWidth, int windowHeight) {
 
     glm::vec4 clipCoords(
-            2.0f * x / viewportWidth - 1.0f,
-            1.0f - 2.0f * y / viewportHeight,
+            2.0f * x / windowWidth - 1.0f,
+            1.0f - 2.0f * y / windowHeight,
             -1.0f,
             1.0f);
     
     glm::vec4 cameraCoords = glm::inverse(projection) * clipCoords;
     glm::vec4 worldCoords = glm::inverse(view) *
-        glm::vec4(cameraCoords.x, cameraCoords.y, -1.0f, 0.0f);
+        glm::vec4(cameraCoords.x, cameraCoords.y, cameraCoords.z, 0.0f);
 
     return glm::normalize(glm::vec3(worldCoords.x, worldCoords.y, worldCoords.z));
 }
