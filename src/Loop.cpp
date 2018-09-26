@@ -15,7 +15,6 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
 
     camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
 
-    markerModule.addMarker(modelMat);
     modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
 
     cube.upload();
@@ -52,6 +51,12 @@ void Loop::loop() {
                 modelMat,
                 0.0002f * timer.dt.count(),
                 glm::vec3(0.0, 0.0f, 1.0f));
+
+        /*modelMat = glm::translate(
+                modelMat,
+                glm::vec3(0.001f, 0.0f, 0.0f));*/
+
+        markerModule.addMarker(modelMat);
 
         // render
 
