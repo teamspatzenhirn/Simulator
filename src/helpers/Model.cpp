@@ -1,5 +1,14 @@
 #include "Model.h"
 
+Model::Model() : Model(GL_STATIC_DRAW) {
+}
+
+Model::Model(GLenum storageType) : storageType(storageType) {
+
+    glGenVertexArrays(1, &vaoId);
+    glGenBuffers(1, &vboId);
+}
+
 Model::Model(std::string path) : Model(path, GL_STATIC_DRAW) {
 }
 
