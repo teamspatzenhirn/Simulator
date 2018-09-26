@@ -517,7 +517,7 @@ void MarkerModule::render(
     if (!mouse.handled) {
         selectedModelPose = 0;
     }
-
+    
     renderMarkers(shaderProgramId, cameraPosition);
 
     glUniform1i(lightingLocation, true);

@@ -5,6 +5,9 @@ double cursorPosX = 0;
 double cursorPosY = 0;
 int lastMouseButtonState[8];
 
+bool hideKeyState = false;
+bool hideMouseButtonState = false;
+
 std::vector<KeyEvent> keyEvents;
 std::vector<CharEvent> charEvents;
 std::vector<CharModsEvent> charModsEvents;
@@ -94,6 +97,9 @@ void initInput(GLFWwindow* window) {
 
 void updateInput() {
 
+    hideKeyState = false;
+    hideMouseButtonState = false;
+
     keyEvents.clear();
     charEvents.clear();
     charModsEvents.clear();
@@ -108,9 +114,7 @@ void updateInput() {
 
 void clearKeyboardInput() {
 
-    for (int i = 0; i < 400; ++i) {
-        lastKeyState[i] = GLFW_RELEASE;
-    }
+    hideKeyState = true;
 
     keyEvents.clear();
     charEvents.clear();
@@ -119,9 +123,7 @@ void clearKeyboardInput() {
 
 void clearMouseInput() {
 
-    for (int i = 0; i < 8; ++i) {
-        lastMouseButtonState[i] = GLFW_RELEASE;
-    }
+    hideMouseButtonState = true;
 
     mouseButtonEvents.clear();
     cursorPosEvents.clear();
@@ -131,7 +133,12 @@ void clearMouseInput() {
 }
 
 int getKey(int key) {
-    return lastKeyState[key];
+
+    if (hideKeyState) {
+        return GLFW_RELEASE;
+    } else {
+        return lastKeyState[key];
+    }
 }
 
 double getCursorX() {
@@ -143,7 +150,12 @@ double getCursorY() {
 }
 
 int getMouseButton(int button) {
-    return lastMouseButtonState[button];
+
+    if (hideMouseButtonState) {
+        return GLFW_RELEASE;
+    } else {
+        return lastMouseButtonState[button];
+    }
 }
 
 std::vector<KeyEvent>& getKeyEvents() {
