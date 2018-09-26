@@ -23,28 +23,28 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
     float speed = 0.01f * dt;
 
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_W)) {
+    if (GLFW_PRESS == getKey(GLFW_KEY_W)) {
         translation = glm::translate(translation, eye * speed);
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_A)) {
+    if (GLFW_PRESS == getKey(GLFW_KEY_A)) {
         translation = glm::translate(translation, right * speed);
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_S)) {
+    if (GLFW_PRESS == getKey(GLFW_KEY_S)) {
         translation = glm::translate(translation, eye * -speed);
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_D)) {
+    if (GLFW_PRESS == getKey(GLFW_KEY_D)) {
         translation = glm::translate(translation, right * -speed);
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_SPACE)) {
+    if (GLFW_PRESS == getKey(GLFW_KEY_SPACE)) {
         translation = glm::translate(translation, up * -speed);
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+    if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_SHIFT)) {
         translation = glm::translate(translation, up * speed);
     }
     
-    int leftMouseBtnState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+    int rightMouseBtnState = getMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
 
-    if (GLFW_PRESS == leftMouseBtnState) {
+    if (GLFW_PRESS == rightMouseBtnState) {
         double mouseX;
         double mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);

@@ -1,12 +1,28 @@
 #include "Camera.h"
 
-Camera::Camera(float fov, float aspectRatio) {
+Camera::Camera() : Camera(M_PI * 0.3, 4.0f/3.0f) {
+}
 
-    projection = glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
-    view = glm::mat4(1.0f);
+Camera::Camera(float fov, float aspectRatio) 
+    : fov{fov},
+      aspectRatio{aspectRatio},
+      view{glm::mat4(1.0f)} {
+}
+
+glm::vec3 Camera::getPosition() {
+
+    glm::mat3 rotation(view);
+    return -glm::transpose(rotation) * glm::vec3(view[3]);
+}
+
+glm::mat4 Camera::getProjectionMatrix() {
+
+    return glm::perspective(fov, aspectRatio, 0.1f, 100.0f);
 }
 
 void Camera::render(GLuint shaderProgramId) {
+
+    glm::mat4 projection = getProjectionMatrix();
 
     GLint viewLocation =
         glGetUniformLocation(shaderProgramId, "view");
@@ -16,9 +32,7 @@ void Camera::render(GLuint shaderProgramId) {
         glGetUniformLocation(shaderProgramId, "projection");
     glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, &projection[0][0]);
 
-    // TODO: inefficient!
-    glm::mat4 iv = glm::inverse(view);
-    glm::vec4 cameraPosition = iv * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    glm::vec3 cameraPosition = getPosition();
 
     GLint posLocation =
         glGetUniformLocation(shaderProgramId, "cameraPosition");
@@ -26,6 +40,8 @@ void Camera::render(GLuint shaderProgramId) {
 }
 
 glm::vec3 Camera::pickRay(GLuint x, GLuint y, GLuint viewportWidth, GLuint viewportHeight) {
+
+    glm::mat4 projection = getProjectionMatrix();
 
     glm::vec4 clipCoords(
             2.0f * x / viewportWidth - 1.0f,

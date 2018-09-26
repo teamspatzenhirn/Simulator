@@ -11,11 +11,22 @@ class Camera {
 
 public:
 
+    Camera();
     Camera(float fov, float aspectRatio);
 
-    glm::mat4 projection;
+    float fov;
+    float aspectRatio;
+
     glm::mat4 view;
 
+    glm::vec3 getPosition();
+
+    glm::mat4 getProjectionMatrix();
+
+    /*
+     * This sets the uniform variables "view" "projection"
+     * and "cameraPosition" in the currently bound shader program.
+     */
     void render(GLuint shaderProgramId);
 
     /*

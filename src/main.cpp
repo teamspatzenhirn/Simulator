@@ -1,109 +1,56 @@
-#include <chrono>
 #include <iostream>
 
-#include "helpers/Helpers.h" 
-#include "modules/MarkerModule.h"
+#include "Loop.h"
+#include "helpers/Input.h"
 
 int main () {
 
-    Renderer renderer("Spatz Simulator", 800, 600);
+    int windowWidth = 800;
+    int windowHeight = 600;
 
-    Shader vertexShader("shaders/VertexShader.glsl", GL_VERTEX_SHADER);
-    Shader fragmentShader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
+    // initialize OpenGL and GLEW
 
-    ShaderProgram shaderProgram(vertexShader, fragmentShader);
-    glUseProgram(shaderProgram.id);
+    if (!glfwInit()) {
+        std::cout << "Could not initialize GLFW!" << std::endl;
+        std::exit(-1);
+    }
 
-    FrameBuffer frameBuffer(800, 600);
-    FrameBuffer markerFrameBuffer(800, 600);
+    GLFWwindow* window = glfwCreateWindow(
+        windowWidth, windowHeight, "Spatz Simulator", nullptr, nullptr);
 
-    MarkerModule markerModule;
+    glfwMakeContextCurrent(window);
 
-    ScreenQuad screenQuad(800, 600, "shaders/ScreenQuadFragment.glsl");
-
-    FpsCamera camera(45, 4.0f/3.0f);
-    camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
-
-    PointLight light(10.0f, 10.0f, 20.0f);
-
-    glm::mat4 modelMat = glm::mat4(1.0f);
-    markerModule.addMarker(modelMat);
-    modelMat = glm::scale(modelMat, glm::vec3(0.4f, 0.4f, 1.0f));
+    if (GLEW_OK != glewInit()) {
+        std::cout << "GL Extension Wrangler initialization failed!" << std::endl;
+        std::exit(-1);
+    }
+    
+    // OpenGL and GLFW settings
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    Model cube("models/test_cube.obj");
-    cube.upload();
-
     glfwSwapInterval(1);
 
-    while (!glfwWindowShouldClose(renderer.window)) {
+    // loop setup
 
-        glfwPollEvents();
+    std::shared_ptr<Loop> loop = std::make_shared<Loop>(window, windowWidth, windowHeight);
 
-        renderer.beginFrame();
+    Loop::instance = loop;
 
-        // actual scene rendered to framebuffer
-        
-        glUseProgram(shaderProgram.id);
+    glfwSetFramebufferSizeCallback(window, Loop::framebufferSizeCallback);
+    /* 
+     * GLFW only supports setting one callback!
+     * If this is commented in imgui input will no longer work!
+     */
+    //glfwSetKeyCallback(window, Loop::keyCallback);
+    
+    // main loop
+    loop->loop();
 
-        glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
-
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        camera.update(renderer.window, renderer.dt.count());
-        camera.render(shaderProgram.id);
-
-        light.render(shaderProgram.id);
-
-        modelMat = glm::rotate(
-                modelMat,
-                0.0002f * renderer.dt.count(),
-                glm::vec3(0.0, 0.0f, 1.0f));
-
-        cube.render(shaderProgram.id, modelMat);
-
-        // render marker overlay 
-
-        glBindFramebuffer(GL_FRAMEBUFFER, markerFrameBuffer.id);
-
-        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        markerModule.render(renderer.window, shaderProgram.id, camera);
-        
-        // render on screen filling quad
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        // this is stupid!
-        // i really don't like doing this with a callback
-
-        screenQuad.render([&](GLuint shaderProgramId){
-
-            glUseProgram(shaderProgramId);
-
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, frameBuffer.colorTextureId);
-            glUniform1i(glGetUniformLocation(shaderProgramId, "tex0"), 0);
-
-            glActiveTexture(GL_TEXTURE0 + 1);
-            glBindTexture(GL_TEXTURE_2D, markerFrameBuffer.colorTextureId);
-            glUniform1i(glGetUniformLocation(shaderProgramId, "tex1"), 1);
-        });
-
-        renderer.endFrame();
-
-        //std::cout << renderer.dt.count() << std::endl;
-        //std::cout << glGetError() << std::endl;
-    }
-
+    glfwDestroyWindow(window);
     glfwTerminate();
 
     return 0;

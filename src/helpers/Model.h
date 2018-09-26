@@ -30,7 +30,7 @@ public:
                 GLuint normalLocation = 1,
                 GLuint texCoordLocation = 2);
 
-    void render(GLuint shaderProgramId, glm::mat4& modelMatrix);
+    void render(GLuint shaderProgramId, glm::mat4 modelMatrix);
 };
 
 #endif

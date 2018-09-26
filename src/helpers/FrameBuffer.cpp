@@ -57,6 +57,9 @@ FrameBuffer::FrameBuffer(GLuint width, GLuint height) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    this->width = width;
+    this->height = height;
 }
 
 FrameBuffer::~FrameBuffer() {
@@ -64,5 +67,37 @@ FrameBuffer::~FrameBuffer() {
     glDeleteFramebuffers(1, &id);
     glDeleteTextures(1, &colorTextureId);
     glDeleteTextures(1, &depthTextureId);
+}
+
+void FrameBuffer::resize(GLuint width, GLuint height) {
+
+    glBindTexture(GL_TEXTURE_2D, colorTextureId);
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_RGBA,
+                 width,
+                 height,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_BYTE,
+                 0);
+
+    glBindTexture(GL_TEXTURE_2D, depthTextureId);
+
+    glTexImage2D(GL_TEXTURE_2D,
+                 0,
+                 GL_DEPTH_COMPONENT24,
+                 width,
+                 height,
+                 0,
+                 GL_DEPTH_COMPONENT,
+                 GL_FLOAT,
+                 0);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    this->width = width;
+    this->height = height;
 }
 

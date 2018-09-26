@@ -23,11 +23,16 @@ public:
 
     GLuint id;
 
+    GLuint width;
+    GLuint height;
+
     GLuint colorTextureId;
     GLuint depthTextureId;
 
     FrameBuffer(GLuint width, GLuint height);
     ~FrameBuffer();
+
+    void resize(GLuint width, GLuint height);
 };
 
 #endif
