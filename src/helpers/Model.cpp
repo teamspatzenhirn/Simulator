@@ -1,5 +1,14 @@
 #include "Model.h"
 
+Model::Model() : Model(GL_STATIC_DRAW) {
+}
+
+Model::Model(GLenum storageType) : storageType(storageType) {
+
+    glGenVertexArrays(1, &vaoId);
+    glGenBuffers(1, &vboId);
+}
+
 Model::Model(std::string path) : Model(path, GL_STATIC_DRAW) {
 }
 
@@ -22,8 +31,12 @@ Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
 
     objl::Mesh mesh = loader.LoadedMeshes.at(0);
 
-    material = mesh.MeshMaterial;
-    vertices = mesh.Vertices;
+    // TODO: handle multiple matrials properly
+
+    for (objl::Mesh& mesh : loader.LoadedMeshes) {
+        vertices.insert(vertices.end(), mesh.Vertices.begin(), mesh.Vertices.end());
+        material = mesh.MeshMaterial;
+    }
 }
 
 Model::~Model() {
@@ -75,7 +88,7 @@ void Model::upload(GLuint positionLocation,
     glBindVertexArray(0);
 }
 
-void Model::render(GLuint shaderProgramId, glm::mat4& modelMatrix) {
+void Model::render(GLuint shaderProgramId, glm::mat4 modelMatrix) {
 
     GLint modelLocation = glGetUniformLocation(shaderProgramId, "model");
     glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &modelMatrix[0][0]);

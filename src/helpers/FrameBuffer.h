@@ -23,6 +23,9 @@ public:
 
     GLuint id;
 
+    GLuint width;
+    GLuint height;
+
     GLuint colorTextureId;
     GLuint depthTextureId;
 

@@ -9,14 +9,18 @@
 
 class Timer {
 
-    std::chrono::system_clock::time_point beforeRender;
+    std::chrono::system_clock::time_point currentTime;
+    double accumulator;
 
 public:
 
-    std::chrono::milliseconds dt;
+    Timer();
 
-    void beginFrame();
-    void endFrame();
+    double time;
+    double frameTime;
+
+    void frameStep();
+    bool updateStep(double deltaTimeMilliSeconds);
 };
 
 #endif

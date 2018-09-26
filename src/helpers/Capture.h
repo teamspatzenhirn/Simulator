@@ -8,18 +8,18 @@
 
 class Capture {
 
-    const GLuint imageWidth;
-    const GLuint imageHeight;
-    const GLuint imageChannels;
-
     GLuint pboIds[2];
     int pboIndex;
 
+    GLuint width;
+    GLuint height;
+
 public:
 
-    Capture(GLuint width, GLuint height, GLuint channels);
+    Capture();
+    ~Capture();
 
-    void capture(GLubyte* buffer);
+    bool capture(GLubyte* buffer, GLuint width, GLuint height, GLenum mode = GL_FRONT);
 };
 
 #endif

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Loop.h"
+#include "helpers/Input.h"
 
 int main () {
 
@@ -40,8 +41,12 @@ int main () {
     Loop::instance = loop;
 
     glfwSetFramebufferSizeCallback(window, Loop::framebufferSizeCallback);
-    glfwSetKeyCallback(window, Loop::keyCallback);
-
+    /* 
+     * GLFW only supports setting one callback!
+     * If this is commented in imgui input will no longer work!
+     */
+    //glfwSetKeyCallback(window, Loop::keyCallback);
+    
     // main loop
     loop->loop();
 
