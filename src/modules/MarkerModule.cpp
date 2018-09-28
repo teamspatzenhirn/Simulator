@@ -360,6 +360,8 @@ void MarkerModule::updateModifiers(Camera& camera) {
                         axis = glm::vec3(0, 0, 1);
                         angle = rotation.z;
                         break;
+                    case NONE:
+                        break;
                 }
 
                 glm::mat4 invModelMat = glm::inverse(
@@ -581,6 +583,8 @@ glm::vec3 MarkerModule::mousePosInArrowCoords(Camera& camera, Axis axis) {
             normal = glm::normalize(glm::vec3(normal.x, normal.y, 0.0f));
             right = glm::vec3(0.0f, 0.0f, 1.0f);
             break;
+        case NONE:
+            return glm::vec3(0.0f, 0.0f, 0.0f);
     }
 
     glm::vec3 localPoint = intersectionPointInPlaneCoord(
@@ -611,6 +615,8 @@ glm::vec3 MarkerModule::mousePosInRotateCoords(Camera& camera, Axis axis) {
             normal = glm::vec3(0.0f, 0.0f, -1.0f);
             right = glm::vec3(1.0f, 0.0f, 0.0f);
             break;
+        case NONE:
+            return glm::vec3(0.0f, 0.0f, 0.0f);
     }
 
     glm::vec3 cameraPosition = camera.getPosition();

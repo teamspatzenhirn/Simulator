@@ -66,6 +66,8 @@ void GuiModule::renderRootWindow(Scene& scene) {
     renderOpenFileDialog(scene, showOpenFileDialog);
     renderSaveFileDialog(scene, showSaveFileDialog, showSaveAsFileDialog);
 
+    //renderErrorDialog();
+
     ImGui::Text("Carolo Simulator v0.2");
 
     std::string msg = "Config: ";
@@ -83,6 +85,25 @@ void GuiModule::renderRootWindow(Scene& scene) {
     //ImGui::ShowDemoWindow(NULL);
 }
 
+void GuiModule::renderErrorDialog(std::string& msg) {
+
+    if (!msg.empty()) { 
+        ImGui::OpenPopup("Error");
+    }
+
+    if (ImGui::BeginPopupModal("Error", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+
+        ImGui::Text(msg.c_str());
+
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            msg = "";
+            ImGui::CloseCurrentPopup();
+        }
+
+        ImGui::EndPopup();
+    }
+}
+
 void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
 
     if (show) {
@@ -94,12 +115,16 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
         renderDirectoryListing();
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
-            if(scene.load(selectedFilename)) {
+            if (scene.load(selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
+                ImGui::CloseCurrentPopup();
+            } else {
+                errorMessage = "Could not open " + selectedFilename + "!";
             }
-            ImGui::CloseCurrentPopup();
         }
+
+        renderErrorDialog(errorMessage);
 
         ImGui::SetItemDefaultFocus();
 
@@ -116,7 +141,7 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
     if (!openedFilename.empty() && !showSaveAs) {
-        scene.save(openedPath + "/" + openedFilename);
+        scene.save(openedPath + openedFilename);
         return;
     }
 
@@ -132,9 +157,13 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
             if (scene.save(currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
+                ImGui::CloseCurrentPopup();
+            } else {
+                errorMessage = "Saving " + selectedFilename + " failed!";
             }
-            ImGui::CloseCurrentPopup();
         }
+
+        renderErrorDialog(errorMessage);
 
         ImGui::SetItemDefaultFocus();
 
@@ -172,7 +201,8 @@ void GuiModule::renderDirectoryListing() {
         // Sigh ... this is not a pretty solution but was easy to implement and
         // works quite well. Unless someone decides to rape the ".." button like
         // a fuckin lunatic the currentDirectory string should be fine.
-        currentDirectory += "../"; }
+        currentDirectory += "../";
+    }
 
     for (dirent& e : entries) {
 

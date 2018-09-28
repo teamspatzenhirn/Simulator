@@ -26,8 +26,11 @@ class GuiModule {
     std::string currentDirectory;
     std::string selectedFilename;
 
+    std::string errorMessage;
+
     void renderRootWindow(Scene& scene);
 
+    void renderErrorDialog(std::string& msg);
     void renderOpenFileDialog(Scene& scene, bool show);
     void renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs);
     void renderDirectoryListing();
