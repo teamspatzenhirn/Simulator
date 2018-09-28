@@ -516,6 +516,8 @@ void MarkerModule::render(
 
     if (!mouse.handled) {
         selectedModelPose = 0;
+    } else {
+        clearMouseInput();
     }
     
     renderMarkers(shaderProgramId, cameraPosition);
