@@ -3,9 +3,6 @@
 
 #include <vector>
 #include <functional>
-#include <experimental/filesystem>
-
-namespace fs = std::experimental::filesystem;
 
 #include "Scene.h"
 
@@ -24,9 +21,10 @@ class GuiModule {
 
     std::map<std::string, bool*> showMenuItems;
 
-    fs::path openedPath;
-    fs::path currentPath;
-    fs::path selection;
+    std::string openedPath;
+    std::string openedFilename;
+    std::string currentDirectory;
+    std::string selectedFilename;
 
     void renderRootWindow(Scene& scene);
 

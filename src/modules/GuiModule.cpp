@@ -4,8 +4,10 @@ GuiModule::GuiModule(GLFWwindow* window) {
 
     this->window = window;
 
-    currentPath = fs::absolute(fs::path("."));
-    selection = "";
+    openedPath = "";
+    openedFilename = "";
+    currentDirectory = "./";
+    selectedFilename = "";
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -37,6 +39,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
             if (ImGui::MenuItem("New")) {
                 scene = Scene();
                 openedPath = "";
+                openedFilename = "";
             }
             if (ImGui::MenuItem("Open")) {
                 showOpenFileDialog = true;
@@ -66,10 +69,10 @@ void GuiModule::renderRootWindow(Scene& scene) {
     ImGui::Text("Carolo Simulator v0.2");
 
     std::string msg = "Config: ";
-    if (openedPath.empty()) { 
+    if (openedFilename.empty()) { 
         msg += "none";
     } else {
-        msg += openedPath.filename().string();
+        msg += openedFilename;
     }
     ImGui::Text(msg.c_str());
 
@@ -91,8 +94,9 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
         renderDirectoryListing();
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
-            if(scene.load(selection.string())) {
-                openedPath = selection.string();
+            if(scene.load(selectedFilename)) {
+                openedPath = currentDirectory;
+                openedFilename = selectedFilename;
             }
             ImGui::CloseCurrentPopup();
         }
@@ -111,8 +115,8 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
 
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
-    if (!openedPath.empty() && !showSaveAs) {
-        scene.save(openedPath.string());
+    if (!openedFilename.empty() && !showSaveAs) {
+        scene.save(openedPath + "/" + openedFilename);
         return;
     }
 
@@ -125,8 +129,9 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
         renderDirectoryListing();
 
         if (ImGui::Button("Save", ImVec2(120, 0))) {
-            if (scene.save(selection.string())) {
-                openedPath = selection;
+            if (scene.save(currentDirectory + selectedFilename)) {
+                openedPath = currentDirectory;
+                openedFilename = selectedFilename;
             }
             ImGui::CloseCurrentPopup();
         }
@@ -150,35 +155,52 @@ void GuiModule::renderDirectoryListing() {
             false,
             ImGuiWindowFlags_HorizontalScrollbar);
 
+    DIR* dir = opendir(currentDirectory.c_str());
+
+    std::vector<dirent> entries;
+
+    if (dir) {
+       dirent* e;
+       while (NULL != (e = readdir(dir))) {
+           entries.push_back(*e);
+       }
+    } 
+
+    closedir(dir);
+
     if (ImGui::Selectable("[dir] ..", false)) {
-        currentPath = currentPath.parent_path();
-    }
+        // Sigh ... this is not a pretty solution but was easy to implement and
+        // works quite well. Unless someone decides to rape the ".." button like
+        // a fuckin lunatic the currentDirectory string should be fine.
+        currentDirectory += "../"; }
 
-    for (auto& i : fs::directory_iterator(currentPath)) {
+    for (dirent& e : entries) {
 
-        if (i.path().stem().string().empty()) {
+        if (e.d_name[0] == '.') {
             continue;
         }
 
-        std::string name = "";
+        std::string filename(e.d_name);
 
-        if (fs::is_regular_file(i)) {
-            name = i.path().filename();
+        std::string entryName = "";
+        if (e.d_type == DT_REG) {
+            entryName += filename;
+        }
+        if (e.d_type == DT_DIR) {
+            entryName = "[dir] ";
+            entryName += filename;
+        }
+        if (entryName.empty()) {
+            continue;
         }
 
-        if (fs::is_directory(i)) {
-            name = "[dir] ";
-            name += i.path().stem();
-        }
-
-        if (!name.empty()) {
-            if (ImGui::Selectable(name.c_str(),
-                        selection == fs::absolute(i.path()))) {
-                if (fs::is_directory(i)) {
-                    currentPath = i.path();
-                } else {
-                    selection = fs::absolute(i.path());
-                }
+        if (ImGui::Selectable(
+                    entryName.c_str(),
+                    selectedFilename == filename)) {
+            if (e.d_type == DT_DIR) {
+                currentDirectory += filename + "/";
+            } else {
+                selectedFilename = filename;
             }
         }
     }
@@ -188,7 +210,7 @@ void GuiModule::renderDirectoryListing() {
     char filenameInputBuf[256];
 
     strncpy(filenameInputBuf,
-            selection.filename().c_str(),
+            selectedFilename.c_str(),
             sizeof(filenameInputBuf));
 
     ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.8);
@@ -196,10 +218,38 @@ void GuiModule::renderDirectoryListing() {
             filenameInputBuf, IM_ARRAYSIZE(filenameInputBuf));
     ImGui::PopItemWidth();
 
-    if (!fs::is_directory(selection)) {
-        selection = selection.remove_filename(); 
+    selectedFilename = std::string(filenameInputBuf);
+
+    /*
+     * Normalizes the directory path.
+     * Transforms bits like "./asdf/test/../" to "./asdf/"
+     */
+
+    std::stringstream ss(currentDirectory);
+    std::string pathElement;
+
+    std::vector<std::string> pathElements;
+
+    while (std::getline(ss, pathElement, '/')) {
+        if (pathElements.empty()) {
+            pathElements.push_back(pathElement);
+        } else if (pathElement == "..") {
+            if (pathElements.back() == ".."
+                    || pathElements.back() == ".") {
+                pathElements.push_back(pathElement);
+            } else {
+                pathElements.pop_back();
+            }
+        } else {
+            pathElements.push_back(pathElement);
+        }
     }
-    selection /= fs::path(filenameInputBuf);
+
+    currentDirectory = "";
+
+    for (std::string& s : pathElements) {
+        currentDirectory += s + "/";
+    }
 }
 
 void GuiModule::begin() {

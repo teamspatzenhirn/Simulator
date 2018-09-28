@@ -10,7 +10,7 @@
 #define DIRENT_H
 
 /*
- * Tiny modification to allow usage under linux and windows.
+ * Modification to allow usage under linux and windows.
  */
 #ifndef _WIN32
     #include <sys/types.h>

@@ -1,5 +1,6 @@
 #include "Camera.h"
 #include "Capture.h"
+#include "Dirent.h"
 #include "FpsCamera.h"
 #include "FrameBuffer.h"
 #include "Json.h"
