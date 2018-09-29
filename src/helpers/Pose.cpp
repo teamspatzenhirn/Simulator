@@ -32,7 +32,7 @@ glm::vec3 Pose::getEulerAngles() {
         eulerAngles.x = 0;
     } else if (test < -0.49999) { 
         // singularity at south pole
-        heading = -2 * atan2(rotation.x,rotation.w);
+        eulerAngles.y = -2 * atan2(rotation.x,rotation.w);
         eulerAngles.z = -M_PI / 2.0f;
         eulerAngles.x = 0;
     } else {
@@ -110,7 +110,6 @@ void Pose::setEulerAngles(glm::vec3 eulerAngles) {
      * Source:
      * http://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToQuaternion/
      */
-
     double c1 = cos(eulerAngles.y / 2.0f);
     double s1 = sin(eulerAngles.y / 2.0f);
     double c2 = cos(eulerAngles.z / 2.0f);

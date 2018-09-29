@@ -180,7 +180,12 @@ void CarModule::renderCarPropertiesGui(Scene::Car& car, GuiModule& guiModule) {
         if (ImGui::TreeNode("Main Camera")) {
 
             ImGui::InputFloat3("position", (float*)&car.mainCamera.pose.position);
-            ImGui::InputFloat3("rotation", (float*)&car.mainCamera.pose.position);
+
+            glm::vec3 eulerAngles = car.mainCamera.pose.getEulerAngles();
+
+            if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                car.mainCamera.pose.setEulerAngles(eulerAngles);
+            }
 
             ImGui::InputInt("image width", (int*)&car.mainCamera.imageWidth);
             ImGui::InputInt("image height", (int*)&car.mainCamera.imageHeight);

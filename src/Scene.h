@@ -27,7 +27,7 @@ struct Scene {
      * This is the current most recent version of the Scene object.
      * Increment this, whenever there were changes made to Scene.
      */
-    static const unsigned int VERSION = 0;
+    static const unsigned int VERSION = 1;
 
     /*
      * This is the actual version of the scene object.
@@ -131,7 +131,11 @@ struct Scene {
          */
         struct MainCamera {
 
-            Pose pose{0, 0, 0};
+            Pose pose{0, 0.260, 0.110};
+
+            MainCamera() {
+                pose.setEulerAngles(glm::vec3(-10.0f, 180.0f, 0.0f));
+            }
 
             unsigned int imageWidth = 2064;
             unsigned int imageHeight = 1544;
