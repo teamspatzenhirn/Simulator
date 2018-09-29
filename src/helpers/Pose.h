@@ -17,6 +17,9 @@ public:
     Pose(glm::vec3 position);
     Pose(float x, float y, float z);
 
+    glm::vec3 getEulerAngles();
+    void setEulerAngles(glm::vec3 eulerAngles);
+
     glm::mat4 getMatrix();
 };
 
