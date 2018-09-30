@@ -11,6 +11,48 @@
 
 #include <helpers/Helpers.h>
 
+struct TrackBase;
+
+struct ControlPoint {
+
+    glm::vec2 coords;
+
+    std::vector<std::shared_ptr<TrackBase>> tracks;
+};
+
+struct TrackBase {
+
+    // total width of a track
+    static constexpr float trackWidth{0.8f};
+
+    std::weak_ptr<ControlPoint> start;
+    std::weak_ptr<ControlPoint> end;
+
+    TrackBase(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
+    virtual ~TrackBase() = 0;
+
+    virtual glm::vec2 getDirection(const ControlPoint& controlPoint) = 0;
+};
+
+struct TrackLine : TrackBase {
+
+    TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
+
+    glm::vec2 getDirection(const ControlPoint& controlPoint) override;
+};
+
+struct TrackArc : TrackBase {
+
+    glm::vec2 center;
+    float radius{0};
+    bool rightArc{false};
+
+    TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
+            const glm::vec2& center, const float radius, const bool rightArc);
+
+    glm::vec2 getDirection(const ControlPoint& controlPoint) override;
+};
+
 /*
  * In order to make simulation state propagration and retention
  * as simple as possible the complete simulation state should be
@@ -27,7 +69,7 @@ struct Scene {
      * This is the current most recent version of the Scene object.
      * Increment this, whenever there were changes made to Scene.
      */
-    static const unsigned int VERSION = 1;
+    static const unsigned int VERSION = 2;
 
     /*
      * This is the actual version of the scene object.
@@ -156,6 +198,25 @@ struct Scene {
         } mainCamera;
 
     } car;
+
+    float groundSize = 10.0f;
+
+    struct Tracks {
+
+    private:
+
+        std::vector<std::shared_ptr<ControlPoint>> tracks;
+
+    public:
+
+        const std::vector<std::shared_ptr<ControlPoint>>& getTracks() const;
+
+        std::shared_ptr<TrackLine> addTrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
+        std::shared_ptr<TrackArc> addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc);
+
+        bool controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const;
+
+    } tracks;
 
     Scene();
     ~Scene();

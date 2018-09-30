@@ -246,6 +246,115 @@ void from_json(const json& j, Scene& s) {
  * Now that's the actual Scene implementation, fellas!
  */
 
+TrackBase::TrackBase(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end)
+    : start(start), end(end) {
+}
+
+TrackBase::~TrackBase() {
+}
+
+TrackLine::TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end)
+    : TrackBase(start, end) {
+}
+
+glm::vec2 TrackLine::getDirection(const ControlPoint& controlPoint) {
+
+    std::shared_ptr<ControlPoint> start = this->start.lock();
+    std::shared_ptr<ControlPoint> end = this->end.lock();
+
+    if (start.get() == &controlPoint) {
+        return start->coords - end->coords;
+    } else {
+        return end->coords - start->coords;
+    }
+}
+
+TrackArc::TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
+        const glm::vec2& center, const float radius, const bool rightArc)
+    : TrackBase(start, end), center(center), radius(radius), rightArc(rightArc) {
+}
+
+glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
+
+    std::shared_ptr<ControlPoint> start = this->start.lock();
+    std::shared_ptr<ControlPoint> end = this->end.lock();
+
+    glm::vec2 dir;
+    if (start.get() == &controlPoint) {
+        if (rightArc) {
+            dir = center - start->coords;
+        } else {
+            dir = start->coords - center;
+        }
+    } else {
+        if (rightArc) {
+            dir = end->coords - center;
+        } else {
+            dir = center - end->coords;
+        }
+    }
+
+    dir = glm::vec2(-dir.y, dir.x);
+
+    return dir;
+}
+
+const std::vector<std::shared_ptr<ControlPoint>>& Scene::Tracks::getTracks() const {
+
+    return tracks;
+}
+
+std::shared_ptr<TrackLine> Scene::Tracks::addTrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end) {
+
+    // add control points
+    if (!controlPointExists(start)) {
+        tracks.push_back(start);
+    }
+
+    if (!controlPointExists(end)) {
+        tracks.push_back(end);
+    }
+
+    // create track
+    std::shared_ptr<TrackLine> track = std::make_shared<TrackLine>(start, end);
+
+    start->tracks.push_back(track);
+    end->tracks.push_back(track);
+
+    return track;
+}
+
+std::shared_ptr<TrackArc> Scene::Tracks::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc) {
+
+    // add control points
+    if (!controlPointExists(start)) {
+        tracks.push_back(start);
+    }
+
+    if (!controlPointExists(end)) {
+        tracks.push_back(end);
+    }
+
+    // create track
+    std::shared_ptr<TrackArc> track = std::make_shared<TrackArc>(start, end, center, radius, rightArc);
+
+    start->tracks.push_back(track);
+    end->tracks.push_back(track);
+
+    return track;
+}
+
+bool Scene::Tracks::controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const {
+
+    for (std::shared_ptr<ControlPoint> const& cp : tracks) {
+        if (controlPoint == cp) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 Scene::Scene() : version{VERSION} {
 }
 

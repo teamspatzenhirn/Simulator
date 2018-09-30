@@ -9,6 +9,7 @@
 #include "modules/MarkerModule.h"
 #include "modules/CarModule.h"
 #include "modules/GuiModule.h"
+#include "modules/Editor.h"
 #include "sharedmem/shmcomm.h"
 
 class Loop {
@@ -50,6 +51,8 @@ private:
     Model cube{"models/arrow.obj"};
 
     FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
+
+    Editor editor{scene.groundSize};
 
     CarModule car;
 

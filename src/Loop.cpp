@@ -147,6 +147,8 @@ void Loop::renderScene() {
     cube.render(shaderProgram.id, modelPose.getMatrix());
 
     car.render(scene.car, shaderProgram.id, markerModule);
+
+    editor.renderScene(shaderProgram.id, scene.tracks);
 }
 
 void Loop::renderFpsView() {
@@ -174,6 +176,9 @@ void Loop::renderFpsView() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     markerModule.render(window, shaderProgram.id, fpsCamera, guiModule);
+
+    editor.updateInput(fpsCamera, scene.tracks, scene.groundSize);
+    editor.renderMarkers(shaderProgram.id, scene.tracks);
 }
 
 void Loop::renderCarView() {
