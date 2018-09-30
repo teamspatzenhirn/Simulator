@@ -15,16 +15,30 @@ class Model {
 
     GLenum storageType;
 
+    void renderMaterialAndVertices(GLuint shaderProgramId);
+
 public:
 
-    std::vector<objl::Vertex> vertices;
-    objl::Material material;
-
     Model();
+    Model(const Model& model);
     Model(GLenum storageType);
     Model(std::string path);
     Model(std::string path, GLenum storageType);
     ~Model();
+
+    std::vector<Model> subModels;
+
+    objl::Material material;
+    std::vector<objl::Vertex> vertices;
+
+    struct BoundingBox {
+
+        glm::vec3 center{0, 0, 0};
+        glm::vec3 size{0, 0, 0};
+
+    } boundingBox;
+
+    void updateBoundingBox();
 
     void upload(GLuint positionLocation = 0,
                 GLuint normalLocation = 1,
