@@ -172,6 +172,15 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
                     }
                 }
             }
+
+            break;
+        case GLFW_MOUSE_BUTTON_RIGHT:
+            if (action == GLFW_PRESS) {
+                // cancel track
+                activeControlPoint = nullptr;
+            }
+
+            break;
     }
 }
 
