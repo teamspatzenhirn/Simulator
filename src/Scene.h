@@ -22,9 +22,6 @@ struct ControlPoint {
 
 struct TrackBase {
 
-    // total width of a track
-    static constexpr float trackWidth{0.8f};
-
     std::weak_ptr<ControlPoint> start;
     std::weak_ptr<ControlPoint> end;
 
@@ -69,7 +66,7 @@ struct Scene {
      * This is the current most recent version of the Scene object.
      * Increment this, whenever there were changes made to Scene.
      */
-    static const unsigned int VERSION = 2;
+    static const unsigned int VERSION = 3;
 
     /*
      * This is the actual version of the scene object.
@@ -202,6 +199,14 @@ struct Scene {
     float groundSize = 10.0f;
 
     struct Tracks {
+
+        // total width of a track
+        float trackWidth = 0.8f;
+
+        // lane markings
+        float markingWidth = 0.02f;
+        float centerLineLength = 0.2f;
+        float centerLineInterrupt = 0.2f;
 
     private:
 

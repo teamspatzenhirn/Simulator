@@ -60,8 +60,6 @@ private:
     glm::mat4 markerModelMatTrackArc;
 
     // tracks
-    std::shared_ptr<Model> trackLineModel = std::make_shared<Model>();
-
     std::map<std::shared_ptr<TrackBase>, std::shared_ptr<Model>> trackModels;
     std::map<std::shared_ptr<TrackBase>, glm::mat4> trackModelMats;
 
@@ -107,8 +105,9 @@ private:
             Camera& camera, glm::vec2& groundCoords);
 
     void updateMarkers(const ControlPoint& startPoint, const Scene::Tracks& tracks);
-    void updateTrackLineMarker(const glm::vec2& start, const glm::vec2& end);
-    void updateTrackArcMarker(const ControlPoint& startPoint, const glm::vec2& end);
+    void updateTrackLineMarker(const glm::vec2& start, const glm::vec2& end, const Scene::Tracks& tracks);
+    void updateTrackArcMarker(const ControlPoint& startPoint,
+            const glm::vec2& end, const Scene::Tracks& tracks);
 
     bool getArc(const ControlPoint& startPoint, const glm::vec2& end, glm::vec2& center, float& radius, bool& rightArc);
 
@@ -128,12 +127,25 @@ private:
     static void genTrackMaterial(Model& model);
 
     static void genPointVertices(Model& model);
-    static void genTrackLineVertices(Model& model);
-    static void genTrackArcVertices(const glm::vec2& start, const glm::vec2& end, const glm::vec2& center, const float radius, const bool rightArc, Model& model);
+    static void genTrackLineVertices(const glm::vec2& start, const glm::vec2& end, const Scene::Tracks& tracks, Model& model);
+    static void genTrackArcVertices(const glm::vec2& start, const glm::vec2& end, const glm::vec2& center, const float radius, const bool rightArc, const Scene::Tracks& tracks, Model& model);
+    static void genTrackLineMarkerVertices(Model& model);
+    static void genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& end,
+            const glm::vec2& center, const float radius, const bool rightArc,
+            const Scene::Tracks& tracks, Model& model);
 
     static glm::mat4 genPointMatrix(const glm::vec2& point, const float y);
     static glm::mat4 genTrackLineMatrix(const glm::vec2& start, const glm::vec2& end, const float y);
     static glm::mat4 genTrackArcMatrix(const glm::vec2& center, const float y);
+    static glm::mat4 genTrackLineMarkerMatrix(const glm::vec2& start,
+            const glm::vec2& end, const float y, const Scene::Tracks& tracks);
+
+    static void appendQuad(std::vector<objl::Vertex>& vertices, const objl::Vector3& vec0,
+            const objl::Vector3& vec1, const objl::Vector3& vec2, const objl::Vector3& vec3);
+
+    static void getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
+            const glm::vec2& center, const bool rightArc, float& baseAngle,
+            float& angle, int& numQuads);
 };
 
 #endif
