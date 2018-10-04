@@ -21,6 +21,9 @@ public:
     void setEulerAngles(glm::vec3 eulerAngles);
 
     glm::mat4 getMatrix();
+    glm::mat4 getInverseMatrix();
+
+    Pose transform(Pose other);
 };
 
 #endif

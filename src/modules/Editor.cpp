@@ -397,7 +397,7 @@ bool Editor::toGroundCoordinates(const double cursorX, const double cursorY, con
         return false;
     }
 
-    glm::vec3 cameraPos = glm::vec3(glm::inverse(camera.view) * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    glm::vec3 cameraPos = camera.pose.position; 
 
     float t = -cameraPos.y / pick.y;
     if (t < 0) {

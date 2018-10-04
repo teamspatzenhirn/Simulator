@@ -13,9 +13,7 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , guiModule{window}
     , tx(SimulatorSHM::SERVER, 428769) {
 
-    fpsCamera.view = glm::translate(fpsCamera.view, glm::vec3(0.0f, 0.0f, -4.0f));
-
-    cube.upload();
+    fpsCamera.pose = glm::vec3(0.0f, 1.0f, -4.0f);
 
     if(!tx.attach()) {
         tx.destroy();
@@ -54,8 +52,6 @@ void Loop::loop() {
             update(deltaTime);
         }
 
-        markerModule.add(modelPose);
-        
         glUseProgram(shaderProgram.id);
 
         // render fps / editor camera view if needed
@@ -124,16 +120,16 @@ void Loop::loop() {
             });
         }
 
-        guiModule.end(scene);
+        guiModule.renderRootWindow(scene);
+        guiModule.renderCarPropertiesWindow(scene.car);
+        guiModule.renderPoseWindow(markerModule.getSelection());
+        guiModule.end();
 
         glfwSwapBuffers(window);
     }
 }
 
 void Loop::update(double deltaTime) {
-
-    /* modelPose.rotation = glm::rotate(
-           modelPose.rotation, 0.002f, glm::vec3(0, 0, 1)); */
 
     fpsCamera.update(window, deltaTime);
 
@@ -142,9 +138,8 @@ void Loop::update(double deltaTime) {
 
 void Loop::renderScene() {
 
+    markerModule.add(light.pose);
     light.render(shaderProgram.id);
-
-    cube.render(shaderProgram.id, modelPose.getMatrix());
 
     car.render(scene.car, shaderProgram.id, markerModule);
 
@@ -152,6 +147,9 @@ void Loop::renderScene() {
 }
 
 void Loop::renderFpsView() {
+
+    markerModule.update(window, fpsCamera);
+    editor.updateInput(fpsCamera, scene.tracks, scene.groundSize);
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
@@ -164,10 +162,6 @@ void Loop::renderFpsView() {
 
     renderScene();
 
-    // render module guis
-
-    car.renderCarPropertiesGui(scene.car, guiModule);
-
     // render marker overlay 
 
     glBindFramebuffer(GL_FRAMEBUFFER, markerFrameBuffer.id);
@@ -175,9 +169,7 @@ void Loop::renderFpsView() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    markerModule.render(window, shaderProgram.id, fpsCamera, guiModule);
-
-    editor.updateInput(fpsCamera, scene.tracks, scene.groundSize);
+    markerModule.render(window, shaderProgram.id, fpsCamera);
     editor.renderMarkers(shaderProgram.id, scene.tracks);
 }
 

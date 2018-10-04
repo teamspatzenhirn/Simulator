@@ -13,6 +13,8 @@ FpsCamera::FpsCamera(float fov, float aspectRatio) : Camera(fov, aspectRatio) {
 
 void FpsCamera::update(GLFWwindow* window, float dt) {
 
+    glm::mat4 view = pose.getInverseMatrix();
+
     glm::vec3 eye = glm::normalize(
         glm::vec3(view[0][2], 0.0f, view[2][2]));
 
@@ -24,22 +26,22 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
     float speed = 0.01f * dt;
 
     if (GLFW_PRESS == getKey(GLFW_KEY_W)) {
-        translation = glm::translate(translation, eye * speed);
+        pose.position -= eye * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_A)) {
-        translation = glm::translate(translation, right * speed);
+        pose.position -= right * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_S)) {
-        translation = glm::translate(translation, eye * -speed);
+        pose.position += eye * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_D)) {
-        translation = glm::translate(translation, right * -speed);
+        pose.position += right * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_SPACE)) {
-        translation = glm::translate(translation, up * -speed);
+        pose.position += up * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_SHIFT)) {
-        translation = glm::translate(translation, up * speed);
+        pose.position -= up * speed;
     }
     
     int rightMouseBtnState = getMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
@@ -62,12 +64,10 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
         prevMouseY = -1.0f;
     }
 
-    glm::mat4 rotateX = glm::rotate(
-        glm::mat4(1.0f), pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 rotateY = glm::rotate(
-        glm::mat4(1.0f), yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    pose.rotation = glm::quat(1, 0, 0, 0);
 
-    glm::mat4 rotation = rotateX * rotateY;
-
-    view = rotation * translation;
+    pose.rotation = glm::rotate(
+        pose.rotation, -yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    pose.rotation = glm::rotate(
+        pose.rotation, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
 }

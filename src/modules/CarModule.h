@@ -6,6 +6,8 @@
 #include "Scene.h"
 #include "imgui/imgui.h"
 #include "helpers/Helpers.h"
+
+#include "modules/GuiModule.h"
 #include "modules/MarkerModule.h"
 
 class CarModule {
@@ -24,8 +26,6 @@ public:
     void update(Scene::Car& car, float deltaTime);
 
     void render(Scene::Car& car, GLuint shaderProgramId, MarkerModule& markerModule);
-
-    void renderCarPropertiesGui(Scene::Car& car, GuiModule& guiModule);
 };
 
 #endif

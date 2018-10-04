@@ -19,6 +19,9 @@ class GuiModule {
 
     GLFWwindow* window;
 
+    bool showPoseWindow = true;
+    bool showCarPropertiesWindow = false;
+
     std::map<std::string, bool*> showMenuItems;
 
     std::string openedPath;
@@ -28,20 +31,22 @@ class GuiModule {
 
     std::string errorMessage;
 
-    void renderRootWindow(Scene& scene);
-
     void renderErrorDialog(std::string& msg);
     void renderOpenFileDialog(Scene& scene, bool show);
     void renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs);
     void renderDirectoryListing();
-
+ 
 public:
 
     GuiModule(GLFWwindow* window);
     ~GuiModule();
 
+    void renderRootWindow(Scene& scene);
+    void renderPoseWindow(Pose* pose);
+    void renderCarPropertiesWindow(Scene::Car& car);
+
     void begin();
-    void end(Scene& scene);
+    void end();
 
     void addShowMenuItem(std::string title, bool* show);
 };

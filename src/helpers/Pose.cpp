@@ -135,3 +135,26 @@ glm::mat4 Pose::getMatrix() {
 
     return matrix;
 }
+
+glm::mat4 Pose::getInverseMatrix() {
+
+    glm::mat4 matrix(1.0f);
+
+    matrix = glm::scale(matrix, 1.0f / scale);
+    matrix *= glm::mat4_cast(inverse(rotation));
+    matrix = glm::translate(matrix, -position);
+
+    return matrix;
+}
+
+Pose Pose::transform(Pose other) {
+
+    glm::mat4 mat = other.getMatrix();        
+
+    Pose pose;
+    pose.position = glm::vec3(mat * glm::vec4(position, 1.0f));
+    pose.rotation = other.rotation * rotation;
+    pose.scale = other.scale * scale;
+
+    return pose;
+}

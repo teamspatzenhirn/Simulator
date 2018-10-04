@@ -54,9 +54,9 @@ void GuiModule::renderRootWindow(Scene& scene) {
         }
 
         if (ImGui::BeginMenu("Show")) {
-            for (const auto & i : showMenuItems) {
-                ImGui::MenuItem(i.first.c_str(), NULL, i.second);
-            }
+
+            ImGui::MenuItem("Car Properties", NULL, &showCarPropertiesWindow);
+
             ImGui::EndMenu();
         }
 
@@ -66,9 +66,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
     renderOpenFileDialog(scene, showOpenFileDialog);
     renderSaveFileDialog(scene, showSaveFileDialog, showSaveAsFileDialog);
 
-    //renderErrorDialog();
-
-    ImGui::Text("Carolo Simulator v0.2");
+    ImGui::Text("Carolo Simulator v0.3");
 
     std::string msg = "Config: ";
     if (openedFilename.empty()) { 
@@ -76,13 +74,53 @@ void GuiModule::renderRootWindow(Scene& scene) {
     } else {
         msg += openedFilename;
     }
-    ImGui::Text(msg.c_str());
+    ImGui::Text("%s", msg.c_str());
+
+    ImGui::Separator();
+
+    ImGui::Text("Use w a s d to move");
+    ImGui::Text("Right click and drag to move the camera");
+    ImGui::Text("Press c to toggle car camera");
+
+    ImGui::Separator();
+
+    ImGui::Text("Click anywhere on the floor to build a track");
+    ImGui::Text("Press 1 to build straight tracks");
+    ImGui::Text("Press 2 to build curves");
+    ImGui::Text("Double click to exit track building");
+
+    ImGui::Separator();
+
+    ImGui::Text("Click on a green marker to select it");
+    ImGui::Text("Click again to cycle tranformation modes");
+    ImGui::Text("Press ESC or click anywhere to deselect");
 
     ImGui::End();
         
     showMenuItems.clear();
 
     //ImGui::ShowDemoWindow(NULL);
+}
+
+void GuiModule::renderPoseWindow(Pose* selectedPose) {
+
+    ImGui::Begin("Pose", &showPoseWindow);
+
+    if (nullptr != selectedPose) {
+
+        ImGui::InputFloat3("position",
+                glm::value_ptr(selectedPose->position));
+
+        ImGui::InputFloat3("scale", glm::value_ptr(selectedPose->scale));
+        
+        glm::vec3 eulerAngles = selectedPose->getEulerAngles();
+
+        if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+            selectedPose->setEulerAngles(eulerAngles);
+        }
+    }
+
+    ImGui::End();
 }
 
 void GuiModule::renderErrorDialog(std::string& msg) {
@@ -93,7 +131,7 @@ void GuiModule::renderErrorDialog(std::string& msg) {
 
     if (ImGui::BeginPopupModal("Error", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
 
-        ImGui::Text(msg.c_str());
+        ImGui::Text("%s", msg.c_str());
 
         if (ImGui::Button("OK", ImVec2(120, 0))) {
             msg = "";
@@ -101,6 +139,89 @@ void GuiModule::renderErrorDialog(std::string& msg) {
         }
 
         ImGui::EndPopup();
+    }
+}
+
+void GuiModule::renderCarPropertiesWindow(Scene::Car& car) {
+        
+    if (showCarPropertiesWindow) {
+
+        ImGui::Begin("Car Properties", &showCarPropertiesWindow); 
+
+        if (ImGui::TreeNode("Pose")) { 
+
+            ImGui::InputFloat3("position", (float*)&car.modelPose);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("System Parameters")) {
+
+            ImGui::InputDouble("axesDistance", &car.systemParams.axesDistance);
+            ImGui::InputDouble("axesMomentRatio", &car.systemParams.axesMomentRatio);
+            ImGui::InputDouble("inertia", &car.systemParams.inertia);
+            ImGui::InputDouble("mass", &car.systemParams.mass);
+            ImGui::InputDouble("distCogToFrontAxle", &car.systemParams.distCogToFrontAxle);
+            ImGui::InputDouble("distCogToRearAxle", &car.systemParams.distCogToRearAxle);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Limits")) {
+
+            ImGui::InputDouble("max F", &car.limits.max_F);
+            ImGui::InputDouble("max delta", &car.limits.max_delta);
+            ImGui::InputDouble("max d delta", &car.limits.max_d_delta);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Vesc")) {
+
+            ImGui::InputDouble("velocity", &car.vesc.velocity);
+            ImGui::InputDouble("steeringAngle", &car.vesc.steeringAngle);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Wheels")) {
+
+            ImGui::Checkbox("use pacejka model", &car.wheels.usePacejkaModel);
+
+            ImGui::InputDouble("B_front", &car.wheels.B_front);
+            ImGui::InputDouble("B_rear", &car.wheels.B_rear);
+            ImGui::InputDouble("C_front", &car.wheels.C_front);
+            ImGui::InputDouble("C_rear", &car.wheels.C_rear);
+            ImGui::InputDouble("D_front", &car.wheels.D_front);
+            ImGui::InputDouble("D_rear", &car.wheels.D_rear);
+            ImGui::InputDouble("k_front", &car.wheels.k_front);
+            ImGui::InputDouble("k_rear", &car.wheels.k_rear);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Main Camera")) {
+
+            ImGui::InputFloat3("position", (float*)&car.mainCamera.pose.position);
+
+            glm::vec3 eulerAngles = car.mainCamera.pose.getEulerAngles();
+
+            if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                car.mainCamera.pose.setEulerAngles(eulerAngles);
+            }
+
+            ImGui::InputInt("image width", (int*)&car.mainCamera.imageWidth);
+            ImGui::InputInt("image height", (int*)&car.mainCamera.imageHeight);
+            ImGui::InputFloat("fov", &car.mainCamera.fovy);
+            ImGui::InputFloat3("radial distortion",
+                    car.mainCamera.distortionCoefficients.radial);
+            ImGui::InputFloat3("tangential distortion",
+                    car.mainCamera.distortionCoefficients.radial);
+
+            ImGui::TreePop();
+        }
+
+        ImGui::End(); 
     }
 }
 
@@ -311,9 +432,7 @@ void GuiModule::begin() {
     ImGui::NewFrame();
 }
 
-void GuiModule::end(Scene& scene) {
-
-    renderRootWindow(scene);
+void GuiModule::end() {
 
     ImGui::Render();
 

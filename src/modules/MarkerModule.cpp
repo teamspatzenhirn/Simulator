@@ -3,39 +3,9 @@
 MarkerModule::MarkerModule() { 
 
     markerModel = std::make_shared<Model>("models/marker.obj");
-    markerModel->upload();
-
     arrowModel = std::make_shared<Model>("models/arrow.obj");
-    arrowModel->upload();
-
     scaleArrowModel = std::make_shared<Model>("models/scale_arrow.obj");
-    scaleArrowModel->upload();
-
     ringModel = std::make_shared<Model>("models/ring.obj");
-    ringModel->upload();
-}
-
-void MarkerModule::renderGui(GuiModule& guiModule) {
-
-    guiModule.addShowMenuItem("Pose", &gui.show);
-
-    if (gui.show) {
-
-        ImGui::Begin("Pose", &gui.show);
-
-        ImGui::InputFloat3("position",
-                glm::value_ptr(selectedModelPose->position));
-
-        ImGui::InputFloat3("scale", glm::value_ptr(selectedModelPose->scale));
-        
-        glm::vec3 eulerAngles = selectedModelPose->getEulerAngles();
-
-        if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-            selectedModelPose->setEulerAngles(eulerAngles);
-        }
-
-        ImGui::End();
-    }
 }
 
 float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition) {
@@ -45,10 +15,13 @@ float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition
 
 bool MarkerModule::hasSelection() {
 
-    auto it = std::find(
-            modelPoses.begin(), modelPoses.end(), selectedModelPose);
-
-    return it != modelPoses.end();
+    if (selectedModelPose == nullptr) {
+        return false;
+    } else {
+        auto it = std::find(
+                modelPoses.begin(), modelPoses.end(), selectedModelPose);
+        return it != modelPoses.end();
+    }
 }
 
 void MarkerModule::updateMouseState(GLFWwindow* window, Camera& camera) {
@@ -85,10 +58,12 @@ void MarkerModule::updateSelectionState(Camera& camera) {
         return;
     }
 
-    glm::vec3 eyeVector = glm::normalize(glm::vec3(
-            camera.view[0][2], camera.view[1][2], camera.view[2][2]));
+    glm::mat4 view = camera.pose.getInverseMatrix();
 
-    glm::vec3 cameraPosition = camera.getPosition();
+    glm::vec3 eyeVector = glm::normalize(glm::vec3(
+            view[0][2], view[1][2], view[2][2]));
+
+    glm::vec3 cameraPosition = camera.pose.position;
 
     for (Pose* pose : modelPoses) {
 
@@ -117,7 +92,7 @@ void MarkerModule::updateModifiers(Camera& camera) {
         return;
     }
 
-    glm::vec3 cameraPosition = camera.getPosition();
+    glm::vec3 cameraPosition = camera.pose.position;
 
     if (mouse.click) {
         mod.dragStartModelPosition = selectedModelPose->position;
@@ -373,33 +348,50 @@ void MarkerModule::add(Pose& pose) {
     }
 }
 
-void MarkerModule::render(
-        GLFWwindow* window,
-        GLuint shaderProgramId,
-        Camera& camera,
-        GuiModule& guiModule) {
+Pose* MarkerModule::getSelection() {
+    
+    return selectedModelPose;
+}
 
-    GLuint lightingLocation =
-        glGetUniformLocation(shaderProgramId, "lighting");
-    glUniform1i(lightingLocation, false);
-
-    glm::vec3 cameraPosition = camera.getPosition();
+void MarkerModule::update(GLFWwindow* window, Camera& camera) {
 
     updateMouseState(window, camera);
     updateSelectionState(camera);
 
     if (hasSelection()) {
-        renderGui(guiModule);
-        renderModifiers(shaderProgramId, cameraPosition);
         updateModifiers(camera);
+    } else {
+        selectedModelPose = nullptr;
+    }
+
+    for (KeyEvent& e : getKeyEvents()) {
+        if (GLFW_KEY_ESCAPE == e.key && GLFW_PRESS == e.action) {
+            selectedModelPose = nullptr;
+        }
     }
 
     if (!mouse.handled) {
-        selectedModelPose = 0;
+        selectedModelPose = nullptr;
     } else {
         clearMouseInput();
     }
-    
+}
+
+void MarkerModule::render(
+        GLFWwindow* window,
+        GLuint shaderProgramId,
+        Camera& camera) {
+
+    GLuint lightingLocation =
+        glGetUniformLocation(shaderProgramId, "lighting");
+    glUniform1i(lightingLocation, false);
+
+    glm::vec3 cameraPosition = camera.pose.position;
+
+    if (hasSelection()) {
+        renderModifiers(shaderProgramId, cameraPosition);
+    } 
+
     renderMarkers(shaderProgramId, cameraPosition);
 
     glUniform1i(lightingLocation, true);
@@ -444,7 +436,7 @@ glm::vec3 MarkerModule::intersectionPointInPlaneCoord(
 
 glm::vec3 MarkerModule::mousePosInArrowCoords(Camera& camera, Axis axis) {
 
-    glm::vec3 cameraPosition = camera.getPosition();
+    glm::vec3 cameraPosition = camera.pose.position;
     glm::vec3 normal = cameraPosition - mod.dragStartModelPosition;
     glm::vec3 right;
 
@@ -497,7 +489,7 @@ glm::vec3 MarkerModule::mousePosInRotateCoords(Camera& camera, Axis axis) {
             return glm::vec3(0.0f, 0.0f, 0.0f);
     }
 
-    glm::vec3 cameraPosition = camera.getPosition();
+    glm::vec3 cameraPosition = camera.pose.position;
 
     glm::vec3 localPoint = intersectionPointInPlaneCoord(
             mouse.clickRay,

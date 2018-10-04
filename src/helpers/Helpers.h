@@ -9,6 +9,7 @@
 #include "PointLight.h"
 #include "Pose.h"
 #include "Timer.h"
+#include "Id.h"
 #include "Input.h"
 #include "ScreenQuad.h"
 #include "Shader.h"

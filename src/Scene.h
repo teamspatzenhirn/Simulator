@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <memory>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -74,8 +75,11 @@ struct Scene {
     /*
      * This is the actual version of the scene object.
      */
-    unsigned int version = 0;
+    unsigned int version = VERSION;
 
+    /*
+     * This struct contains the state of the simulated model car
+     */
     struct Car {
 
         Pose modelPose{0.0, 0.0, 0.0};
@@ -217,6 +221,12 @@ struct Scene {
         bool controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const;
 
     } tracks;
+
+    struct Obstacle {
+
+        Pose pose;
+    };
+    std::vector<std::shared_ptr<Obstacle>> obstacles;
 
     Scene();
     ~Scene();

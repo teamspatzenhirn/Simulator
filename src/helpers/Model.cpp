@@ -58,6 +58,7 @@ Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
     }
 
     upload();
+    updateBoundingBox();
 }
 
 Model::~Model() {
