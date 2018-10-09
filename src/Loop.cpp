@@ -10,18 +10,9 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , markerFrameBuffer{windowWidth, windowHeight}
     , screenQuad{windowWidth, windowHeight, "shaders/ScreenQuadFragment.glsl"}
     , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"}
-    , guiModule{window}
-    , tx(SimulatorSHM::SERVER, 428769) {
+    , guiModule{window} {
 
     fpsCamera.pose = glm::vec3(0.0f, 1.0f, -4.0f);
-
-    if(!tx.attach()) {
-        tx.destroy();
-        if(!tx.attach()) {
-            std::cout << "Shared memory init failed!" << std::endl;
-            std::exit(-1);
-        }
-    }
 }
 
 void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -59,6 +50,9 @@ void Loop::loop() {
         for(KeyEvent& e : getKeyEvents()) {
             if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
                 fpsCameraActive = !fpsCameraActive;
+            }
+            if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
+                scene.paused = !scene.paused;
             }
         }
 
@@ -120,9 +114,14 @@ void Loop::loop() {
             });
         }
 
+        commModule.transmitMainCamera(scene.car, car.frameBuffer.id);
+        commModule.transmitCar(scene.car);
+        commModule.receiveVesc(scene.car.vesc);
+
         guiModule.renderRootWindow(scene);
         guiModule.renderCarPropertiesWindow(scene.car);
         guiModule.renderPoseWindow(markerModule.getSelection());
+        guiModule.renderHelpWindow();
         guiModule.end();
 
         glfwSwapBuffers(window);
@@ -133,7 +132,7 @@ void Loop::update(double deltaTime) {
 
     fpsCamera.update(window, deltaTime);
 
-    car.update(scene.car, deltaTime);
+    car.update(scene.car, scene.paused, deltaTime);
 }
 
 void Loop::renderScene() {
@@ -150,6 +149,13 @@ void Loop::renderFpsView() {
 
     markerModule.update(window, fpsCamera);
     editor.updateInput(fpsCamera, scene.tracks, scene.groundSize);
+
+    /*
+     * TODO: update also fps camera position!
+     */
+
+    Scene preRenderScene = scene;
+    update(timer.accumulator);
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
@@ -171,9 +177,14 @@ void Loop::renderFpsView() {
 
     markerModule.render(window, shaderProgram.id, fpsCamera);
     editor.renderMarkers(shaderProgram.id, scene.tracks);
+
+    scene = preRenderScene;
 }
 
 void Loop::renderCarView() {
+
+    Scene preRenderScene = scene;
+    update(timer.accumulator);
 
     glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
 
@@ -188,19 +199,5 @@ void Loop::renderCarView() {
 
     renderScene();
 
-    // download image from opengl to shared memory buffer
-
-    ImageObject* obj = tx.lock(SimulatorSHM::WRITE_NO_OVERWRITE); 
-
-    if (obj != NULL) {
-        capture.capture(obj->buffer,
-                scene.car.mainCamera.imageWidth,
-                scene.car.mainCamera.imageHeight,
-                GL_COLOR_ATTACHMENT0);
-        obj->imageWidth = scene.car.mainCamera.imageWidth;
-        obj->imageHeight = scene.car.mainCamera.imageHeight;
-        tx.unlock(obj);
-    } else {
-        //std::cout << "ADTF down!" << std::endl;
-    }
+    scene = preRenderScene;
 }

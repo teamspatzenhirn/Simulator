@@ -15,6 +15,8 @@ int main () {
         std::exit(-1);
     }
 
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
     GLFWwindow* window = glfwCreateWindow(
         windowWidth, windowHeight, "Spatz Simulator", nullptr, nullptr);
 
@@ -30,6 +32,8 @@ int main () {
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_MULTISAMPLE);
+
     glDepthFunc(GL_LEQUAL);
 
     glfwSwapInterval(1);

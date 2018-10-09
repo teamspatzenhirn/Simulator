@@ -21,8 +21,7 @@ class GuiModule {
 
     bool showPoseWindow = true;
     bool showCarPropertiesWindow = false;
-
-    std::map<std::string, bool*> showMenuItems;
+    bool showHelpWindow = false;
 
     std::string openedPath;
     std::string openedFilename;
@@ -44,11 +43,10 @@ public:
     void renderRootWindow(Scene& scene);
     void renderPoseWindow(Pose* pose);
     void renderCarPropertiesWindow(Scene::Car& car);
+    void renderHelpWindow();
 
     void begin();
     void end();
-
-    void addShowMenuItem(std::string title, bool* show);
 };
 
 #endif

@@ -73,9 +73,14 @@ struct Scene {
      * This is the actual version of the scene object.
      */
     unsigned int version = VERSION;
+    
+    /*
+     * If set the simulation will be paused.
+     */
+    bool paused = false;
 
     /*
-     * This struct contains the state of the simulated model car
+     * This struct contains the state of the simulated model car.
      */
     struct Car {
 
@@ -84,7 +89,7 @@ struct Scene {
         glm::vec3 velocity{0, 0, 0};
         glm::vec3 acceleration{0, 0, 0};
 
-        double steerAngle = 0;
+        double steeringAngle = 0;
 
         double alphaFront = 0;
         double alphaRear = 0;

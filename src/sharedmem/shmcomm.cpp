@@ -31,18 +31,18 @@ bool SHMCommPrivate::_attach()
     shmsize = align(sizeof(Buffer)) + align(buffersize);
     shmsize *= NBUFFERS;
     if(role == SERVER){
-        cout << "Creating SHM of "<<shmsize<<" bytes"<<endl;
+        //cout << "Creating SHM of "<<shmsize<<" bytes"<<endl;
         shmId = shmget(key, shmsize, IPC_CREAT | IPC_EXCL | 0666);
     }else{
         shmId = shmget(key, shmsize, 0666);
     }
     if(shmId < 0){
-        cerr << "shmget failed miserably: "<<strerror(errno)<<endl;
+        //cerr << "shmget failed miserably: "<<strerror(errno)<<endl;
         return false;
     }
     shmPtr = shmat(shmId, nullptr, 0);
     if(shmPtr == (void*)-1){
-        cerr << "shmat failed miserably: "<<strerror(errno)<<endl;
+        //cerr << "shmat failed miserably: "<<strerror(errno)<<endl;
         return false;
     }
 
@@ -139,6 +139,11 @@ void SHMCommPrivate::_unlock(void *buffer)
     else bp->state = DATA;
 
     return;
+}
+
+bool SHMCommPrivate::_ok() {
+
+    return shmget(key, shmsize, 0666) >= 0 && shmPtr != nullptr;
 }
 
 SHMCommPrivate::~SHMCommPrivate()

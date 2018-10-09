@@ -56,6 +56,8 @@ void GuiModule::renderRootWindow(Scene& scene) {
         if (ImGui::BeginMenu("Show")) {
 
             ImGui::MenuItem("Car Properties", NULL, &showCarPropertiesWindow);
+            ImGui::MenuItem("Pose", NULL, &showPoseWindow);
+            ImGui::MenuItem("Help", NULL, &showHelpWindow);
 
             ImGui::EndMenu();
         }
@@ -76,51 +78,37 @@ void GuiModule::renderRootWindow(Scene& scene) {
     }
     ImGui::Text("%s", msg.c_str());
 
-    ImGui::Separator();
-
-    ImGui::Text("Use w a s d to move");
-    ImGui::Text("Right click and drag to move the camera");
-    ImGui::Text("Press c to toggle car camera");
-
-    ImGui::Separator();
-
-    ImGui::Text("Click anywhere on the floor to build a track");
-    ImGui::Text("Press 1 to build straight tracks");
-    ImGui::Text("Press 2 to build curves");
-    ImGui::Text("Double click to exit track building");
-
-    ImGui::Separator();
-
-    ImGui::Text("Click on a green marker to select it");
-    ImGui::Text("Click again to cycle tranformation modes");
-    ImGui::Text("Press ESC or click anywhere to deselect");
+    if (scene.paused) {
+        ImGui::Text("PAUSED");
+    }
 
     ImGui::End();
-        
-    showMenuItems.clear();
 
     //ImGui::ShowDemoWindow(NULL);
 }
 
 void GuiModule::renderPoseWindow(Pose* selectedPose) {
 
-    ImGui::Begin("Pose", &showPoseWindow);
+    if (showPoseWindow) {
 
-    if (nullptr != selectedPose) {
+        ImGui::Begin("Pose", &showPoseWindow);
 
-        ImGui::InputFloat3("position",
-                glm::value_ptr(selectedPose->position));
+        if (nullptr != selectedPose) {
 
-        ImGui::InputFloat3("scale", glm::value_ptr(selectedPose->scale));
-        
-        glm::vec3 eulerAngles = selectedPose->getEulerAngles();
+            ImGui::InputFloat3("position",
+                    glm::value_ptr(selectedPose->position));
 
-        if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-            selectedPose->setEulerAngles(eulerAngles);
+            ImGui::InputFloat3("scale", glm::value_ptr(selectedPose->scale));
+            
+            glm::vec3 eulerAngles = selectedPose->getEulerAngles();
+
+            if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                selectedPose->setEulerAngles(eulerAngles);
+            }
         }
-    }
 
-    ImGui::End();
+        ImGui::End();
+    }
 }
 
 void GuiModule::renderErrorDialog(std::string& msg) {
@@ -222,6 +210,34 @@ void GuiModule::renderCarPropertiesWindow(Scene::Car& car) {
         }
 
         ImGui::End(); 
+    }
+}
+
+void GuiModule::renderHelpWindow() {
+
+    if (showHelpWindow) { 
+
+        ImGui::Begin("Help", &showHelpWindow);
+
+        ImGui::Text("Use w a s d to move");
+        ImGui::Text("Right click and drag to move the camera");
+        ImGui::Text("Press c to toggle car camera");
+        ImGui::Text("Press p to pause the simulation");
+
+        ImGui::Separator();
+
+        ImGui::Text("Click anywhere on the floor to build a track");
+        ImGui::Text("Press 1 to build straight tracks");
+        ImGui::Text("Press 2 to build curves");
+        ImGui::Text("Double click to exit track building");
+
+        ImGui::Separator();
+
+        ImGui::Text("Click on a green marker to select it");
+        ImGui::Text("Click again to cycle tranformation modes");
+        ImGui::Text("Press ESC or click anywhere to deselect");
+
+        ImGui::End();
     }
 }
 
@@ -445,9 +461,4 @@ void GuiModule::end() {
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
     glfwMakeContextCurrent(window);
-}
-
-void GuiModule::addShowMenuItem(std::string title, bool* show) {
-
-    showMenuItems[title] = show;
 }

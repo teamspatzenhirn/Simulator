@@ -23,7 +23,7 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    float speed = 0.01f * dt;
+    float speed = 0.002f * dt;
 
     if (GLFW_PRESS == getKey(GLFW_KEY_W)) {
         pose.position -= eye * speed;

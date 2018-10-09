@@ -8,19 +8,11 @@
 #include "helpers/Helpers.h" 
 #include "modules/MarkerModule.h"
 #include "modules/CarModule.h"
+#include "modules/CommModule.h"
 #include "modules/GuiModule.h"
 #include "modules/Editor.h"
-#include "sharedmem/shmcomm.h"
 
 class Loop {
-
-    static constexpr int sharedMemId = 428769;
-
-public:
-
-    static std::shared_ptr<Loop> instance;
-
-private:
 
     GLFWwindow* window;
 
@@ -43,6 +35,7 @@ private:
     ScreenQuad screenQuad;
     ScreenQuad screenQuadCar;
 
+    CommModule commModule;
     MarkerModule markerModule;
     GuiModule guiModule;
 
@@ -54,22 +47,13 @@ private:
 
     CarModule car;
 
-    Capture capture;
-
-    struct ImageObject {
-        // assuming 2064x1544 RGB as the maximum possible image size
-        unsigned char buffer[9560448];
-        int imageWidth;
-        int imageHeight;
-    };
-
-    SimulatorSHM::SHMComm<ImageObject> tx; 
-
 public:
 
-    Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight);
+    static std::shared_ptr<Loop> instance;
 
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+
+    Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight);
 
     void loop();
 

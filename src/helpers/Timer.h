@@ -9,10 +9,11 @@
 
 class Timer {
 
-    std::chrono::system_clock::time_point currentTime;
-    double accumulator;
+    std::chrono::steady_clock::time_point currentTime;
 
 public:
+
+    double accumulator;
 
     Timer();
 

@@ -19,11 +19,9 @@ public:
     Camera mainCamera;
     FrameBuffer frameBuffer{1, 1};
 
-    bool showMenu = false;
-
     CarModule();
 
-    void update(Scene::Car& car, float deltaTime);
+    void update(Scene::Car& car, bool paused, float deltaTime);
 
     void render(Scene::Car& car, GLuint shaderProgramId, MarkerModule& markerModule);
 };

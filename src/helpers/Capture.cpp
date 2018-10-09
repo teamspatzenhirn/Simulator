@@ -43,25 +43,8 @@ bool Capture::capture(GLubyte* buffer, GLuint width, GLuint height, GLenum mode)
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[nextIndex]);
     GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
-    // TODO: move this in the camera module 
-    // this is not actually the purpose of the capture helper
-
     if (ptr) {
-        const unsigned char * source = ptr;
-        unsigned char * dest = buffer;
-        int row;
-        for(int y = 0; y < height; y++){
-            row = y*width;
-            for(int x = 0; x < width; x++){
-                dest[row+x] = source[((row+x)*3)+x%2]; // BGBGBGBG...
-            }
-            y++;
-            row = y*width;
-            for(int x = 0; x < width; x++){
-                dest[row+x] = source[((row+x)*3)+1+x%2]; // GRGRGRGRGR...
-            }
-        }
-
+        memcpy(buffer, ptr, dataSize);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
 
