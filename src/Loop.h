@@ -11,6 +11,7 @@
 #include "modules/CommModule.h"
 #include "modules/GuiModule.h"
 #include "modules/Editor.h"
+#include "modules/ItemsModule.h"
 
 class Loop {
 
@@ -38,6 +39,7 @@ class Loop {
     CommModule commModule;
     MarkerModule markerModule;
     GuiModule guiModule;
+    ItemsModule itemsModule;
 
     PointLight light{10.0f, 10.0f, 20.0f};
 

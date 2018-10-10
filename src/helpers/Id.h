@@ -8,7 +8,6 @@
  * unique ID to any class/struct. This provides a better identification
  * mechanism for objects then using e.g. memory addresses. 
  */
-
 template<typename T> class Id : public T {
 
     /*
@@ -26,10 +25,10 @@ public:
     using T::T;
 
     /*
-     * This is intentionally made const and not private with a
-     * getter. This way the id can still be changed in edge cases.
+     * This is intentionally made not private.
+     * This way the id can still be changed in edge cases.
      */
-    const uint64_t id = LAST_ID++;
+    uint64_t id = LAST_ID++;
 };
 
 template<typename T>

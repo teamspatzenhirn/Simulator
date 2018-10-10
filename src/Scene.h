@@ -236,9 +236,9 @@ public:
 
     struct Obstacle {
 
-        Pose pose;
+        Id<Pose> pose;
     };
-    std::vector<std::shared_ptr<Obstacle>> obstacles;
+    std::vector<Obstacle> obstacles;
 
     Scene();
     ~Scene();
