@@ -17,6 +17,7 @@ SHMCommPrivate::SHMCommPrivate(Role role, int key, size_t bufsize)
     this->shmId = -1;
     this->shmPtr = nullptr;
     this->gWriteId = 0;
+    this->initialized = false;
 }
 
 size_t align(size_t sz){
@@ -26,8 +27,6 @@ size_t align(size_t sz){
 
 bool SHMCommPrivate::_attach()
 {
-
-
     shmsize = align(sizeof(Buffer)) + align(buffersize);
     shmsize *= NBUFFERS;
     if(role == SERVER){
@@ -38,24 +37,30 @@ bool SHMCommPrivate::_attach()
     }
     if(shmId < 0){
         //cerr << "shmget failed miserably: "<<strerror(errno)<<endl;
+        initialized = false;
         return false;
     }
     shmPtr = shmat(shmId, nullptr, 0);
     if(shmPtr == (void*)-1){
         //cerr << "shmat failed miserably: "<<strerror(errno)<<endl;
+        initialized = false;
         return false;
     }
 
-    char * cptr = (char*)shmPtr;
-    size_t offset = 0;
-    for(int i = 0; i < NBUFFERS; i++){
-        buffers[i] = (Buffer*)(cptr+offset);
-        offset += align(sizeof(Buffer));
-        buffers[i]->bufferSize = buffersize;
-        buffers[i]->state = FREE;
-        buffers[i]->writeId = 0;
-        offset += align(sizeof(buffersize));
+    if (!initialized) {
+        char * cptr = (char*)shmPtr;
+        size_t offset = 0;
+        for(int i = 0; i < NBUFFERS; i++){
+            buffers[i] = (Buffer*)(cptr+offset);
+            offset += align(sizeof(Buffer));
+            buffers[i]->bufferSize = buffersize;
+            buffers[i]->state = FREE;
+            buffers[i]->writeId = 0;
+            offset += align(sizeof(buffersize));
+        }
     }
+    
+    initialized = true;
     return true;
 }
 
@@ -139,11 +144,6 @@ void SHMCommPrivate::_unlock(void *buffer)
     else bp->state = DATA;
 
     return;
-}
-
-bool SHMCommPrivate::_ok() {
-
-    return shmget(key, shmsize, 0666) >= 0 && shmPtr != nullptr;
 }
 
 SHMCommPrivate::~SHMCommPrivate()

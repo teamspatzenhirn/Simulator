@@ -114,13 +114,7 @@ void CommModule::transmitCar(Scene::Car& car) {
 
 void CommModule::receiveVesc(Scene::Car::Vesc& vesc) {
 
-    if (!rxVesc.ok()) {
-        rxVesc = SimulatorSHM::SHMComm<Vesc>(SimulatorSHM::CLIENT, vescMemId);
-        rxVesc.attach();
-        //std::cout << std::strerror(errno) << std::endl;
-    }
-
-    if (rxVesc.ok()) {
+    if (rxVesc.attach()) {
 
         Vesc* obj = rxVesc.lock(SimulatorSHM::READ_OLDEST);
 

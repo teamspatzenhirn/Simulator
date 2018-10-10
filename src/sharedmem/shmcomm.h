@@ -38,13 +38,11 @@ public:
     bool _attach();
     void *_lock(LockMode mode);
     void _unlock(void * buffer);
-    bool _ok();
 
     ~SHMCommPrivate();
 private:
 
-
-
+    bool initialized;
     void * shmPtr;
     int shmId;
     int key;
@@ -78,9 +76,6 @@ public:
     }
     void unlock(DataType * buffer){
         p._unlock(buffer);
-    }
-    bool ok(){
-        return p._ok();
     }
 private:
 
