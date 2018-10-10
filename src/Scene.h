@@ -217,11 +217,11 @@ struct Scene {
         float centerLineLength = 0.2f;
         float centerLineInterrupt = 0.2f;
 
-    private:
+private:
 
         std::vector<std::shared_ptr<ControlPoint>> tracks;
 
-    public:
+public:
 
         const std::vector<std::shared_ptr<ControlPoint>>& getTracks() const;
 
@@ -229,6 +229,8 @@ struct Scene {
         std::shared_ptr<TrackArc> addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc);
 
         bool controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const;
+
+        void removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint);
 
     } tracks;
 

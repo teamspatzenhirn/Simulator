@@ -144,6 +144,14 @@ void Editor::onKey(int key, int action, const Scene::Tracks& tracks) {
     if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
         setTrackMode(Editor::TrackMode::Arc, tracks);
     }
+
+    if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS
+            || key == GLFW_KEY_DELETE && action == GLFW_PRESS) {
+        if (activeControlPoint != nullptr) {
+            ((Scene::Tracks&)tracks).removeControlPoint(activeControlPoint);
+            activeControlPoint = nullptr;
+        }
+    }
 }
 
 void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windowHeight,
@@ -232,6 +240,46 @@ void Editor::renderScene(GLuint shaderProgramId, const Scene::Tracks& tracks) {
     }
 
     for (std::shared_ptr<TrackBase> const& track : ts) {
+
+        if (trackModels.end() == trackModels.find(track)) {
+
+            // TODO: move model creation to somewhere else!
+
+            if (TrackArc* arc = dynamic_cast<TrackArc*>(track.get())) {
+                std::shared_ptr<Model> model = std::make_shared<Model>();
+                genTrackArcVertices(
+                        arc->start.lock()->coords,
+                        arc->end.lock()->coords,
+                        arc->center,
+                        arc->radius,
+                        arc->rightArc,
+                        tracks,
+                        *model);
+                genTrackMaterial(*model);
+                model->upload();
+                trackModels[track] = model;
+
+                glm::mat4 modelMat = genTrackArcMatrix(arc->center, trackYOffset);
+                trackModelMats[track] = modelMat;
+            } else {
+                std::shared_ptr<Model> model = std::make_shared<Model>();
+                genTrackLineVertices(
+                        track->start.lock()->coords,
+                        track->end.lock()->coords,
+                        tracks,
+                        *model);
+                genTrackMaterial(*model);
+                model->upload();
+
+                trackModels[track] = model;
+                glm::mat4 modelMat = genTrackLineMatrix(
+                        track->start.lock()->coords,
+                        track->end.lock()->coords,
+                        trackYOffset);
+                trackModelMats[track] = modelMat;
+            }
+        }
+
         trackModels[track]->render(shaderProgramId, trackModelMats[track]);
     }
 }

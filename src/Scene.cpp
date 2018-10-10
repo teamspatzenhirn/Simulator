@@ -225,6 +225,111 @@ void from_json(const json& j, Scene::Car& o) {
 }
 
 /*
+ * Tracks
+ */
+
+void to_json(json& j, const Scene::Tracks& t) {
+
+    json jsonControlPoints;
+    json jsonTracks;
+
+    const std::vector<std::shared_ptr<ControlPoint>>& tracks = t.getTracks();
+    std::map<unsigned int, unsigned int> controlPointConnections;
+
+    for (auto& controlPoint : tracks) {
+
+        jsonControlPoints.push_back({{"coords", controlPoint->coords}});
+
+        for (auto& track : controlPoint->tracks) {
+
+            unsigned int start;
+            unsigned int end;
+
+            for (unsigned int i = 0; i < tracks.size(); i++) {
+                if (track->start.lock().get() == tracks.at(i).get()) {
+                    start = i;
+                    break;
+                }
+            }
+            for (unsigned int i = 0; i < tracks.size(); i++) {
+                if (track->end.lock().get() == tracks.at(i).get()) {
+                    end = i;
+                    break;
+                }
+            }
+
+            if (controlPointConnections.end()
+                    != controlPointConnections.find(start)
+                    && controlPointConnections.at(start) == end) {
+                continue;
+            } else {
+                controlPointConnections[start] = end;
+            }
+
+            json jsonTrack;
+
+            jsonTrack["start"] = start;
+            jsonTrack["end"] = end;
+
+            if (TrackArc* arc = dynamic_cast<TrackArc*>(track.get())) {
+                jsonTrack["type"] = "arc";
+                jsonTrack["center"] = arc->center;
+                jsonTrack["radius"] = arc->radius;
+                jsonTrack["rightArc"] = arc->rightArc;
+            } else {
+                jsonTrack["type"] = "line";
+            }
+
+            jsonTracks.push_back(jsonTrack);
+        }
+    }
+
+    j = json({
+            {"trackWidth", t.trackWidth},
+            {"markingWidth", t.markingWidth},
+            {"centerLineLength", t.centerLineLength},
+            {"centerLineInterrupt", t.centerLineInterrupt},
+            {"controlPoints", jsonControlPoints},
+            {"tracks", jsonTracks}
+        });
+}
+
+void from_json(const json& j, Scene::Tracks& t) {
+
+    t.trackWidth = j.at("trackWidth").get<float>();
+    t.markingWidth = j.at("markingWidth").get<float>();
+    t.centerLineLength = j.at("centerLineLength").get<float>();
+    t.centerLineInterrupt = j.at("centerLineInterrupt").get<float>();
+
+    std::vector<std::shared_ptr<ControlPoint>> controlPoints;
+
+    for (const json& jsonControlPoint : j["controlPoints"]) {
+        ControlPoint* controlPoint = new ControlPoint();
+        controlPoint->coords = jsonControlPoint.at("coords").get<glm::vec2>();
+        controlPoints.emplace_back(controlPoint);
+    }
+
+    for (const json& jsonTrack : j["tracks"]) {
+
+        std::shared_ptr<ControlPoint> start =
+            controlPoints.at(jsonTrack.at("start").get<int>());
+        std::shared_ptr<ControlPoint> end =
+            controlPoints.at(jsonTrack.at("end").get<int>());
+
+        std::string type = jsonTrack.at("type").get<std::string>();
+
+        if ("arc" == type) {
+            glm::vec2 center = jsonTrack.at("center").get<glm::vec2>();
+            float radius = jsonTrack.at("radius").get<float>();
+            float rightArc = jsonTrack.at("rightArc").get<bool>();
+            t.addTrackArc(start, end, center, radius, rightArc);
+        } else {
+            t.addTrackLine(start, end);
+        }
+    }
+}
+
+/*
  * Scene
  */
 
@@ -232,15 +337,20 @@ void to_json(json& j, const Scene& s) {
 
     j = json({
             {"version", s.version},
-            {"car", s.car}
+            {"paused", s.paused},
+            {"car", s.car},
+            {"tracks", s.tracks}
         });
 }
 
 void from_json(const json& j, Scene& s) {
 
     s.version = j.at("version").get<unsigned int>();
+    s.paused = j.at("paused").get<bool>();
     s.car = j.at("car").get<Scene::Car>();
+    s.tracks = j.at("tracks").get<Scene::Tracks>();
 }
+
 
 /*
  * Now that's the actual Scene implementation, fellas!
@@ -353,6 +463,30 @@ bool Scene::Tracks::controlPointExists(const std::shared_ptr<ControlPoint>& cont
     }
 
     return false;
+}
+
+void Scene::Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint) {
+
+    for (std::shared_ptr<ControlPoint>& other : tracks) {
+        other->tracks.erase(
+                std::remove_if(
+                    other->tracks.begin(),
+                    other->tracks.end(),
+                    [&](const std::shared_ptr<TrackBase>& b){
+                        return b->start.lock() == controlPoint
+                            || b->end.lock() == controlPoint;
+                    }),
+                other->tracks.end());
+    }
+
+    tracks.erase(
+            std::remove_if(
+                tracks.begin(),
+                tracks.end(),
+                [&](const std::shared_ptr<ControlPoint>& c){
+                    return c == controlPoint || c->tracks.empty();
+                }),
+            tracks.end());
 }
 
 Scene::Scene() : version{VERSION} {
