@@ -173,6 +173,7 @@ void Loop::renderFpsView() {
 
     markerModule.update(window, scene.fpsCamera);
     editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
+    itemsModule.update(scene.items, markerModule.getSelection());
 
     Scene preRenderScene = scene;
     update(timer.accumulator);

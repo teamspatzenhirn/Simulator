@@ -97,6 +97,7 @@ void from_json(const json& j, Pose& p) {
     p.scale = j.at("scale").get<glm::vec3>();
 }
 
+
 /*
  * Scene::Car::SystemParams
  */
@@ -330,6 +331,34 @@ void from_json(const json& j, Scene::Tracks& t) {
 }
 
 /*
+ * Items
+ */
+
+void to_json(json& j, const std::vector<std::shared_ptr<Scene::Item>>& is) {
+
+    json jsonItems;
+
+    for (const std::shared_ptr<Scene::Item>& i : is) {
+        jsonItems.push_back({
+                {"pose", i->pose},
+                {"type", (int)i->type}
+            });
+    }
+
+    j = jsonItems;
+}
+
+void from_json(const json& j, std::vector<std::shared_ptr<Scene::Item>>& is) {
+
+    for (const json& jsonItem : j) {
+        std::shared_ptr<Scene::Item> i = std::make_shared<Scene::Item>(NONE);
+        i->pose = jsonItem.at("pose").get<Pose>();
+        i->type = (ItemType) jsonItem.at("type").get<int>();
+        is.push_back(i);
+    }
+}
+
+/*
  * Scene
  */
 
@@ -339,7 +368,8 @@ void to_json(json& j, const Scene& s) {
             {"version", s.version},
             {"paused", s.paused},
             {"car", s.car},
-            {"tracks", s.tracks}
+            {"tracks", s.tracks},
+            {"items", s.items}
         });
 }
 
@@ -349,6 +379,7 @@ void from_json(const json& j, Scene& s) {
     s.paused = j.at("paused").get<bool>();
     s.car = j.at("car").get<Scene::Car>();
     s.tracks = j.at("tracks").get<Scene::Tracks>();
+    s.items = j.at("items").get<std::vector<std::shared_ptr<Scene::Item>>>();
 }
 
 

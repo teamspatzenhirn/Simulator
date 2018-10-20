@@ -63,7 +63,26 @@ enum ItemType {
     STOP_LINE,
     GIVE_WAY_LINE,
     CROSSWALK,
+    GROUND_10,
+    GROUND_20,
     GROUND_30,
+    GROUND_40,
+    GROUND_50,
+    GROUND_60,
+    GROUND_70,
+    GROUND_80,
+    GROUND_90,
+    GROUND_10_END,
+    GROUND_20_END,
+    GROUND_30_END,
+    GROUND_40_END,
+    GROUND_50_END,
+    GROUND_60_END,
+    GROUND_70_END,
+    GROUND_80_END,
+    GROUND_90_END,
+    GROUND_ARROW_LEFT,
+    GROUND_ARROW_RIGHT,
 };
 
 /*
@@ -259,6 +278,10 @@ struct Scene {
 
     } tracks;
 
+    /*
+     * An item is everything that is not the car or the track.
+     * E.g. street signs, road markings, obstacles ...
+     */
     struct Item {
 
         ItemType type = NONE;

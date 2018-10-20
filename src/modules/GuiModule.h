@@ -35,6 +35,8 @@ class GuiModule {
     void renderOpenFileDialog(Scene& scene, bool show);
     void renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs);
     void renderDirectoryListing();
+
+    void renderCreateMenu(Scene& scene);
  
 public:
 

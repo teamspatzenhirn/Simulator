@@ -54,24 +54,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
         }
 
         if (ImGui::BeginMenu("Create")) {
-            if (ImGui::MenuItem("Obstacle 10x10cm")) {
-                scene.items.emplace_back(std::make_shared<Scene::Item>(OBSTACLE));
-            }
-            if (ImGui::MenuItem("Start line")) {
-                scene.items.emplace_back(std::make_shared<Scene::Item>(START_LINE));
-            }
-            if (ImGui::MenuItem("Stop line")) {
-                scene.items.emplace_back(std::make_shared<Scene::Item>(STOP_LINE));
-            }
-            if (ImGui::MenuItem("Give-way line")) {
-                scene.items.emplace_back(std::make_shared<Scene::Item>(GIVE_WAY_LINE));
-            }
-            if (ImGui::MenuItem("Crosswalk")) {
-                scene.items.emplace_back(std::make_shared<Scene::Item>(CROSSWALK));
-            }
-            if (ImGui::MenuItem("Ground marking 30")) {
-                scene.items.emplace_back(std::make_shared<Scene::Item>(GROUND_30));
-            }
+            renderCreateMenu(scene);
             ImGui::EndMenu();
         }
 
@@ -110,6 +93,91 @@ void GuiModule::renderRootWindow(Scene& scene) {
     ImGui::End();
 
     ImGui::ShowDemoWindow(NULL);
+}
+
+void GuiModule::renderCreateMenu(Scene& scene) {
+
+    ItemType newType = NONE;
+
+    if (ImGui::MenuItem("Obstacle 10x10cm")) {
+        newType = OBSTACLE;
+    }
+    if (ImGui::MenuItem("Start line")) {
+        newType = START_LINE;
+    }
+    if (ImGui::MenuItem("Stop line")) {
+        newType = STOP_LINE;
+    }
+    if (ImGui::MenuItem("Give-way line")) {
+        newType = GIVE_WAY_LINE;
+    }
+    if (ImGui::MenuItem("Crosswalk")) {
+        newType = CROSSWALK;
+    }
+    if (ImGui::MenuItem("Speed limit 10")) {
+        newType = GROUND_10;
+    }
+    if (ImGui::MenuItem("Speed limit 20")) {
+        newType = GROUND_20;
+    }
+    if (ImGui::MenuItem("Speed limit 30")) {
+        newType = GROUND_30;
+    }
+    if (ImGui::MenuItem("Speed limit 40")) {
+        newType = GROUND_40;
+    }
+    if (ImGui::MenuItem("Speed limit 50")) {
+        newType = GROUND_50;
+    }
+    if (ImGui::MenuItem("Speed limit 60")) {
+        newType = GROUND_60;
+    }
+    if (ImGui::MenuItem("Speed limit 70")) {
+        newType = GROUND_70;
+    }
+    if (ImGui::MenuItem("Speed limit 80")) {
+        newType = GROUND_80;
+    }
+    if (ImGui::MenuItem("Speed limit 90")) {
+        newType = GROUND_90;
+    }
+    if (ImGui::MenuItem("End speed limit 10")) {
+        newType = GROUND_10_END;
+    }
+    if (ImGui::MenuItem("End speed limit 20")) {
+        newType = GROUND_20_END;
+    }
+    if (ImGui::MenuItem("End speed limit 30")) {
+        newType = GROUND_30_END;
+    }
+    if (ImGui::MenuItem("End speed limit 40")) {
+        newType = GROUND_40_END;
+    }
+    if (ImGui::MenuItem("End speed limit 50")) {
+        newType = GROUND_50_END;
+    }
+    if (ImGui::MenuItem("End speed limit 60")) {
+        newType = GROUND_60_END;
+    }
+    if (ImGui::MenuItem("End speed limit 70")) {
+        newType = GROUND_70_END;
+    }
+    if (ImGui::MenuItem("End speed limit 80")) {
+        newType = GROUND_80_END;
+    }
+    if (ImGui::MenuItem("End speed limit 90")) {
+        newType = GROUND_90_END;
+    }
+    if (ImGui::MenuItem("Arrow left")) {
+        newType = GROUND_ARROW_LEFT;
+    }
+    if (ImGui::MenuItem("Arrow right")) {
+        newType = GROUND_ARROW_RIGHT;
+    }
+
+    if (NONE != newType) {
+        scene.items.emplace_back(std::make_shared<Scene::Item>(newType));
+    }
 }
 
 void GuiModule::renderPoseWindow(Pose* selectedPose) {

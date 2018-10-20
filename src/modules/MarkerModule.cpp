@@ -350,12 +350,6 @@ void MarkerModule::add(Pose& pose) {
 
 Pose* MarkerModule::getSelection() {
     
-    auto it = std::find(modelPoses.begin(), modelPoses.end(), selectedModelPose);
-
-    if (it == modelPoses.end()) {
-        return nullptr;
-    }
-
     return selectedModelPose;
 }
 
