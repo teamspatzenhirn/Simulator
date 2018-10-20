@@ -44,6 +44,8 @@ class CommModule {
 
         double alphaFront;
         double alphaRear;
+
+        uint64_t time;
     };
 
     struct Vesc {
@@ -51,6 +53,8 @@ class CommModule {
         double velocity;
         double steeringAngle;
     };
+
+    int vescFailCounter = 0;
 
     Capture mainCameraCapture;
     GLubyte* mainCameraIntermediateBuffer;
@@ -69,7 +73,7 @@ public:
     ~CommModule();
 
     void transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebufferId);
-    void transmitCar(Scene::Car& car);
+    void transmitCar(Scene::Car& car, uint64_t time);
     void receiveVesc(Scene::Car::Vesc& car);
 };
 

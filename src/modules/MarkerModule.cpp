@@ -350,6 +350,12 @@ void MarkerModule::add(Pose& pose) {
 
 Pose* MarkerModule::getSelection() {
     
+    auto it = std::find(modelPoses.begin(), modelPoses.end(), selectedModelPose);
+
+    if (it == modelPoses.end()) {
+        return nullptr;
+    }
+
     return selectedModelPose;
 }
 
@@ -375,6 +381,8 @@ void MarkerModule::update(GLFWwindow* window, Camera& camera) {
     } else {
         clearMouseInput();
     }
+
+    modelPoses.clear();
 }
 
 void MarkerModule::render(
@@ -395,8 +403,6 @@ void MarkerModule::render(
     renderMarkers(shaderProgramId, cameraPosition);
 
     glUniform1i(lightingLocation, true);
-
-    modelPoses.clear();
 }
 
 glm::vec3 MarkerModule::intersectLineWithPlane(

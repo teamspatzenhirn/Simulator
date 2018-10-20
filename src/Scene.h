@@ -52,6 +52,21 @@ struct TrackArc : TrackBase {
 };
 
 /*
+ * For easier access (less typing, that is) the enum
+ * is placed here and not in Scene.
+ */
+enum ItemType {
+
+    NONE,
+    OBSTACLE,
+    START_LINE,
+    STOP_LINE,
+    GIVE_WAY_LINE,
+    CROSSWALK,
+    GROUND_30,
+};
+
+/*
  * In order to make simulation state propagration and retention
  * as simple as possible the complete simulation state should be
  * encapsulated in this Scene object.
@@ -80,11 +95,21 @@ struct Scene {
     bool paused = false;
 
     /*
+     * The current time of the simulation in milliseconds.
+     */
+    uint64_t simulationTime = 0;
+
+    /*
+     * This is free camera that is used in the editor.
+     */
+    FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
+
+    /*
      * This struct contains the state of the simulated model car.
      */
     struct Car {
 
-        Pose modelPose{0.0, 0.0, 0.0};
+        Id<Pose> modelPose{0.0, 0.0, 0.0};
 
         glm::vec3 velocity{0, 0, 0};
         glm::vec3 acceleration{0, 0, 0};
@@ -182,7 +207,7 @@ struct Scene {
             Pose pose{0, 0.260, 0.110};
 
             MainCamera() {
-                pose.setEulerAngles(glm::vec3(-10.0f, 180.0f, 0.0f));
+                pose.setEulerAngles(glm::vec3(-12.0f, 180.0f, 0.0f));
             }
 
             unsigned int imageWidth = 2064;
@@ -217,11 +242,11 @@ struct Scene {
         float centerLineLength = 0.2f;
         float centerLineInterrupt = 0.2f;
 
-private:
+    private:
 
         std::vector<std::shared_ptr<ControlPoint>> tracks;
 
-public:
+    public:
 
         const std::vector<std::shared_ptr<ControlPoint>>& getTracks() const;
 
@@ -234,11 +259,16 @@ public:
 
     } tracks;
 
-    struct Obstacle {
+    struct Item {
 
-        Id<Pose> pose;
+        ItemType type = NONE;
+        Pose pose{0, 0, 0};
+        
+        Item (ItemType type) : type(type) {
+        }
     };
-    std::vector<Obstacle> obstacles;
+
+    std::vector<std::shared_ptr<Item>> items;
 
     Scene();
     ~Scene();

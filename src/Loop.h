@@ -43,8 +43,6 @@ class Loop {
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
-    FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
-
     Editor editor{scene.groundSize};
 
     CarModule car;
@@ -61,6 +59,7 @@ public:
 
     void update(double deltaTime);
 
+    void renderMarkers();
     void renderScene();
     void renderFpsView();
     void renderCarView();

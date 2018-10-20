@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Pose.h"
+#include "Id.h"
 
 class PointLight {
 
@@ -16,7 +17,7 @@ public:
     PointLight();
     PointLight(float x, float y, float z);
 
-    Pose pose;
+    Id<Pose> pose;
 
     glm::vec3 ambientColor;
     glm::vec3 diffuseColor;

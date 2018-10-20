@@ -1,8 +1,9 @@
 #include "FpsCamera.h"
 
-FpsCamera::FpsCamera(float fov, float aspectRatio) : Camera(fov, aspectRatio) {
+FpsCamera::FpsCamera() {
+}
 
-    translation = glm::mat4(1.0f);
+FpsCamera::FpsCamera(float fov, float aspectRatio) : Camera(fov, aspectRatio) {
 
     prevMouseX = -1;
     prevMouseY = -1;
@@ -24,6 +25,14 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
     float speed = 0.002f * dt;
+
+    if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_CONTROL)) {
+        speed *= 4;
+    }
+
+    if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_ALT)) {
+        speed /= 4;
+    }
 
     if (GLFW_PRESS == getKey(GLFW_KEY_W)) {
         pose.position -= eye * speed;
@@ -53,8 +62,8 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
         if (prevMouseX > 0 && prevMouseY > 0) {
             pitch = std::min(1.56, std::max(-1.56,
-                pitch + std::asin((mouseY - prevMouseY) / 10000.0f * dt)));
-            yaw += std::asin((mouseX - prevMouseX) / 10000.0f * dt);
+                pitch + std::asin((mouseY - prevMouseY) / 200.0f * dt)));
+            yaw += std::asin((mouseX - prevMouseX) / 200.0f * dt);
         }
 
         prevMouseX = mouseX;

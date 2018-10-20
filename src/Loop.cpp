@@ -12,7 +12,7 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"}
     , guiModule{window} {
 
-    fpsCamera.pose = glm::vec3(0.0f, 1.0f, -4.0f);
+    scene.fpsCamera.pose = glm::vec3(0.0f, 1.0f, -4.0f);
 }
 
 void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -23,7 +23,7 @@ void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
     instance->frameBuffer.resize(width, height);
     instance->markerFrameBuffer.resize(width, height);
 
-    instance->fpsCamera.aspectRatio = ((float) width) / height;
+    instance->scene.fpsCamera.aspectRatio = ((float) width) / height;
 }
 
 void Loop::loop() {
@@ -38,9 +38,20 @@ void Loop::loop() {
 
         guiModule.begin();
 
-        double deltaTime = 16;
+        double deltaTime = 5.0f;
+        double simDeltaTime = 1.0f;
+
         while (timer.updateStep(deltaTime)) {
-            update(deltaTime);
+
+            commModule.receiveVesc(scene.car.vesc);
+
+            update(simDeltaTime);
+
+            if (!scene.paused) {
+                scene.simulationTime += simDeltaTime;
+            }
+
+            commModule.transmitCar(scene.car, scene.simulationTime);
         }
 
         glUseProgram(shaderProgram.id);
@@ -115,8 +126,6 @@ void Loop::loop() {
         }
 
         commModule.transmitMainCamera(scene.car, car.frameBuffer.id);
-        commModule.transmitCar(scene.car);
-        commModule.receiveVesc(scene.car.vesc);
 
         guiModule.renderRootWindow(scene);
         guiModule.renderCarPropertiesWindow(scene.car);
@@ -130,29 +139,40 @@ void Loop::loop() {
 
 void Loop::update(double deltaTime) {
 
-    fpsCamera.update(window, deltaTime);
+    scene.fpsCamera.update(window, deltaTime);
 
-    car.update(scene.car, scene.paused, deltaTime);
+    if (!scene.paused) {
+        car.update(scene.car, deltaTime);
+    }
 }
 
 void Loop::renderScene() {
 
-    markerModule.add(light.pose);
     light.render(shaderProgram.id);
 
-    car.render(scene.car, shaderProgram.id, markerModule);
+    car.render(shaderProgram.id, scene.car);
+
+    itemsModule.render(shaderProgram.id, scene.items);
 
     editor.renderScene(shaderProgram.id, scene.tracks);
 }
 
+void Loop::renderMarkers() {
+
+    markerModule.add(light.pose);
+    markerModule.add(scene.car.modelPose);
+
+    for (std::shared_ptr<Scene::Item>& i : scene.items) {
+        markerModule.add(i->pose);
+    }
+
+    markerModule.render(window, shaderProgram.id, scene.fpsCamera);
+}
+
 void Loop::renderFpsView() {
 
-    markerModule.update(window, fpsCamera);
-    editor.updateInput(fpsCamera, scene.tracks, scene.groundSize);
-
-    /*
-     * TODO: update also fps camera position!
-     */
+    markerModule.update(window, scene.fpsCamera);
+    editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
 
     Scene preRenderScene = scene;
     update(timer.accumulator);
@@ -164,7 +184,7 @@ void Loop::renderFpsView() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    fpsCamera.render(shaderProgram.id);
+    scene.fpsCamera.render(shaderProgram.id);
 
     renderScene();
 
@@ -175,8 +195,8 @@ void Loop::renderFpsView() {
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    markerModule.render(window, shaderProgram.id, fpsCamera);
     editor.renderMarkers(shaderProgram.id, scene.tracks);
+    renderMarkers();
 
     scene = preRenderScene;
 }

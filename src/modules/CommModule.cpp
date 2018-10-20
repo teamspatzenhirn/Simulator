@@ -6,6 +6,7 @@ CommModule::CommModule() :
     rxVesc(SimulatorSHM::CLIENT, vescMemId) { 
 
     initSharedMemory(txMainCamera);
+    initSharedMemory(rxVesc);
     initSharedMemory(txCar);
 
     mainCameraIntermediateBuffer = nullptr;
@@ -21,11 +22,8 @@ template<typename T>
 void CommModule::initSharedMemory(SimulatorSHM::SHMComm<T>& mem) {
 
     if(!mem.attach()) {
-        mem.destroy();
-        if(!mem.attach()) {
-            std::cout << "Shared memory init failed!" << std::endl;
-            std::exit(-1);
-        }
+        std::cout << "Shared memory init failed!" << std::endl;
+        std::exit(-1);
     }
 }
 
@@ -87,14 +85,14 @@ void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebuffe
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void CommModule::transmitCar(Scene::Car& car) {
+void CommModule::transmitCar(Scene::Car& car, uint64_t time) {
 
     Car* obj = txCar.lock(SimulatorSHM::WRITE_NO_OVERWRITE); 
 
     if (obj != nullptr) {
         /*
          * Why is it necessary to negate the y-axis, psi, dPsi and
-         * the steeringAngle here?! Does not make any sense!
+         * the steeringAngle here?! Does not make any sence!
          */
         obj->x = car.simulatorState.x1;
         obj->y = -car.simulatorState.x2;
@@ -107,6 +105,7 @@ void CommModule::transmitCar(Scene::Car& car) {
         obj->accY = -car.acceleration.x;
         obj->alphaFront = car.alphaFront;
         obj->alphaRear = car.alphaRear;
+        obj->time = time;
 
         txCar.unlock(obj);
     }
@@ -114,19 +113,20 @@ void CommModule::transmitCar(Scene::Car& car) {
 
 void CommModule::receiveVesc(Scene::Car::Vesc& vesc) {
 
-    if (rxVesc.attach()) {
+    Vesc* obj = rxVesc.lock(SimulatorSHM::READ_NEWEST);
 
-        Vesc* obj = rxVesc.lock(SimulatorSHM::READ_OLDEST);
+    if (obj != nullptr) {
+        vescFailCounter = 0;
 
-        if (obj != nullptr) {
+        vesc.velocity = obj->velocity;
+        vesc.steeringAngle = -obj->steeringAngle;
 
-            vesc.velocity = obj->velocity;
-            vesc.steeringAngle = -obj->steeringAngle;
-
-            rxVesc.unlock(obj);
-        }
-    } else {
+        rxVesc.unlock(obj);
+    } else if (vescFailCounter == 100) {
         vesc.velocity = 0.0f;
         vesc.steeringAngle = 0.0f;
+        vescFailCounter++;
+    } else {
+        vescFailCounter++;
     }
 }

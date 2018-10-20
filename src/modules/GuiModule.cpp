@@ -53,6 +53,28 @@ void GuiModule::renderRootWindow(Scene& scene) {
             ImGui::EndMenu();
         }
 
+        if (ImGui::BeginMenu("Create")) {
+            if (ImGui::MenuItem("Obstacle 10x10cm")) {
+                scene.items.emplace_back(std::make_shared<Scene::Item>(OBSTACLE));
+            }
+            if (ImGui::MenuItem("Start line")) {
+                scene.items.emplace_back(std::make_shared<Scene::Item>(START_LINE));
+            }
+            if (ImGui::MenuItem("Stop line")) {
+                scene.items.emplace_back(std::make_shared<Scene::Item>(STOP_LINE));
+            }
+            if (ImGui::MenuItem("Give-way line")) {
+                scene.items.emplace_back(std::make_shared<Scene::Item>(GIVE_WAY_LINE));
+            }
+            if (ImGui::MenuItem("Crosswalk")) {
+                scene.items.emplace_back(std::make_shared<Scene::Item>(CROSSWALK));
+            }
+            if (ImGui::MenuItem("Ground marking 30")) {
+                scene.items.emplace_back(std::make_shared<Scene::Item>(GROUND_30));
+            }
+            ImGui::EndMenu();
+        }
+
         if (ImGui::BeginMenu("Show")) {
 
             ImGui::MenuItem("Car Properties", NULL, &showCarPropertiesWindow);
@@ -78,13 +100,16 @@ void GuiModule::renderRootWindow(Scene& scene) {
     }
     ImGui::Text("%s", msg.c_str());
 
+    ImGui::Text("Simulation time: %.2f seconds",
+            ((double)scene.simulationTime) / 1000.0);
+
     if (scene.paused) {
         ImGui::Text("PAUSED");
     }
 
     ImGui::End();
 
-    //ImGui::ShowDemoWindow(NULL);
+    ImGui::ShowDemoWindow(NULL);
 }
 
 void GuiModule::renderPoseWindow(Pose* selectedPose) {

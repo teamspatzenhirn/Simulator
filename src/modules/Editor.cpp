@@ -145,8 +145,8 @@ void Editor::onKey(int key, int action, const Scene::Tracks& tracks) {
         setTrackMode(Editor::TrackMode::Arc, tracks);
     }
 
-    if (key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS
-            || key == GLFW_KEY_DELETE && action == GLFW_PRESS) {
+    if ((key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
+            || (key == GLFW_KEY_DELETE && action == GLFW_PRESS)) {
         if (activeControlPoint != nullptr) {
             ((Scene::Tracks&)tracks).removeControlPoint(activeControlPoint);
             activeControlPoint = nullptr;

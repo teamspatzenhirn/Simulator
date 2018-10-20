@@ -21,9 +21,9 @@ public:
 
     CarModule();
 
-    void update(Scene::Car& car, bool paused, float deltaTime);
+    void update(Scene::Car& car, float deltaTime);
 
-    void render(Scene::Car& car, GLuint shaderProgramId, MarkerModule& markerModule);
+    void render(GLuint shaderProgramId, Scene::Car& car);
 };
 
 #endif

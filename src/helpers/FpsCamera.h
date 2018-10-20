@@ -13,15 +13,10 @@
 
 class FpsCamera : public Camera {
 
-    glm::mat4 translation;
-
     float prevMouseX;
     float prevMouseY;
 
-    // rotation about x axis
-    float pitch;
-    // rotation about y axis
-    float yaw;
+public:
 
     /*
      * The two rotation parameters are stored separate
@@ -30,8 +25,12 @@ class FpsCamera : public Camera {
      * result in quite weird camera behaviour.
      */
 
-public:
+    // rotation about x axis
+    float pitch;
+    // rotation about y axis
+    float yaw;
 
+    FpsCamera();
     FpsCamera(float fov, float aspectRatio);
 
     /*

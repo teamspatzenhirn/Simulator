@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <algorithm>
+#include <cstdint>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -51,6 +52,7 @@ class MarkerModule {
     } selectedAxis;
 
     Pose* selectedModelPose;
+
     enum SelectionMode { TRANSLATE = 0, SCALE = 1, ROTATE = 2 } selectionMode;
 
     float getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition);
