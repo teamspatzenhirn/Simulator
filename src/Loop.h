@@ -12,6 +12,8 @@
 #include "modules/GuiModule.h"
 #include "modules/Editor.h"
 #include "modules/ItemsModule.h"
+#include "modules/CollisionModule.h"
+#include "modules/RuleModule.h"
 
 class Loop {
 
@@ -40,12 +42,22 @@ class Loop {
     MarkerModule markerModule;
     GuiModule guiModule;
     ItemsModule itemsModule;
+    CollisionModule collisionModule;
+    RuleModule ruleModule;
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
     Editor editor{scene.groundSize};
 
     CarModule car;
+
+    void update(double deltaTime);
+    void updateCollisions();
+
+    void renderMarkers();
+    void renderScene();
+    void renderFpsView();
+    void renderCarView();
 
 public:
 
@@ -56,13 +68,6 @@ public:
     Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight);
 
     void loop();
-
-    void update(double deltaTime);
-
-    void renderMarkers();
-    void renderScene();
-    void renderFpsView();
-    void renderCarView();
 };
 
 #endif

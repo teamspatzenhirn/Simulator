@@ -129,6 +129,7 @@ void Loop::loop() {
 
         guiModule.renderRootWindow(scene);
         guiModule.renderCarPropertiesWindow(scene.car);
+        guiModule.renderRulePropertiesWindow(scene.rules);
         guiModule.renderPoseWindow(markerModule.getSelection());
         guiModule.renderHelpWindow();
         guiModule.end();
@@ -141,9 +142,26 @@ void Loop::update(double deltaTime) {
 
     scene.fpsCamera.update(window, deltaTime);
 
+    updateCollisions();
+
     if (!scene.paused) {
         car.update(scene.car, deltaTime);
     }
+
+    ruleModule.update(scene.rules, scene.car, collisionModule);
+}
+
+void Loop::updateCollisions() {
+
+    collisionModule.add(scene.car.modelPose, car.carModel);
+
+    for (auto& i : scene.items) {
+        if (i->type == OBSTACLE) {
+            collisionModule.add(i->pose, itemsModule.obstacleModel);
+        }
+    }
+
+    collisionModule.update();
 }
 
 void Loop::renderScene() {

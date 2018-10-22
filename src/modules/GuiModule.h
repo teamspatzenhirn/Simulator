@@ -22,6 +22,7 @@ class GuiModule {
     bool showCreateItemsWindow = true;
     bool showPoseWindow = true;
     bool showCarPropertiesWindow = false;
+    bool showRulePropertiesWindow = true;
     bool showHelpWindow = false;
 
     std::string openedPath;
@@ -46,6 +47,7 @@ public:
     void renderRootWindow(Scene& scene);
     void renderPoseWindow(Pose* pose);
     void renderCarPropertiesWindow(Scene::Car& car);
+    void renderRulePropertiesWindow(Scene::Rules& rules);
     void renderHelpWindow();
     void renderCreateDialog();
 

@@ -6,6 +6,8 @@
 
 class ItemsModule {
 
+public:
+
     Model obstacleModel{"models/obstacle.obj"};
     Model startLineModel{"models/start_line.obj"};
     Model stopLineModel{"models/stop_line.obj"};
@@ -31,8 +33,6 @@ class ItemsModule {
     Model ground90EndModel{"models/ground_90_end.obj"};
     Model groundArrowLeftModel{"models/ground_arrow_left.obj"};
     Model groundArrowRightModel{"models/ground_arrow_right.obj"};
-
-public:
 
     ItemsModule();
     ~ItemsModule();

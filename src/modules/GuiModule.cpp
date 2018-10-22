@@ -407,6 +407,18 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
     }
 }
 
+void GuiModule::renderRulePropertiesWindow(Scene::Rules& rules) {
+    
+    if (showRulePropertiesWindow) {
+
+        ImGui::Begin("Rule Properties", &showRulePropertiesWindow);
+
+        ImGui::Checkbox("Exit on obstacle collision", &rules.exitOnObstacleCollision);
+
+        ImGui::End();
+    }
+}
+
 void GuiModule::renderDirectoryListing() {
 
     ImGui::BeginChild("Dir Listing",

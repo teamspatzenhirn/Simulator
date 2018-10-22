@@ -293,6 +293,16 @@ struct Scene {
 
     std::vector<std::shared_ptr<Item>> items;
 
+    /*
+     * This contains the RuleModule reactions to violations of the
+     * carolo cup rules.
+     */
+    struct Rules {
+
+        bool exitOnObstacleCollision = false;
+
+    } rules;
+
     Scene();
     ~Scene();
 
