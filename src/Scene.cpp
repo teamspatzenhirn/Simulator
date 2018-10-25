@@ -150,6 +150,36 @@ void from_json(const json& j, Scene::Car::SystemParams& o) {
 }
 
 /*
+ * Scene::Car::SimulatorState
+ */
+
+void to_json(json& j, const Scene::Car::SimulatorState& o) {
+
+    j = json({
+            {"x1", o.x1},
+            {"x2", o.x2},
+            {"psi", o.psi},
+            {"delta", o.delta},
+            {"v", o.v},
+            {"vLon", o.v_lon},
+            {"vLat", o.v_lat},
+            {"dPsi", o.d_psi},
+        });
+}
+
+void from_json(const json& j, Scene::Car::SimulatorState& o) {
+
+    o.x1 = j.at("x1").get<double>();
+    o.x2 = j.at("x2").get<double>();
+    o.psi = j.at("psi").get<double>();
+    o.delta = j.at("delta").get<double>();
+    o.v = j.at("v").get<double>();
+    o.v_lon = j.at("vLon").get<double>();
+    o.v_lat = j.at("vLat").get<double>();
+    o.d_psi = j.at("dPsi").get<double>();
+}
+
+/*
  * Scene::Car::Limits
  */
 
@@ -233,6 +263,7 @@ void to_json(json& j, const Scene::Car& o) {
 
     j = json({
             {"modelPose", o.modelPose},
+            {"simulatorState", o.simulatorState},
             {"systemParams", o.systemParams},
             {"limits", o.limits},
             {"wheels", o.wheels},
@@ -243,6 +274,7 @@ void to_json(json& j, const Scene::Car& o) {
 void from_json(const json& j, Scene::Car& o) {
 
     o.modelPose = j.at("modelPose").get<Pose>();
+    o.simulatorState = j.at("simulatorState").get<Scene::Car::SimulatorState>();
     o.systemParams = j.at("systemParams").get<Scene::Car::SystemParams>();
     o.limits = j.at("limits").get<Scene::Car::Limits>();
     o.wheels = j.at("wheels").get<Scene::Car::Wheels>();

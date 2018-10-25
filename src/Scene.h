@@ -128,7 +128,7 @@ struct Scene {
      */
     struct Car {
 
-        Id<Pose> modelPose{0.0, 0.0, 0.0};
+        Pose modelPose{0.0, 0.0, 0.0};
 
         glm::vec3 velocity{0, 0, 0};
         glm::vec3 acceleration{0, 0, 0};
