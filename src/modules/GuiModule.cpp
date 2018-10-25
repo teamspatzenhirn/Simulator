@@ -4,10 +4,10 @@ GuiModule::GuiModule(GLFWwindow* window) {
 
     this->window = window;
 
-    openedPath = "";
-    openedFilename = "";
+    openedPath = "./";
+    openedFilename = "default.json";
     currentDirectory = "./";
-    selectedFilename = "";
+    selectedFilename = "default.json";
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();

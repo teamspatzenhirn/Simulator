@@ -12,7 +12,7 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"}
     , guiModule{window} {
 
-    scene.fpsCamera.pose = glm::vec3(0.0f, 1.0f, -4.0f);
+    scene.load("default.json");
 }
 
 void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
