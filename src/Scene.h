@@ -212,8 +212,8 @@ struct Scene {
          */
         struct Vesc {
 
-            double velocity = 1.5;
-            double steeringAngle = 0.1;
+            double velocity = 0;
+            double steeringAngle = 0;
 
         } vesc;
 

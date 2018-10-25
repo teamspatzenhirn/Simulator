@@ -73,6 +73,8 @@ void GuiModule::renderRootWindow(Scene& scene) {
     renderOpenFileDialog(scene, showOpenFileDialog);
     renderSaveFileDialog(scene, showSaveFileDialog, showSaveAsFileDialog);
 
+    // rendering the status text
+
     ImGui::Text("Carolo Simulator v0.3");
 
     std::string msg = "Config: ";
@@ -319,6 +321,10 @@ void GuiModule::renderHelpWindow() {
 
         ImGui::Separator();
 
+        ImGui::Text("Press F5 to reload the current save file");
+
+        ImGui::Separator();
+
         ImGui::Text("Click anywhere on the floor to build a track");
         ImGui::Text("Press 1 to build straight tracks");
         ImGui::Text("Press 2 to build curves");
@@ -370,7 +376,17 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
 
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
-    if (!openedFilename.empty() && !showSaveAs) {
+    if (!openedFilename.empty()) {
+        for (KeyEvent& e : getKeyEvents()) {
+            if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
+                if (!scene.load(selectedFilename)) {
+                    errorMessage = "Could not open " + selectedFilename + "!";
+                }
+            }
+        }
+    }
+
+    if (!openedFilename.empty() && !showSaveAs && show) {
         scene.save(openedPath + openedFilename);
         return;
     }

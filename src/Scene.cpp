@@ -99,6 +99,30 @@ void from_json(const json& j, Pose& p) {
 
 
 /*
+ * FpsCamera
+ */
+
+void to_json(json& j, const FpsCamera& o) {
+
+    j = json({
+            {"pitch", o.pitch},
+            {"yaw", o.yaw},
+            {"fov", o.fov},
+            {"aspectRatio", o.aspectRatio},
+            {"pose", o.pose}
+        });
+}
+
+void from_json(const json& j, FpsCamera& o) {
+
+    o.pitch = j.at("pitch").get<float>();
+    o.yaw = j.at("yaw").get<float>();
+    o.fov = j.at("fov").get<float>();
+    o.aspectRatio = j.at("aspectRatio").get<float>();
+    o.pose = j.at("pose").get<Pose>();
+}
+
+/*
  * Scene::Car::SystemParams
  */
 
@@ -367,6 +391,7 @@ void to_json(json& j, const Scene& s) {
     j = json({
             {"version", s.version},
             {"paused", s.paused},
+            {"fpsCamera", s.fpsCamera},
             {"car", s.car},
             {"tracks", s.tracks},
             {"items", s.items}
@@ -377,6 +402,7 @@ void from_json(const json& j, Scene& s) {
 
     s.version = j.at("version").get<unsigned int>();
     s.paused = j.at("paused").get<bool>();
+    s.fpsCamera = j.at("fpsCamera").get<FpsCamera>();
     s.car = j.at("car").get<Scene::Car>();
     s.tracks = j.at("tracks").get<Scene::Tracks>();
     s.items = j.at("items").get<std::vector<std::shared_ptr<Scene::Item>>>();

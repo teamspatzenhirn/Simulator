@@ -38,7 +38,7 @@ void Loop::loop() {
 
         guiModule.begin();
 
-        double deltaTime = 5.0f;
+        double deltaTime = 4.0f;
         double simDeltaTime = 1.0f;
 
         while (timer.updateStep(deltaTime)) {
