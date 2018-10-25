@@ -87,7 +87,7 @@ void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebuffe
 
 void CommModule::transmitCar(Scene::Car& car, uint64_t time) {
 
-    Car* obj = txCar.lock(SimulatorSHM::WRITE_NO_OVERWRITE); 
+    Car* obj = txCar.lock(SimulatorSHM::WRITE_OVERWRITE_OLDEST); 
 
     if (obj != nullptr) {
         /*
@@ -95,14 +95,14 @@ void CommModule::transmitCar(Scene::Car& car, uint64_t time) {
          * the steeringAngle here?! Does not make any sence!
          */
         obj->x = car.simulatorState.x1;
-        obj->y = -car.simulatorState.x2;
-        obj->psi = -car.simulatorState.psi;
-        obj->dPsi = -car.simulatorState.d_psi;
-        obj->steeringAngle = -car.steeringAngle;
+        obj->y = car.simulatorState.x2;
+        obj->psi = car.simulatorState.psi;
+        obj->dPsi = car.simulatorState.d_psi;
+        obj->steeringAngle = car.steeringAngle;
         obj->velX = car.velocity.z;
-        obj->velY = -car.velocity.x;
+        obj->velY = car.velocity.x;
         obj->accX = car.acceleration.z;
-        obj->accY = -car.acceleration.x;
+        obj->accY = car.acceleration.x;
         obj->alphaFront = car.alphaFront;
         obj->alphaRear = car.alphaRear;
         obj->time = time;
@@ -119,7 +119,7 @@ void CommModule::receiveVesc(Scene::Car::Vesc& vesc) {
         vescFailCounter = 0;
 
         vesc.velocity = obj->velocity;
-        vesc.steeringAngle = -obj->steeringAngle;
+        vesc.steeringAngle = obj->steeringAngle;
 
         rxVesc.unlock(obj);
     } else if (vescFailCounter == 100) {
