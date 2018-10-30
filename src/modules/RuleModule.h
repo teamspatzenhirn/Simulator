@@ -1,6 +1,9 @@
 #ifndef INC_2019_RULEMODULE_H
 #define INC_2019_RULEMODULE_H
 
+#include <vector>
+#include <algorithm>
+
 #include <glm/glm.hpp>
 
 #include "Scene.h"
