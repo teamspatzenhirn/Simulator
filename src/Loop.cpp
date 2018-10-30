@@ -148,7 +148,7 @@ void Loop::update(double deltaTime) {
         car.update(scene.car, deltaTime);
     }
 
-    ruleModule.update(scene.rules, scene.car, collisionModule);
+    ruleModule.update(scene.rules, scene.car, scene.tracks, collisionModule);
 }
 
 void Loop::updateCollisions() {

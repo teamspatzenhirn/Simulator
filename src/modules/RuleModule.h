@@ -17,6 +17,7 @@ public:
     void update(
             Scene::Rules& rules,
             Scene::Car& car,
+            Scene::Tracks& tracks,
             CollisionModule& collisionModule);
 };
 

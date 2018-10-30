@@ -33,7 +33,7 @@ void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebuffe
 
     // download image from opengl to shared memory buffer
 
-    MainCameraImage* obj = txMainCamera.lock(SimulatorSHM::WRITE_NO_OVERWRITE); 
+    MainCameraImage* obj = txMainCamera.lock(SimulatorSHM::WRITE_OVERWRITE_OLDEST); 
 
     if (obj != nullptr) {
 
