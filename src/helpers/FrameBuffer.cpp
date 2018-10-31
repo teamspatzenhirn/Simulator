@@ -1,6 +1,13 @@
 #include "FrameBuffer.h"
 
-FrameBuffer::FrameBuffer(GLuint width, GLuint height) {
+FrameBuffer::FrameBuffer(GLuint width, GLuint height) 
+    : FrameBuffer(width, height, GL_RGBA, GL_RGBA) {
+}
+
+FrameBuffer::FrameBuffer(GLuint width, GLuint height, GLint internalFormatColor, GLenum formatColor) {
+
+    this->internalFormatColor = internalFormatColor;
+    this->formatColor = formatColor;
 
     glGenFramebuffers(1, &id);
     glBindFramebuffer(GL_FRAMEBUFFER, id);
@@ -12,11 +19,11 @@ FrameBuffer::FrameBuffer(GLuint width, GLuint height) {
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_RGBA,
+                 internalFormatColor,
                  width,
                  height,
                  0,
-                 GL_RGBA,
+                 formatColor,
                  GL_UNSIGNED_BYTE,
                  0);
 
@@ -75,11 +82,11 @@ void FrameBuffer::resize(GLuint width, GLuint height) {
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_RGBA,
+                 internalFormatColor,
                  width,
                  height,
                  0,
-                 GL_RGBA,
+                 formatColor,
                  GL_UNSIGNED_BYTE,
                  0);
 

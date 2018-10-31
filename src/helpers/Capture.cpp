@@ -14,9 +14,15 @@ Capture::~Capture() {
     glDeleteBuffers(2, pboIds);
 }
 
-bool Capture::capture(GLubyte* buffer, GLuint width, GLuint height, GLenum mode) {
+bool Capture::capture(
+        GLubyte* buffer,
+        GLuint width,
+        GLuint height,
+        GLuint channels,
+        GLenum format,
+        GLenum mode) {
 
-    int dataSize = width * height * 3;
+    int dataSize = width * height * channels;
 
     if (this->width != width || this->height != height) {
         this->height = height;
@@ -36,7 +42,7 @@ bool Capture::capture(GLubyte* buffer, GLuint width, GLuint height, GLenum mode)
     glReadPixels(
         0, 0,
         width, height,
-        GL_RGB,
+        format,
         GL_UNSIGNED_BYTE,
         nullptr);
 

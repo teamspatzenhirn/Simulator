@@ -115,6 +115,12 @@ void CarModule::update(Scene::Car& car, float deltaTime) {
         frameBuffer.resize(car.mainCamera.imageWidth,
                 car.mainCamera.imageHeight);
     }
+
+    if (bayerFrameBuffer.width != car.mainCamera.imageWidth
+            || bayerFrameBuffer.height != car.mainCamera.imageHeight) {
+        bayerFrameBuffer.resize(car.mainCamera.imageWidth,
+                car.mainCamera.imageHeight);
+    }
 }
 
 void CarModule::render(GLuint shaderProgramId, Scene::Car& car) {

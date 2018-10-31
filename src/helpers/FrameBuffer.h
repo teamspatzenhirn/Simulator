@@ -29,7 +29,11 @@ public:
     GLuint colorTextureId;
     GLuint depthTextureId;
 
+    GLint internalFormatColor;
+    GLenum formatColor;
+
     FrameBuffer(GLuint width, GLuint height);
+    FrameBuffer(GLuint width, GLuint height, GLint internalFormatColor, GLenum formatColor);
     ~FrameBuffer();
 
     void resize(GLuint width, GLuint height);

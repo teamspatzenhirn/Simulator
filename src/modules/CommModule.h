@@ -57,8 +57,6 @@ class CommModule {
     int vescFailCounter = 0;
 
     Capture mainCameraCapture;
-    GLubyte* mainCameraIntermediateBuffer;
-    unsigned int mainCameraIntermediateBufferSize;
 
     SimulatorSHM::SHMComm<MainCameraImage> txMainCamera; 
     SimulatorSHM::SHMComm<Car> txCar; 

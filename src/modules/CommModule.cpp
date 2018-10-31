@@ -8,14 +8,10 @@ CommModule::CommModule() :
     initSharedMemory(txMainCamera);
     initSharedMemory(rxVesc);
     initSharedMemory(txCar);
-
-    mainCameraIntermediateBuffer = nullptr;
-    mainCameraIntermediateBufferSize = -1;
 }
 
 CommModule::~CommModule() {
 
-    delete[] mainCameraIntermediateBuffer;
 }
 
 template<typename T>
@@ -37,50 +33,16 @@ void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebuffe
 
     if (obj != nullptr) {
 
-        unsigned int dataSize =
-            car.mainCamera.imageWidth * car.mainCamera.imageHeight * 3;
-
-        // TODO: tu moch capy ...
-
-        if (mainCameraIntermediateBufferSize != dataSize) {
-            delete[] mainCameraIntermediateBuffer;
-            mainCameraIntermediateBuffer = new GLubyte[dataSize];
-            mainCameraIntermediateBufferSize = dataSize;
-        }
-
-        mainCameraCapture.capture(
-                mainCameraIntermediateBuffer,
-                car.mainCamera.imageWidth,
-                car.mainCamera.imageHeight,
-                GL_COLOR_ATTACHMENT0);
-
         obj->imageWidth = car.mainCamera.imageWidth;
         obj->imageHeight = car.mainCamera.imageHeight;
 
-        // conversion to bayer pattern
-        
-        // TODO: this is highly inefficient and eats up about 70% of
-        // the processing time of one core
-
-        const unsigned char* source = mainCameraIntermediateBuffer;
-        unsigned char* dest = obj->buffer;
-
-        int srcRow;
-        int row;
-
-        for(unsigned int y = 0; y < car.mainCamera.imageHeight; y++){
-            srcRow = (car.mainCamera.imageHeight - y - 1) * car.mainCamera.imageWidth;
-            row = y * car.mainCamera.imageWidth;
-            for(unsigned int x = 0; x < car.mainCamera.imageWidth; x++){
-                dest[row+x] = source[((srcRow+x)*3)+x%2]; // BGBGBGBG...
-            }
-            y++;
-            srcRow = (car.mainCamera.imageHeight - y - 1) * car.mainCamera.imageWidth;
-            row = y * car.mainCamera.imageWidth;
-            for(unsigned int x = 0; x < car.mainCamera.imageWidth; x++){
-                dest[row+x] = source[((srcRow+x)*3)+1+x%2]; // GRGRGRGRGR...
-            }
-        }
+        mainCameraCapture.capture(
+                (GLubyte*)obj->buffer,
+                car.mainCamera.imageWidth,
+                car.mainCamera.imageHeight,
+                1,
+                GL_RED,
+                GL_COLOR_ATTACHMENT0);
 
         txMainCamera.unlock(obj);
     } 
