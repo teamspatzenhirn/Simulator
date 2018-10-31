@@ -9,7 +9,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} \
     -Wno-unused-parameter \
     -Wextra \
     -Wpedantic \
-    -std=c++1z")
+    -std=c++11")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 

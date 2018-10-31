@@ -49,7 +49,9 @@ void CollisionModule::add(Pose& pose, Model& model) {
         pMin.y = std::min(points[i].z, pMin.y);
     }
 
-    RigidBody& rb = bodies.emplace_back();
+    bodies.emplace_back();
+    RigidBody& rb = bodies.back();
+    
     rb.pose = &pose;
     rb.p00 = {pMin.x, pMin.y};
     rb.p01 = {pMin.x, pMax.y};
