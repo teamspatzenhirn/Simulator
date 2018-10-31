@@ -125,7 +125,7 @@ void Loop::loop() {
             });
         }
 
-        commModule.transmitMainCamera(scene.car, car.frameBuffer.id);
+        commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
 
         guiModule.renderRootWindow(scene);
         guiModule.renderCarPropertiesWindow(scene.car);
@@ -164,18 +164,18 @@ void Loop::updateCollisions() {
     collisionModule.update();
 }
 
-void Loop::renderScene() {
+void Loop::renderScene(GLuint shaderProgramId) {
 
-    light.render(shaderProgram.id);
+    light.render(shaderProgramId);
 
-    car.render(shaderProgram.id, scene.car);
+    car.render(shaderProgramId, scene.car);
 
-    itemsModule.render(shaderProgram.id, scene.items);
+    itemsModule.render(shaderProgramId, scene.items);
 
-    editor.renderScene(shaderProgram.id, scene.tracks);
+    editor.renderScene(shaderProgramId, scene.tracks);
 }
 
-void Loop::renderMarkers() {
+void Loop::renderMarkers(GLuint shaderProgramId) {
 
     markerModule.add(light.pose);
     markerModule.add(scene.car.modelPose);
@@ -184,7 +184,7 @@ void Loop::renderMarkers() {
         markerModule.add(i->pose);
     }
 
-    markerModule.render(window, shaderProgram.id, scene.fpsCamera);
+    markerModule.render(window, shaderProgramId, scene.fpsCamera);
 }
 
 void Loop::renderFpsView() {
@@ -205,7 +205,7 @@ void Loop::renderFpsView() {
 
     scene.fpsCamera.render(shaderProgram.id);
 
-    renderScene();
+    renderScene(shaderProgram.id);
 
     // render marker overlay 
 
@@ -215,7 +215,7 @@ void Loop::renderFpsView() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     editor.renderMarkers(shaderProgram.id, scene.tracks);
-    renderMarkers();
+    renderMarkers(shaderProgram.id);
 
     scene = preRenderScene;
 }
@@ -225,7 +225,9 @@ void Loop::renderCarView() {
     Scene preRenderScene = scene;
     update(timer.accumulator);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
+    glUseProgram(carShaderProgram.id);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, car.bayerFrameBuffer.id);
 
     glViewport(0, 0,
             scene.car.mainCamera.imageWidth,
@@ -234,9 +236,27 @@ void Loop::renderCarView() {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    car.mainCamera.render(shaderProgram.id);
+    car.mainCamera.render(carShaderProgram.id);
 
-    renderScene();
+    renderScene(carShaderProgram.id);
+
+    glUseProgram(shaderProgram.id);
+
+    if (!fpsCameraActive) {
+
+        glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
+
+        glViewport(0, 0,
+                scene.car.mainCamera.imageWidth,
+                scene.car.mainCamera.imageHeight);
+
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        car.mainCamera.render(carShaderProgram.id);
+
+        renderScene(carShaderProgram.id);
+    }
 
     scene = preRenderScene;
 }

@@ -17,7 +17,9 @@ public:
     Model carModel{"models/spatz.obj"};
 
     Camera mainCamera;
+
     FrameBuffer frameBuffer{1, 1};
+    FrameBuffer bayerFrameBuffer{1, 1, GL_RED, GL_RED};
 
     CarModule();
 

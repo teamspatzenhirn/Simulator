@@ -3,6 +3,14 @@
 RuleModule::RuleModule() {
 }
 
+float normalizeAngle(float radians) {
+
+    while(radians > M_PI * 2) radians -= M_PI * 2;
+    while(radians < 0) radians += M_PI * 2;
+
+    return radians;
+}
+
 void RuleModule::update(
         Scene::Rules& rules,
         Scene::Car& car,
@@ -75,15 +83,13 @@ void RuleModule::update(
 
             glm::vec2 startVec = start - ta.center;
             glm::vec2 endVec = end - ta.center;
-            glm::vec carVec = carPosition - ta.center;
+            glm::vec2 carVec = carPosition - ta.center;
 
-            float startAngle = glm::atan(startVec.y, startVec.x);
-            float endAngle = glm::atan(endVec.y, endVec.x);
-            float carAngle = glm::atan(carVec.y, carVec.x);
+            bool inSection = false;
 
-            bool inSection = true;
+            glm::vec2 startVecNormal(-startVec.y, startVec.x);
+            glm::vec2 endVecNormal(-endVec.y, endVec.x);
 
-            /*
             if (ta.rightArc) {
                 if (glm::dot(endVecNormal, carVec) < 0
                         && glm::dot(startVecNormal, carVec) > 0) {
@@ -95,17 +101,10 @@ void RuleModule::update(
                     inSection = true;
                 }
             }
-            */
-
-            float dist = glm::length(carVec);
 
             if (inSection) { 
+                float dist = glm::length(carVec);
                 if (dist > ta.radius - 0.4 && dist < ta.radius + 0.4) {
-                    std::cout << s.get() << std::endl;
-                    std::cout << startAngle << std::endl;
-                    std::cout << carAngle << std::endl;
-                    std::cout << endAngle << std::endl;
-                    std::cout << ta.rightArc << std::endl;
                     onTrack = true;
                     break;
                 }
@@ -113,7 +112,13 @@ void RuleModule::update(
         }
     }
 
-    std::cout << "On track: " << onTrack << std::endl;
+    if (!onTrack) {
+        if (rules.exitIfNotOnTrack) {
+            std::cerr << "\nRULE VIOLATION" << std::endl;
+            std::cerr << "Vehicle left track! \n" << std::endl;
+            std::exit(-1);
+        }
+    }
 
     // validating collisions
 

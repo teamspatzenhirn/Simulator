@@ -430,6 +430,7 @@ void GuiModule::renderRulePropertiesWindow(Scene::Rules& rules) {
         ImGui::Begin("Rule Properties", &showRulePropertiesWindow);
 
         ImGui::Checkbox("Exit on obstacle collision", &rules.exitOnObstacleCollision);
+        ImGui::Checkbox("Exit if not on track", &rules.exitIfNotOnTrack);
 
         ImGui::End();
     }

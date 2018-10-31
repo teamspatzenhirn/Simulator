@@ -30,6 +30,10 @@ class Loop {
         Shader("shaders/VertexShader.glsl", GL_VERTEX_SHADER),
         Shader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER)};
 
+    ShaderProgram carShaderProgram{
+        Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
+        Shader("shaders/BayerFragmentShader.glsl", GL_FRAGMENT_SHADER)};
+
     Scene scene;
 
     FrameBuffer frameBuffer;
@@ -54,8 +58,8 @@ class Loop {
     void update(double deltaTime);
     void updateCollisions();
 
-    void renderMarkers();
-    void renderScene();
+    void renderMarkers(GLuint shaderProgramId);
+    void renderScene(GLuint shaderProgramIdj);
     void renderFpsView();
     void renderCarView();
 

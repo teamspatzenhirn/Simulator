@@ -300,6 +300,7 @@ struct Scene {
     struct Rules {
 
         bool exitOnObstacleCollision = false;
+        bool exitIfNotOnTrack = false;
 
     } rules;
 

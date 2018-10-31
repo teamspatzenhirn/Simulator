@@ -22,6 +22,12 @@ void main () {
     fragTextureCoord = textureCoord;
     fragCameraPosition = cameraPosition;
 
+    mat4 flipMat = mat4(
+        vec4(1.0f, 0.0f, 0.0f, 0.0f),
+        vec4(0.0f, -1.0f, 0.0f, 0.0f),
+        vec4(0.0f, 0.0f, 1.0f, 0.0f),
+        vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
     if (billboard) {
         /*
          * This transforms each vertex along the coordinate axis 
@@ -47,10 +53,10 @@ void main () {
             + right * modVertex.x
             + up * modVertex.y
             + eye * modVertex.z, 1.0);
-        gl_Position = projection * view * fragPosition;
+        gl_Position = flipMat * projection * view * fragPosition;
     } else {
         fragNormal = normalize(normalMat * normal);
         fragPosition = model * vec4(vertex, 1);
-        gl_Position = projection * view * fragPosition;
+        gl_Position = flipMat * projection * view * fragPosition;
     }
 }
