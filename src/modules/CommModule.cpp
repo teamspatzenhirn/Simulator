@@ -58,6 +58,9 @@ void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebuffe
         obj->imageHeight = car.mainCamera.imageHeight;
 
         // conversion to bayer pattern
+        
+        // TODO: this is highly inefficient and eats up about 70% of
+        // the processing time of one core
 
         const unsigned char* source = mainCameraIntermediateBuffer;
         unsigned char* dest = obj->buffer;
