@@ -5,9 +5,7 @@ CarModule::CarModule() {
     carModel.upload();
 }
 
-void CarModule::update(Scene::Car& car, float deltaTime) {
-
-    // updating car movement
+void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
 
     float dt = deltaTime / 1000; // in seconds, input is milliseconds
 
@@ -103,8 +101,9 @@ void CarModule::update(Scene::Car& car, float deltaTime) {
     car.steeringAngle = x.delta;
     car.alphaFront = alpha_front;
     car.alphaRear = alpha_rear;
+}
 
-    // updating main camera and frame buffer
+void CarModule::updateMainCamera(Scene::Car& car) {
 
     mainCamera.fov = car.mainCamera.fovy;
     mainCamera.aspectRatio = car.mainCamera.getAspectRatio();
@@ -120,6 +119,12 @@ void CarModule::update(Scene::Car& car, float deltaTime) {
             || bayerFrameBuffer.height != car.mainCamera.imageHeight) {
         bayerFrameBuffer.resize(car.mainCamera.imageWidth,
                 car.mainCamera.imageHeight);
+    }
+}
+
+void CarModule::updateLaserSensors(std::vector<std::shared_ptr<Scene::Item>>& items) {
+
+    for (std::shared_ptr<Scene::Item> i : items) {
     }
 }
 

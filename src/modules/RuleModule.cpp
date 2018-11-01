@@ -12,18 +12,22 @@ float normalizeAngle(float radians) {
 }
 
 void RuleModule::update(
+        float simulationTime,
         Scene::Rules& rules,
         Scene::Car& car,
         Scene::Tracks& tracks,
+        std::vector<std::shared_ptr<Scene::Item>>& items,
         CollisionModule& collisionModule) {
 
-    // checking that car is on the right side of the track
-    
-    // this is only a simple validation which checks the
-    // distance of the vehicle pose to the track segements
-
-    // it would be correct (according to the rules) to
-    // actually check if at least three wheels are on the track
+    /*
+     * Check if car is on the track.
+     *
+     * This is only a simple validation which, checks the
+     * distance of the vehicle pose to the track segements
+     *
+     * It would be correct (according to the rules) to
+     * actually check if at least three wheels are on the track.
+     */
     
     std::vector<std::shared_ptr<TrackBase>> trackSegments;
 
@@ -39,8 +43,6 @@ void RuleModule::update(
     glm::vec2 carPosition(
             car.modelPose.position.x, 
             car.modelPose.position.z);
-
-    bool onTrack = false;
 
     for (std::shared_ptr<TrackBase>& s : trackSegments) {
 
@@ -69,7 +71,7 @@ void RuleModule::update(
                     && abDot < glm::dot(ab, ab)
                     && 0 < adDot
                     && adDot < glm::dot(ad, ad)) {
-                onTrack = true;
+                rules.onTrack = true;
                 break;
             }
         }
@@ -105,14 +107,14 @@ void RuleModule::update(
             if (inSection) { 
                 float dist = glm::length(carVec);
                 if (dist > ta.radius - 0.4 && dist < ta.radius + 0.4) {
-                    onTrack = true;
+                    rules.onTrack = true;
                     break;
                 }
             }
         }
     }
 
-    if (!onTrack) {
+    if (!rules.onTrack) {
         if (rules.exitIfNotOnTrack) {
             std::cerr << "\nRULE VIOLATION" << std::endl;
             std::cerr << "Vehicle left track! \n" << std::endl;
@@ -120,13 +122,73 @@ void RuleModule::update(
         }
     }
 
-    // validating collisions
+    /*
+     * Validating collisions
+     */
 
     if (collisionModule.getCollisions(car.modelPose).size() > 0) {
+
+        rules.isColliding = true;
+
         if (rules.exitOnObstacleCollision) {
             std::cerr << "\nRULE VIOLATION" << std::endl;
             std::cerr << "Detected collision with obstacle! \n" << std::endl;
             std::exit(-1);
+        }
+    }
+
+    /*
+     * Validating stop lines
+     */
+
+    for (std::shared_ptr<Scene::Item>& i : items) {
+        if (i->type == STOP_LINE) {
+
+            glm::vec3 p0 = car.modelPose.position;
+            glm::vec3 p1 = Scene::getHistoryBackStep(1).car.modelPose.position;
+            glm::vec3 p2 = Scene::getHistoryBackStep(2).car.modelPose.position;
+            glm::vec3 p3 = Scene::getHistoryBackStep(3).car.modelPose.position;
+
+            float d0 = glm::length(i->pose.position - p0);
+            float d1 = glm::length(i->pose.position - p1);
+            float d2 = glm::length(i->pose.position - p2);
+            float d3 = glm::length(i->pose.position - p3);
+
+            if (d0 > 0.3) {
+                continue;
+            }
+
+            if (d3 < d2 || d1 > d0) {
+                continue;
+            }
+
+            int notMovedCounter = 0;
+
+            glm::vec3 prevPos = Scene::getFromHistory(
+                    simulationTime).car.modelPose.position;
+
+            for (int dt = 10; dt < 5000; dt += 10) {
+
+                glm::vec3 nowPos = Scene::getFromHistory(
+                        simulationTime - dt).car.modelPose.position;
+
+                float d = glm::length(nowPos - i->pose.position);
+
+                if (d < 0.4 && glm::length(prevPos - nowPos) < 0.001) {
+                    notMovedCounter++;
+                } else if (notMovedCounter > 0) {
+                    break;
+                }
+                
+                prevPos = nowPos;
+            }
+
+            if (notMovedCounter < 300) {
+                std::cerr << "\nRULE VIOLATION" << std::endl;
+                std::cerr << "Did not stop on stop line!" << std::endl;
+                std::cerr << "Stop time: " 
+                          << notMovedCounter * 10 << "ms" << std::endl;
+            }
         }
     }
 }

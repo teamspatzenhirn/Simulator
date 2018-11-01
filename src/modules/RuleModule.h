@@ -18,9 +18,11 @@ public:
     RuleModule();
 
     void update(
+            float simulationTime,
             Scene::Rules& rules,
             Scene::Car& car,
             Scene::Tracks& tracks,
+            std::vector<std::shared_ptr<Scene::Item>>& items,
             CollisionModule& collisionModule);
 };
 

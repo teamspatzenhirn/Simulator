@@ -619,3 +619,42 @@ bool Scene::load(std::string path) {
 
     return true;
 }
+
+std::deque<Scene> Scene::history;
+
+void Scene::addToHistory() {
+    
+    history.push_back(*this);
+
+    if (history.size() > 0) {
+        if (simulationTime - history.front().simulationTime > 10000) {
+            history.pop_front();
+        }
+    }
+}
+
+Scene& Scene::getFromHistory(float simulationTimePoint) {
+
+    if (simulationTimePoint < history.front().simulationTime) {
+        return history.front();
+    }   
+
+    for (auto it = history.crbegin(); it != history.crend(); ++it) {
+        if ((*it).simulationTime <= simulationTimePoint) {
+            return (Scene&)(*it);
+        }
+    }
+
+    return history.back();
+}
+
+Scene& Scene::getHistoryBackStep(int step) {
+    
+    int index = history.size() - 1 - step;
+
+    if (index < 0) {
+        return history.front();
+    } 
+
+    return history[index];
+}

@@ -94,7 +94,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
     ImGui::End();
 
-    ImGui::ShowDemoWindow(NULL);
+    //ImGui::ShowDemoWindow(NULL);
 }
 
 void GuiModule::renderCreateMenu(Scene& scene) {
@@ -321,14 +321,14 @@ void GuiModule::renderHelpWindow() {
 
         ImGui::Separator();
 
-        ImGui::Text("Press F5 to reload the current save file");
+        ImGui::Text("Press r to reload the current save file");
 
         ImGui::Separator();
 
         ImGui::Text("Click anywhere on the floor to build a track");
         ImGui::Text("Press 1 to build straight tracks");
         ImGui::Text("Press 2 to build curves");
-        ImGui::Text("Double click to exit track building");
+        ImGui::Text("Double/right click to exit track building");
 
         ImGui::Separator();
 
@@ -341,6 +341,23 @@ void GuiModule::renderHelpWindow() {
 }
 
 void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
+
+    /*
+     * TODO: This does not really fit in here.
+     * Thematically it seems ok though, if you count reacting to
+     * key presses as "GUI" work.
+     */
+    if (!openedFilename.empty()) {
+        for (KeyEvent& e : getKeyEvents()) {
+            if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
+                if (scene.load(selectedFilename)) {
+                    Scene::history.clear();
+                } else {
+                    errorMessage = "Could not open " + selectedFilename + "!";
+                }
+            }
+        }
+    }
 
     if (show) {
         ImGui::OpenPopup("Open File");
@@ -355,6 +372,8 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
                 ImGui::CloseCurrentPopup();
+
+                Scene::history.clear();
             } else {
                 errorMessage = "Could not open " + selectedFilename + "!";
             }
@@ -375,16 +394,6 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
 }
 
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
-
-    if (!openedFilename.empty()) {
-        for (KeyEvent& e : getKeyEvents()) {
-            if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
-                if (!scene.load(selectedFilename)) {
-                    errorMessage = "Could not open " + selectedFilename + "!";
-                }
-            }
-        }
-    }
 
     if (!openedFilename.empty() && !showSaveAs && show) {
         scene.save(openedPath + openedFilename);

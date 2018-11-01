@@ -32,6 +32,8 @@ void Loop::loop() {
 
     while (!glfwWindowShouldClose(window)) {
 
+        scene.addToHistory();
+
         timer.frameStep(); 
 
         updateInput();
@@ -53,6 +55,14 @@ void Loop::loop() {
 
             commModule.transmitCar(scene.car, scene.simulationTime);
         }
+
+        ruleModule.update(
+                scene.simulationTime,
+                scene.rules,
+                scene.car,
+                scene.tracks,
+                scene.items,
+                collisionModule);
 
         glUseProgram(shaderProgram.id);
 
@@ -145,10 +155,11 @@ void Loop::update(double deltaTime) {
     updateCollisions();
 
     if (!scene.paused) {
-        car.update(scene.car, deltaTime);
+        car.updatePosition(scene.car, deltaTime);
     }
 
-    ruleModule.update(scene.rules, scene.car, scene.tracks, collisionModule);
+    car.updateMainCamera(scene.car);
+
 }
 
 void Loop::updateCollisions() {

@@ -23,7 +23,11 @@ public:
 
     CarModule();
 
-    void update(Scene::Car& car, float deltaTime);
+    void updatePosition(Scene::Car& car, float deltaTime);
+
+    void updateMainCamera(Scene::Car& car);
+
+    void updateLaserSensors(std::vector<std::shared_ptr<Scene::Item>>& items);
 
     void render(GLuint shaderProgramId, Scene::Car& car);
 };

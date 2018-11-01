@@ -5,6 +5,7 @@
 #include <vector>
 #include <fstream>
 #include <memory>
+#include <deque>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -294,10 +295,13 @@ struct Scene {
     std::vector<std::shared_ptr<Item>> items;
 
     /*
-     * This contains the RuleModule reactions to violations of the
-     * carolo cup rules.
+     * This contains the RuleModule state and the set
+     * reactions to violations of the Carolo Cup rules.
      */
     struct Rules {
+
+        bool onTrack = false;
+        bool isColliding = false;
 
         bool exitOnObstacleCollision = false;
         bool exitIfNotOnTrack = false;
@@ -309,6 +313,27 @@ struct Scene {
 
     bool save(std::string path);
     bool load(std::string path);
+
+    /*
+     * Contains the last 10 simulated seconds of Scene objects.
+     */
+    static std::deque<Scene> history;
+
+    /*
+     * Adds a this scene to the scene history.
+     */
+    void addToHistory();
+
+    /*
+     * Returns the frist scene object from the history which
+     * time stamp is <= the given time point.
+     */
+    static Scene& getFromHistory(float simulationTimePoint);
+
+    /*
+     * Returns the nth-last element from the history.
+     */
+    static Scene& getHistoryBackStep(int step);
 };
 
 #endif
