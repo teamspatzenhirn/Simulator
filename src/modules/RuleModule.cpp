@@ -244,6 +244,14 @@ void RuleModule::update(
             case GROUND_ARROW_LEFT:
                 if (isReallyClose) rules.leftArrow = i;
                 break;
+
+            case END:
+                if (d < 0.25) {
+                    if (rules.exitIfOnEndItem) {
+                        std::exit(0);
+                    }
+                }
+                break;
         }
     }
 

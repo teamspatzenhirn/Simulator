@@ -120,6 +120,9 @@ void ItemsModule::render(GLuint shaderProgramId,
             case GROUND_ARROW_RIGHT:
                 groundArrowRightModel.render(shaderProgramId, modelMat);
                 break;
+            case END:
+                endModel.render(shaderProgramId, modelMat);
+                break;
             default:
                 break;
         }

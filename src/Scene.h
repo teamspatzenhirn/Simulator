@@ -84,6 +84,7 @@ enum ItemType {
     GROUND_90_END,
     GROUND_ARROW_LEFT,
     GROUND_ARROW_RIGHT,
+    END,
 };
 
 /*
@@ -319,6 +320,7 @@ struct Scene {
         bool exitIfRightArrowIgnored = false;
         bool exitIfStopLineIgnored = false;
         bool exitIfGiveWayLineIgnored = false;
+        bool exitIfOnEndItem = false;
 
     } rules;
 

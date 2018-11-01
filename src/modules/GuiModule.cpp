@@ -185,6 +185,9 @@ void GuiModule::renderCreateMenu(Scene& scene) {
     if (ImGui::MenuItem("Arrow right")) {
         newType = GROUND_ARROW_RIGHT;
     }
+    if (ImGui::MenuItem("End")) {
+        newType = END;
+    }
 
     if (NONE != newType) {
         scene.items.emplace_back(std::make_shared<Scene::Item>(newType));
@@ -455,6 +458,7 @@ void GuiModule::renderRulePropertiesWindow(Scene::Rules& rules) {
         ImGui::Checkbox("Exit if right arrow ignored", &rules.exitIfRightArrowIgnored);
         ImGui::Checkbox("Exit if stop line ignored", &rules.exitIfStopLineIgnored);
         ImGui::Checkbox("Exit if give way line ignored", &rules.exitIfGiveWayLineIgnored);
+        ImGui::Checkbox("Exit if on end item", &rules.exitIfOnEndItem);
 
         ImGui::End();
     }

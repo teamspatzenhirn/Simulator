@@ -33,6 +33,7 @@ public:
     Model ground90EndModel{"models/ground_90_end.obj"};
     Model groundArrowLeftModel{"models/ground_arrow_left.obj"};
     Model groundArrowRightModel{"models/ground_arrow_right.obj"};
+    Model endModel{"models/end.obj"};
 
     ItemsModule();
     ~ItemsModule();
