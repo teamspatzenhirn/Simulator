@@ -440,6 +440,11 @@ void GuiModule::renderRulePropertiesWindow(Scene::Rules& rules) {
 
         ImGui::Checkbox("Exit on obstacle collision", &rules.exitOnObstacleCollision);
         ImGui::Checkbox("Exit if not on track", &rules.exitIfNotOnTrack);
+        ImGui::Checkbox("Exit if speed limit exceeded", &rules.exitIfSpeedLimitExceeded);
+        ImGui::Checkbox("Exit if left arrow ignored", &rules.exitIfLeftArrowIgnored);
+        ImGui::Checkbox("Exit if right arrow ignored", &rules.exitIfRightArrowIgnored);
+        ImGui::Checkbox("Exit if stop line ignored", &rules.exitIfStopLineIgnored);
+        ImGui::Checkbox("Exit if give way line ignored", &rules.exitIfGiveWayLineIgnored);
 
         ImGui::End();
     }

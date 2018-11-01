@@ -13,6 +13,8 @@
 
 class RuleModule {
 
+    void printViolation(float simulationTime);
+
 public:
 
     RuleModule();

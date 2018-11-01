@@ -300,11 +300,25 @@ struct Scene {
      */
     struct Rules {
 
+        std::shared_ptr<Item> line;
+        uint64_t lineTime = 0;
+        bool linePassed = false;
+
+        std::shared_ptr<Item> rightArrow;
+        std::shared_ptr<Item> leftArrow;
+
+        float allowedMaxSpeed = 1000;
+
         bool onTrack = false;
         bool isColliding = false;
 
         bool exitOnObstacleCollision = false;
         bool exitIfNotOnTrack = false;
+        bool exitIfSpeedLimitExceeded = false;
+        bool exitIfLeftArrowIgnored = false;
+        bool exitIfRightArrowIgnored = false;
+        bool exitIfStopLineIgnored = false;
+        bool exitIfGiveWayLineIgnored = false;
 
     } rules;
 

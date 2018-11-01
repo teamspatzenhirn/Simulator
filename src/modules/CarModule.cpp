@@ -101,6 +101,22 @@ void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
     car.steeringAngle = x.delta;
     car.alphaFront = alpha_front;
     car.alphaRear = alpha_rear;
+
+    // user controls ...
+
+    if (getKey(GLFW_KEY_UP) == GLFW_PRESS) {
+        car.vesc.velocity = 1.0;
+        car.vesc.steeringAngle = 0;
+    }
+    if (getKey(GLFW_KEY_DOWN) == GLFW_PRESS) {
+        car.vesc.velocity = 0.0;
+    }
+    if (getKey(GLFW_KEY_LEFT) == GLFW_PRESS) {
+        car.vesc.steeringAngle = 0.4;
+    }
+    if (getKey(GLFW_KEY_RIGHT) == GLFW_PRESS) {
+        car.vesc.steeringAngle = -0.4;
+    }
 }
 
 void CarModule::updateMainCamera(Scene::Car& car) {

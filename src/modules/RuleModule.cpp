@@ -3,12 +3,12 @@
 RuleModule::RuleModule() {
 }
 
-float normalizeAngle(float radians) {
+void RuleModule::printViolation(float simulationTime) {
 
-    while(radians > M_PI * 2) radians -= M_PI * 2;
-    while(radians < 0) radians += M_PI * 2;
-
-    return radians;
+    std::cerr << "\nRULE VIOLATION AFTER "
+              << simulationTime
+              << " ms"
+              << std::endl;
 }
 
 void RuleModule::update(
@@ -43,6 +43,8 @@ void RuleModule::update(
     glm::vec2 carPosition(
             car.modelPose.position.x, 
             car.modelPose.position.z);
+
+    rules.onTrack = false;
 
     for (std::shared_ptr<TrackBase>& s : trackSegments) {
 
@@ -115,9 +117,9 @@ void RuleModule::update(
     }
 
     if (!rules.onTrack) {
+        printViolation(simulationTime);
+        std::cerr << "Vehicle left track! \n" << std::endl;
         if (rules.exitIfNotOnTrack) {
-            std::cerr << "\nRULE VIOLATION" << std::endl;
-            std::cerr << "Vehicle left track! \n" << std::endl;
             std::exit(-1);
         }
     }
@@ -130,65 +132,181 @@ void RuleModule::update(
 
         rules.isColliding = true;
 
+        printViolation(simulationTime);
+        std::cerr << "Detected collision with obstacle! \n" << std::endl;
+
         if (rules.exitOnObstacleCollision) {
-            std::cerr << "\nRULE VIOLATION" << std::endl;
-            std::cerr << "Detected collision with obstacle! \n" << std::endl;
             std::exit(-1);
         }
     }
 
     /*
-     * Validating stop lines
+     * Validating items
      */
 
     for (std::shared_ptr<Scene::Item>& i : items) {
-        if (i->type == STOP_LINE) {
 
-            glm::vec3 p0 = car.modelPose.position;
-            glm::vec3 p1 = Scene::getHistoryBackStep(1).car.modelPose.position;
-            glm::vec3 p2 = Scene::getHistoryBackStep(2).car.modelPose.position;
-            glm::vec3 p3 = Scene::getHistoryBackStep(3).car.modelPose.position;
+        float d = glm::length(i->pose.position - car.modelPose.position);
+        bool isReallyClose = d < 0.15;
 
-            float d0 = glm::length(i->pose.position - p0);
-            float d1 = glm::length(i->pose.position - p1);
-            float d2 = glm::length(i->pose.position - p2);
-            float d3 = glm::length(i->pose.position - p3);
+        switch (i->type) {
 
-            if (d0 > 0.3) {
-                continue;
-            }
+            case STOP_LINE:
+            case GIVE_WAY_LINE:
+                if (!rules.line) {
+                    if (d < 0.5) {
+                        rules.line = i;
+                        rules.lineTime = simulationTime;
+                        rules.linePassed = false;
+                    }
+                } else if (rules.line == i) { 
+                    if (isReallyClose && rules.linePassed == false) {
+                        uint64_t delta = simulationTime - rules.lineTime;
+                        uint64_t deltaLimit = 0;
+                        std::string typeString = "";
+                        if (i->type == STOP_LINE) {
+                            deltaLimit = 3000;
+                            typeString = "stop line";
+                        }
+                        if (i->type == GIVE_WAY_LINE) {
+                            deltaLimit = 1000;
+                            typeString = "give-way line";
+                        }
+                        if (delta < deltaLimit) {
+                            printViolation(simulationTime);
+                            std::cerr << "Passed "
+                                      << typeString
+                                      << " in: "
+                                      << delta
+                                      << "ms"
+                                      << std::endl;
 
-            if (d3 < d2 || d1 > d0) {
-                continue;
-            }
-
-            int notMovedCounter = 0;
-
-            glm::vec3 prevPos = Scene::getFromHistory(
-                    simulationTime).car.modelPose.position;
-
-            for (int dt = 10; dt < 5000; dt += 10) {
-
-                glm::vec3 nowPos = Scene::getFromHistory(
-                        simulationTime - dt).car.modelPose.position;
-
-                float d = glm::length(nowPos - i->pose.position);
-
-                if (d < 0.4 && glm::length(prevPos - nowPos) < 0.001) {
-                    notMovedCounter++;
-                } else if (notMovedCounter > 0) {
-                    break;
+                            if (i->type == GIVE_WAY_LINE && rules.exitIfGiveWayLineIgnored) {
+                                std::exit(-1);
+                            }
+                            if (i->type == STOP_LINE && rules.exitIfStopLineIgnored) {
+                                std::exit(-1);
+                            }
+                        }
+                        rules.linePassed = true;
+                    }
+                    if (d > 0.5) {
+                        rules.line = nullptr;
+                        rules.lineTime = 0;
+                        rules.linePassed = false;
+                    }
                 }
-                
-                prevPos = nowPos;
-            }
+                break;
 
-            if (notMovedCounter < 300) {
-                std::cerr << "\nRULE VIOLATION" << std::endl;
-                std::cerr << "Did not stop on stop line!" << std::endl;
-                std::cerr << "Stop time: " 
-                          << notMovedCounter * 10 << "ms" << std::endl;
+            case GROUND_10:
+                if (isReallyClose) rules.allowedMaxSpeed = 10;
+                break;
+            case GROUND_20:
+                if (isReallyClose) rules.allowedMaxSpeed = 20;
+                break;
+            case GROUND_30:
+                if (isReallyClose) rules.allowedMaxSpeed = 30;
+                break;
+            case GROUND_40:
+                if (isReallyClose) rules.allowedMaxSpeed = 40;
+                break;
+            case GROUND_50:
+                if (isReallyClose) rules.allowedMaxSpeed = 50;
+                break;
+            case GROUND_60:
+                if (isReallyClose) rules.allowedMaxSpeed = 60;
+                break;
+            case GROUND_70:
+                if (isReallyClose) rules.allowedMaxSpeed = 70;
+                break;
+            case GROUND_80:
+                if (isReallyClose) rules.allowedMaxSpeed = 80;
+                break;
+            case GROUND_90:
+                if (isReallyClose) rules.allowedMaxSpeed = 90;
+                break;
+
+            case GROUND_10_END:
+            case GROUND_20_END:
+            case GROUND_30_END:
+            case GROUND_40_END:
+            case GROUND_50_END:
+            case GROUND_60_END:
+            case GROUND_70_END:
+            case GROUND_80_END:
+            case GROUND_90_END:
+                if (isReallyClose) rules.allowedMaxSpeed = 1000;
+                break;
+
+            case GROUND_ARROW_RIGHT:
+                if (isReallyClose) rules.rightArrow = i;
+                break;
+            case GROUND_ARROW_LEFT:
+                if (isReallyClose) rules.leftArrow = i;
+                break;
+        }
+    }
+
+    if (rules.rightArrow) {
+
+        glm::vec4 carWorldCoords =
+            glm::vec4(car.modelPose.position, 1.0f);
+        glm::vec3 carArrowCoords = glm::vec3(
+                rules.rightArrow->pose.getInverseMatrix() * carWorldCoords);
+
+        if (carArrowCoords.x < -0.5 
+                || carArrowCoords.z < -1.5
+                || carArrowCoords.z > 0.3) {
+
+            printViolation(simulationTime);
+            std::cerr << "Ignored right arrow!" << std::endl;
+
+            if (rules.exitIfRightArrowIgnored) {
+                std::exit(-1);
             }
+        }
+
+        if (carArrowCoords.x > 0.5 || glm::length(carArrowCoords) > 3) {
+            rules.rightArrow = nullptr;
+        }
+    }
+
+    if (rules.leftArrow) {
+
+        glm::vec4 carWorldCoords =
+            glm::vec4(car.modelPose.position, 1.0f);
+        glm::vec3 carArrowCoords = glm::vec3(
+                rules.leftArrow->pose.getInverseMatrix() * carWorldCoords);
+
+        if (carArrowCoords.x > 0.2
+                || carArrowCoords.z < -1.5
+                || carArrowCoords.z > 0.3) {
+
+            printViolation(simulationTime);
+            std::cerr << "Ignored left arrow!" << std::endl;
+
+            if (rules.exitIfLeftArrowIgnored) {
+                std::exit(-1);
+            }
+        }
+
+        std::cout << carArrowCoords << std::endl;
+
+        if (carArrowCoords.x < -0.9 || glm::length(carArrowCoords) > 3) {
+            rules.leftArrow = nullptr;
+        }
+    }
+
+    // TODO: calc correct max speed
+
+    if(car.vesc.velocity > rules.allowedMaxSpeed / 3.6 / 10) {
+
+        std::cerr << "Exceeded speed limit: "
+                  << rules.allowedMaxSpeed
+                  << std::endl;
+
+        if (rules.exitIfSpeedLimitExceeded) {
+            std::exit(-1);
         }
     }
 }
