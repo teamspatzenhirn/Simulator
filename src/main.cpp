@@ -3,7 +3,7 @@
 #include "Loop.h"
 #include "helpers/Input.h"
 
-int main () {
+int main (int argc, char* argv[]) {
 
     int windowWidth = 800;
     int windowHeight = 600;
@@ -39,8 +39,14 @@ int main () {
     glfwSwapInterval(1);
 
     // loop setup
+    
+    std::string scenePath = "default.json";
+    if (argc > 1) {
+        scenePath = std::string(argv[1]);
+    }
 
-    std::shared_ptr<Loop> loop = std::make_shared<Loop>(window, windowWidth, windowHeight);
+    std::shared_ptr<Loop> loop = std::make_shared<Loop>(
+            window, windowWidth, windowHeight, scenePath);
 
     Loop::instance = loop;
 

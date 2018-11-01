@@ -70,7 +70,7 @@ public:
 
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-    Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight);
+    Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight, std::string scenePath);
 
     void loop();
 };

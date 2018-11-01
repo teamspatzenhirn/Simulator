@@ -41,7 +41,7 @@ class GuiModule {
  
 public:
 
-    GuiModule(GLFWwindow* window);
+    GuiModule(GLFWwindow* window, std::string scenePath);
     ~GuiModule();
 
     void renderRootWindow(Scene& scene);

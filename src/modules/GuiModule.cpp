@@ -1,13 +1,22 @@
 #include "GuiModule.h"
 
-GuiModule::GuiModule(GLFWwindow* window) {
+GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     this->window = window;
 
-    openedPath = "./";
-    openedFilename = "default.json";
-    currentDirectory = "./";
-    selectedFilename = "default.json";
+    int separatorIndex = scenePath.find_last_of("\\/");
+
+    if (separatorIndex > 0) { 
+        openedPath = scenePath.substr(0, separatorIndex);
+        openedFilename = scenePath.substr(
+                separatorIndex+1, scenePath.size());
+    } else {
+        openedPath = "./";
+        openedFilename = scenePath;
+    }
+
+    currentDirectory = openedPath;
+    selectedFilename = openedFilename;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -314,7 +323,8 @@ void GuiModule::renderHelpWindow() {
 
         ImGui::Begin("Help", &showHelpWindow);
 
-        ImGui::Text("Use w a s d to move");
+        ImGui::Text("Use w a s d to move the camera");
+        ImGui::Text("Use arrow keys to move the vehicle");
         ImGui::Text("Right click and drag to move the camera");
         ImGui::Text("Press c to toggle car camera");
         ImGui::Text("Press p to pause the simulation");

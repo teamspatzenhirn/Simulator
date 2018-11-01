@@ -2,7 +2,7 @@
 
 std::shared_ptr<Loop> Loop::instance;
 
-Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
+Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight, std::string scenePath)
     : window{window}
     , windowWidth{windowWidth}
     , windowHeight{windowHeight}
@@ -10,9 +10,9 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight)
     , markerFrameBuffer{windowWidth, windowHeight}
     , screenQuad{windowWidth, windowHeight, "shaders/ScreenQuadFragment.glsl"}
     , screenQuadCar{windowWidth, windowHeight, "shaders/ScreenQuadCarFragment.glsl"}
-    , guiModule{window} {
+    , guiModule{window, scenePath} {
 
-    scene.load("default.json");
+    scene.load(scenePath);
 }
 
 void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
