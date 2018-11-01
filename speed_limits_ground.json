@@ -79,18 +79,18 @@
     "fpsCamera": {
         "aspectRatio": 1.3333333730697632,
         "fov": 0.942477822303772,
-        "pitch": 0.3799371123313904,
+        "pitch": 0.5099343657493591,
         "pose": {
             "position": [
-                -5.267467498779297,
-                3.6840715408325195,
-                -9.969086647033691
+                -8.185874938964844,
+                5.30012845993042,
+                -7.401114463806152
             ],
             "rotation": [
-                -0.3962509036064148,
-                0.07619398832321167,
-                0.898514986038208,
-                0.17277295887470245
+                -0.4915768802165985,
+                0.12812446057796478,
+                0.8335109353065491,
+                0.21724607050418854
             ],
             "scale": [
                 1.0,
@@ -98,7 +98,7 @@
                 1.0
             ]
         },
-        "yaw": -3.972292184829712
+        "yaw": -4.207314491271973
     },
     "items": [
         {
@@ -289,9 +289,40 @@
                 ]
             },
             "type": 9
+        },
+        {
+            "pose": {
+                "position": [
+                    -0.07874822616577148,
+                    0.0,
+                    8.556697845458984
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": 26
         }
     ],
     "paused": false,
+    "rules": {
+        "exitIfGiveWayLineIgnored": false,
+        "exitIfLeftArrowIgnored": false,
+        "exitIfNotOnTrack": true,
+        "exitIfOnEndItem": true,
+        "exitIfRightArrowIgnored": false,
+        "exitIfSpeedLimitExceeded": true,
+        "exitIfStopLineIgnored": false,
+        "exitOnObstacleCollision": false
+    },
     "tracks": {
         "centerLineInterrupt": 0.20000000298023224,
         "centerLineLength": 0.20000000298023224,

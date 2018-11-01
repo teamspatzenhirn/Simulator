@@ -415,6 +415,36 @@ void from_json(const json& j, std::vector<std::shared_ptr<Scene::Item>>& is) {
 }
 
 /*
+ * Scene::Rules
+ */
+
+void to_json(json& j, const Scene::Rules& r) {
+
+    j = json({
+            {"exitOnObstacleCollision", r.exitOnObstacleCollision},
+            {"exitIfNotOnTrack", r.exitIfNotOnTrack},
+            {"exitIfSpeedLimitExceeded", r.exitIfSpeedLimitExceeded},
+            {"exitIfLeftArrowIgnored", r.exitIfLeftArrowIgnored},
+            {"exitIfRightArrowIgnored", r.exitIfRightArrowIgnored},
+            {"exitIfStopLineIgnored", r.exitIfStopLineIgnored},
+            {"exitIfGiveWayLineIgnored", r.exitIfGiveWayLineIgnored},
+            {"exitIfOnEndItem", r.exitIfOnEndItem}
+        });
+}
+
+void from_json(const json& j, Scene::Rules& r) {
+
+    r.exitOnObstacleCollision = j.at("exitOnObstacleCollision").get<bool>();
+    r.exitIfNotOnTrack = j.at("exitIfNotOnTrack").get<bool>();
+    r.exitIfSpeedLimitExceeded = j.at("exitIfSpeedLimitExceeded").get<bool>();
+    r.exitIfLeftArrowIgnored = j.at("exitIfLeftArrowIgnored").get<bool>();
+    r.exitIfRightArrowIgnored = j.at("exitIfRightArrowIgnored").get<bool>();
+    r.exitIfStopLineIgnored = j.at("exitIfStopLineIgnored").get<bool>();
+    r.exitIfGiveWayLineIgnored = j.at("exitIfGiveWayLineIgnored").get<bool>();
+    r.exitIfOnEndItem = j.at("exitIfOnEndItem").get<bool>();
+}
+
+/*
  * Scene
  */
 
@@ -426,7 +456,8 @@ void to_json(json& j, const Scene& s) {
             {"fpsCamera", s.fpsCamera},
             {"car", s.car},
             {"tracks", s.tracks},
-            {"items", s.items}
+            {"items", s.items},
+            {"rules", s.rules}
         });
 }
 
@@ -438,6 +469,12 @@ void from_json(const json& j, Scene& s) {
     s.car = j.at("car").get<Scene::Car>();
     s.tracks = j.at("tracks").get<Scene::Tracks>();
     s.items = j.at("items").get<std::vector<std::shared_ptr<Scene::Item>>>();
+
+    try {
+        s.rules = j.at("rules").get<Scene::Rules>();
+    } catch (std::exception e) {
+        std::cout << "Loading defaults for Scene::Rules" << std::endl;
+    }
 }
 
 
