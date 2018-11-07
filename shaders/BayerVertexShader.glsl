@@ -22,6 +22,14 @@ void main () {
     fragTextureCoord = textureCoord;
     fragCameraPosition = cameraPosition;
 
+    /*
+     * This matrix rotates all projected vertices so that the final
+     * rendered image is written to memory in the correct orientation.
+     * If this flip matrix is ommited, a texture (or image) read by
+     * glReadPixels(...) is read upside down from OpenGL and must be
+     * flipped on the CPU. To avoid doing the flip operation on the CPU
+     * this flip matrix is used.
+     */
     mat4 flipMat = mat4(
         vec4(1.0f, 0.0f, 0.0f, 0.0f),
         vec4(0.0f, -1.0f, 0.0f, 0.0f),

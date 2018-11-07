@@ -119,28 +119,46 @@ void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
     }
 }
 
-void CarModule::updateMainCamera(Scene::Car& car) {
+void CarModule::updateMainCamera(
+        Scene::Car::MainCamera& carMainCamera,
+        Pose& carModelPose) {
 
-    mainCamera.fov = car.mainCamera.fovy;
-    mainCamera.aspectRatio = car.mainCamera.getAspectRatio();
-    mainCamera.pose = car.mainCamera.pose.transform(car.modelPose);
+    mainCamera.fov = carMainCamera.fovy;
+    mainCamera.aspectRatio = carMainCamera.getAspectRatio();
+    mainCamera.pose = carMainCamera.pose.transform(carModelPose);
 
-    if (frameBuffer.width != car.mainCamera.imageWidth
-            || frameBuffer.height != car.mainCamera.imageHeight) {
-        frameBuffer.resize(car.mainCamera.imageWidth,
-                car.mainCamera.imageHeight);
+    if (frameBuffer.width != carMainCamera.imageWidth
+            || frameBuffer.height != carMainCamera.imageHeight) {
+        frameBuffer.resize(carMainCamera.imageWidth,
+                carMainCamera.imageHeight);
     }
 
-    if (bayerFrameBuffer.width != car.mainCamera.imageWidth
-            || bayerFrameBuffer.height != car.mainCamera.imageHeight) {
-        bayerFrameBuffer.resize(car.mainCamera.imageWidth,
-                car.mainCamera.imageHeight);
+    if (bayerFrameBuffer.width != carMainCamera.imageWidth
+            || bayerFrameBuffer.height != carMainCamera.imageHeight) {
+        bayerFrameBuffer.resize(carMainCamera.imageWidth,
+                carMainCamera.imageHeight);
+    }
+}
+
+void CarModule::updateDepthCamera(
+        Scene::Car::DepthCamera& carDepthCamera,
+        Pose& carModelPose) {
+
+    depthCamera.fov = carDepthCamera.depthFovy;
+    depthCamera.aspectRatio = carDepthCamera.getDepthAspectRatio();
+    depthCamera.pose = carDepthCamera.pose.transform(carModelPose);
+
+    if (depthCameraFrameBuffer.width != carDepthCamera.depthImageWidth
+            || depthCameraFrameBuffer.height != carDepthCamera.depthImageHeight) {
+        depthCameraFrameBuffer.resize(carDepthCamera.depthImageWidth,
+                carDepthCamera.depthImageHeight);
     }
 }
 
 void CarModule::updateLaserSensors(std::vector<std::shared_ptr<Scene::Item>>& items) {
 
     for (std::shared_ptr<Scene::Item> i : items) {
+        // TODO: implement! Haha ...
     }
 }
 

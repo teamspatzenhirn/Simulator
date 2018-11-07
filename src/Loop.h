@@ -23,7 +23,11 @@ class Loop {
     GLuint windowWidth;
     GLuint windowHeight;
 
-    bool fpsCameraActive{true};
+    enum SelectedCamera {
+        FPS_CAMERA,
+        MAIN_CAMERA,
+        DEPTH_CAMERA
+    } selectedCamera = FPS_CAMERA;
 
     Timer timer;
 
@@ -38,10 +42,8 @@ class Loop {
     Scene scene;
 
     FrameBuffer frameBuffer;
-    FrameBuffer markerFrameBuffer;
-
     ScreenQuad screenQuad;
-    ScreenQuad screenQuadCar;
+    ScreenQuad depthImagePostProcessing;
 
     CommModule commModule;
     MarkerModule markerModule;
@@ -63,6 +65,7 @@ class Loop {
     void renderScene(GLuint shaderProgramIdj);
     void renderFpsView();
     void renderCarView();
+    void renderDepthView();
 
 public:
 

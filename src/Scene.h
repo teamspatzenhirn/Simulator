@@ -85,6 +85,7 @@ enum ItemType {
     GROUND_ARROW_LEFT,
     GROUND_ARROW_RIGHT,
     END,
+    CALIB_MAT,
 };
 
 /*
@@ -248,6 +249,37 @@ struct Scene {
             }
 
         } mainCamera;
+
+        /*
+         * This contains the parameters for the color and the depth images
+         * produced by the depth camera.
+         */
+        struct DepthCamera {
+
+            Pose pose{0, 0.19, 0.05};
+
+            DepthCamera() {
+                pose.setEulerAngles(glm::vec3(0.0f, 180.0f, 0.0f));
+            }
+
+            unsigned int colorImageWidth = 1280;
+            unsigned int colorImageHeight = 720;
+
+            unsigned int depthImageWidth = 640;
+            unsigned int depthImageHeight = 480;
+
+            float colorFovy = M_PI * 0.5f;
+            float depthFovy = M_PI * 0.25f;
+
+            float getColorAspectRatio() {
+                return (float)colorImageWidth / (float)colorImageHeight;
+            }
+
+            float getDepthAspectRatio() {
+                return (float)depthImageWidth / (float)depthImageHeight;
+            }
+
+        } depthCamera;
 
     } car;
 
