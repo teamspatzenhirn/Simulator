@@ -21,7 +21,7 @@ public:
 
     FrameBuffer frameBuffer{1, 1};
     FrameBuffer bayerFrameBuffer{1, 1, GL_RED, GL_RED};
-    FrameBuffer depthCameraFrameBuffer{1, 1};
+    FrameBuffer depthCameraFrameBuffer{1, 1, GL_RGB32F, GL_RGB};
 
     CarModule();
 

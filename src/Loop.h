@@ -39,11 +39,14 @@ class Loop {
         Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
         Shader("shaders/BayerFragmentShader.glsl", GL_FRAGMENT_SHADER)};
 
+    ShaderProgram depthCameraShaderProgram{
+        Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
+        Shader("shaders/DepthPointsFragmentShader.glsl", GL_FRAGMENT_SHADER)};
+
     Scene scene;
 
     FrameBuffer frameBuffer;
     ScreenQuad screenQuad;
-    ScreenQuad depthImagePostProcessing;
 
     CommModule commModule;
     MarkerModule markerModule;

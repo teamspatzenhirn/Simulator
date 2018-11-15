@@ -11,6 +11,7 @@
 class CommModule {
 
     static constexpr int mainCameraMemId = 428769;
+    static constexpr int depthCameraMemId = 428772;
     static constexpr int carMemId = 428770;
     static constexpr int vescMemId = 428771;
 
@@ -21,6 +22,17 @@ class CommModule {
          * possible image size otherwise ... welp, not good ...
          */
         unsigned char buffer[3186816];
+
+        int imageWidth;
+        int imageHeight;
+    };
+
+    struct DepthCameraImage {
+
+        /*
+         * Here we assume 640x480 to be the maximum possible depth image size.
+         */
+        float buffer[640*480*3];
 
         int imageWidth;
         int imageHeight;
@@ -57,8 +69,12 @@ class CommModule {
     int vescFailCounter = 0;
 
     Capture mainCameraCapture;
+    Capture depthCameraCapture;
+
+    DepthCameraImage* lastDepthObj = nullptr;
 
     SimulatorSHM::SHMComm<MainCameraImage> txMainCamera; 
+    SimulatorSHM::SHMComm<DepthCameraImage> txDepthCamera; 
     SimulatorSHM::SHMComm<Car> txCar; 
     SimulatorSHM::SHMComm<Vesc> rxVesc; 
 
@@ -71,6 +87,7 @@ public:
     ~CommModule();
 
     void transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebufferId);
+    void transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebufferId);
     void transmitCar(Scene::Car& car, uint64_t time);
     void receiveVesc(Scene::Car::Vesc& car);
 };

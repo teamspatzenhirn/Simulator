@@ -13,6 +13,7 @@ layout(location = 1) in vec3 normal;
 layout(location = 2) in vec2 textureCoord;
 
 out vec4 fragPosition;
+out vec4 fragViewPosition;
 out vec3 fragNormal;
 out vec2 fragTextureCoord;
 out vec3 fragCameraPosition;
@@ -47,10 +48,11 @@ void main () {
             + right * modVertex.x
             + up * modVertex.y
             + eye * modVertex.z, 1.0);
-        gl_Position = projection * view * fragPosition;
     } else {
         fragNormal = normalize(normalMat * normal);
         fragPosition = model * vec4(vertex, 1);
-        gl_Position = projection * view * fragPosition;
     }
+
+    fragViewPosition = view * fragPosition;
+    gl_Position = projection * fragViewPosition;
 }

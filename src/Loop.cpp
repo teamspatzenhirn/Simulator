@@ -8,7 +8,6 @@ Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight, std::str
     , windowHeight{windowHeight}
     , frameBuffer{windowWidth, windowHeight}
     , screenQuad{windowWidth, windowHeight, "shaders/ScreenQuadFragment.glsl"}
-    , depthImagePostProcessing{windowWidth, windowHeight, "shaders/ScreenQuadLinearizeFragment.glsl"}
     , guiModule{window, scenePath} {
 
     scene.load(scenePath);
@@ -152,13 +151,14 @@ void Loop::loop() {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, car.depthCameraFrameBuffer.depthTextureId);
+            glBindTexture(GL_TEXTURE_2D, car.depthCameraFrameBuffer.colorTextureId);
             glUniform1i(glGetUniformLocation(shaderProgramId, "tex"), 0);
 
             screenQuad.end();
         }
 
         commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
+        commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
         guiModule.renderRootWindow(scene);
         guiModule.renderCarPropertiesWindow(scene.car);
@@ -298,7 +298,7 @@ void Loop::renderDepthView() {
     Scene preRenderScene = scene;
     update(timer.accumulator);
 
-    glUseProgram(shaderProgram.id);
+    glUseProgram(depthCameraShaderProgram.id);
 
     glBindFramebuffer(GL_FRAMEBUFFER, car.depthCameraFrameBuffer.id);
 
@@ -306,30 +306,14 @@ void Loop::renderDepthView() {
             scene.car.depthCamera.depthImageWidth,
             scene.car.depthCamera.depthImageHeight);
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 100.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    car.depthCamera.render(shaderProgram.id);
+    car.depthCamera.render(depthCameraShaderProgram.id);
 
-    renderScene(carShaderProgram.id);
+    renderScene(depthCameraShaderProgram.id);
 
-    // linearize rendered depth buffer in post processing step
-
-    GLuint postProcessingProgramId = depthImagePostProcessing.start();
-
-    glUseProgram(postProcessingProgramId);
-
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, car.depthCameraFrameBuffer.colorTextureId);
-    glUniform1i(glGetUniformLocation(postProcessingProgramId, "colorTexture"), 0);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, car.depthCameraFrameBuffer.depthTextureId);
-    glUniform1i(glGetUniformLocation(postProcessingProgramId, "depthTexture"), 1);
-
-    depthImagePostProcessing.end();
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     scene = preRenderScene;
 }
