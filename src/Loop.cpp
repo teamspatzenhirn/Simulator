@@ -211,11 +211,14 @@ void Loop::renderScene(GLuint shaderProgramId) {
 
 void Loop::renderMarkers(GLuint shaderProgramId) {
 
-    markerModule.add(light.pose);
-    markerModule.add(scene.car.modelPose);
+    markerModule.add(light.pose, MarkerModule::TRANSLATE_ALL);
+    markerModule.add(scene.car.modelPose, MarkerModule::TRANSLATE_X
+            | MarkerModule::TRANSLATE_Z | MarkerModule::ROTATE_Y);
 
     for (std::shared_ptr<Scene::Item>& i : scene.items) {
-        markerModule.add(i->pose);
+        markerModule.add(i->pose, MarkerModule::TRANSLATE_X
+                | MarkerModule::TRANSLATE_Z | MarkerModule::SCALE_ALL
+                | MarkerModule::ROTATE_Y);
     }
 
     markerModule.render(window, shaderProgramId, scene.fpsCamera);
