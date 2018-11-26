@@ -122,6 +122,11 @@ struct Scene {
     uint64_t simulationTime = 0;
 
     /*
+     * The speed of the simulation given as fraction of real time.
+     */
+    float simulationSpeed = 0.25f;
+
+    /*
      * This is free camera that is used in the editor.
      */
     FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};

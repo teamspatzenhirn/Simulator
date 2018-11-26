@@ -4,4 +4,4 @@ build
 .idea/*
 cmake-*
 compile_commands.json
-imgui.ini
+*.ini

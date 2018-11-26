@@ -38,7 +38,7 @@ void Loop::loop() {
         guiModule.begin();
 
         double deltaTime = 4.0f;
-        double simDeltaTime = 1.0f;
+        double simDeltaTime = deltaTime * scene.simulationSpeed;
 
         while (timer.updateStep(deltaTime)) {
 
@@ -164,6 +164,7 @@ void Loop::loop() {
         guiModule.renderCarPropertiesWindow(scene.car);
         guiModule.renderRulePropertiesWindow(scene.rules);
         guiModule.renderPoseWindow(markerModule.getSelection());
+        guiModule.renderSettingsWindow(scene);
         guiModule.renderHelpWindow();
         guiModule.end();
 

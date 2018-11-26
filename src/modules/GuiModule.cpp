@@ -71,6 +71,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
             ImGui::MenuItem("Car Properties", NULL, &showCarPropertiesWindow);
             ImGui::MenuItem("Pose", NULL, &showPoseWindow);
+            ImGui::MenuItem("Settings", NULL, &showSettingsWindow);
             ImGui::MenuItem("Help", NULL, &showHelpWindow);
 
             ImGui::EndMenu();
@@ -100,6 +101,8 @@ void GuiModule::renderRootWindow(Scene& scene) {
     if (scene.paused) {
         ImGui::Text("PAUSED");
     }
+
+    ImGui::ShowDemoWindow();
 
     ImGui::End();
 
@@ -343,6 +346,18 @@ void GuiModule::renderCarPropertiesWindow(Scene::Car& car) {
         }
 
         ImGui::End(); 
+    }
+}
+
+void GuiModule::renderSettingsWindow(Scene& scene) {
+
+    if (showSettingsWindow) { 
+
+        ImGui::Begin("Settings", &showSettingsWindow);
+
+        ImGui::DragFloat("Simulation speed", &scene.simulationSpeed, 0.05f, 0.01f, 4.0f);
+
+        ImGui::End();
     }
 }
 
