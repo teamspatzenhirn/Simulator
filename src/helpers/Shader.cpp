@@ -50,6 +50,7 @@ Shader::Shader(std::string sourcePath, GLenum shaderType) {
 		std::cout << logData << std::endl;
         std::exit(-1);
 	}
+
 }
 
 Shader::~Shader() {

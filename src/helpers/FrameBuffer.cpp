@@ -40,7 +40,7 @@ FrameBuffer::FrameBuffer(GLuint width, GLuint height, GLint internalFormatColor,
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
-                 GL_DEPTH_COMPONENT24,
+                 GL_DEPTH_COMPONENT,
                  width,
                  height,
                  0,

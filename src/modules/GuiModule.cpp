@@ -188,6 +188,9 @@ void GuiModule::renderCreateMenu(Scene& scene) {
     if (ImGui::MenuItem("End")) {
         newType = END;
     }
+    if (ImGui::MenuItem("Calib mat")) {
+        newType = CALIB_MAT;
+    }
 
     if (NONE != newType) {
         scene.items.emplace_back(std::make_shared<Scene::Item>(newType));

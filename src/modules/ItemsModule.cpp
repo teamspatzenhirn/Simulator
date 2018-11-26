@@ -123,6 +123,9 @@ void ItemsModule::render(GLuint shaderProgramId,
             case END:
                 endModel.render(shaderProgramId, modelMat);
                 break;
+            case CALIB_MAT:
+                calibMatModel.render(shaderProgramId, modelMat);
+                break;
             default:
                 break;
         }

@@ -2,10 +2,12 @@
 
 CommModule::CommModule() :
     txMainCamera(SimulatorSHM::SERVER, mainCameraMemId),
+    txDepthCamera(SimulatorSHM::SERVER, depthCameraMemId),
     txCar(SimulatorSHM::SERVER, carMemId),
     rxVesc(SimulatorSHM::CLIENT, vescMemId) { 
 
     initSharedMemory(txMainCamera);
+    initSharedMemory(txDepthCamera);
     initSharedMemory(rxVesc);
     initSharedMemory(txCar);
 }
@@ -42,9 +44,36 @@ void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebuffe
                 car.mainCamera.imageHeight,
                 1,
                 GL_RED,
-                GL_COLOR_ATTACHMENT0);
+                GL_UNSIGNED_BYTE);
 
         txMainCamera.unlock(obj);
+    } 
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void CommModule::transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebufferId) {
+
+    glBindFramebuffer(GL_FRAMEBUFFER, depthCameraFramebufferId);
+
+    // download image from opengl to shared memory buffer
+
+    DepthCameraImage* obj = txDepthCamera.lock(SimulatorSHM::WRITE_OVERWRITE_OLDEST); 
+
+    if (obj != nullptr) {
+
+        obj->imageWidth = car.depthCamera.depthImageWidth;
+        obj->imageHeight = car.depthCamera.depthImageHeight;
+
+        depthCameraCapture.capture(
+                (GLubyte*)obj->buffer,
+                car.depthCamera.depthImageWidth,
+                car.depthCamera.depthImageHeight,
+                4 * 3,
+                GL_RGB,
+                GL_FLOAT);
+
+        txDepthCamera.unlock(obj);
     } 
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);

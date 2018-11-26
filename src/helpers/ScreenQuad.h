@@ -29,6 +29,19 @@ public:
     ScreenQuad(GLuint width, GLuint height, Shader fragmentShader);
     ~ScreenQuad();
 
+    /*
+     * Starts drawing to screen filling quad.
+     * Returns the shaderProgramId for this screen quad
+     * and binds the shaderProgram.
+     */
+    GLuint start();
+
+    /*
+     * Ends drawing to the screen filling quad.
+     * Actually draws the geometry of the screen quad.
+     */
+    void end();
+
     void render(std::function<void(GLuint)> renderFunction);
 };
 

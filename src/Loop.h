@@ -23,7 +23,11 @@ class Loop {
     GLuint windowWidth;
     GLuint windowHeight;
 
-    bool fpsCameraActive{true};
+    enum SelectedCamera {
+        FPS_CAMERA,
+        MAIN_CAMERA,
+        DEPTH_CAMERA
+    } selectedCamera = FPS_CAMERA;
 
     Timer timer;
 
@@ -35,13 +39,14 @@ class Loop {
         Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
         Shader("shaders/BayerFragmentShader.glsl", GL_FRAGMENT_SHADER)};
 
+    ShaderProgram depthCameraShaderProgram{
+        Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
+        Shader("shaders/DepthPointsFragmentShader.glsl", GL_FRAGMENT_SHADER)};
+
     Scene scene;
 
     FrameBuffer frameBuffer;
-    FrameBuffer markerFrameBuffer;
-
     ScreenQuad screenQuad;
-    ScreenQuad screenQuadCar;
 
     CommModule commModule;
     MarkerModule markerModule;
@@ -63,6 +68,7 @@ class Loop {
     void renderScene(GLuint shaderProgramIdj);
     void renderFpsView();
     void renderCarView();
+    void renderDepthView();
 
 public:
 

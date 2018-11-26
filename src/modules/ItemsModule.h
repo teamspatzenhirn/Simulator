@@ -34,6 +34,7 @@ public:
     Model groundArrowLeftModel{"models/ground_arrow_left.obj"};
     Model groundArrowRightModel{"models/ground_arrow_right.obj"};
     Model endModel{"models/end.obj"};
+    Model calibMatModel{"models/calib.obj"};
 
     ItemsModule();
     ~ItemsModule();

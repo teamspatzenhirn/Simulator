@@ -23,9 +23,9 @@ public:
             GLubyte* buffer,
             GLuint width,
             GLuint height,
-            GLuint channels,
+            GLuint elementSize,
             GLenum format,
-            GLenum mode = GL_FRONT);
+            GLenum dataType = GL_UNSIGNED_BYTE);
 };
 
 #endif

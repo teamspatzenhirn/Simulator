@@ -1,4 +1,5 @@
 #include "Capture.h"
+#include <iostream>
 
 Capture::Capture() {
 
@@ -18,11 +19,11 @@ bool Capture::capture(
         GLubyte* buffer,
         GLuint width,
         GLuint height,
-        GLuint channels,
+        GLuint elementSize,
         GLenum format,
-        GLenum mode) {
+        GLenum dataType) {
 
-    int dataSize = width * height * channels;
+    int dataSize = width * height * elementSize;
 
     if (this->width != width || this->height != height) {
         this->height = height;
@@ -36,14 +37,12 @@ bool Capture::capture(
     pboIndex = (pboIndex + 1) % 2;
     int nextIndex = (pboIndex + 1) % 2;
 
-    glReadBuffer(mode);
-
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboIndex]);
     glReadPixels(
         0, 0,
         width, height,
         format,
-        GL_UNSIGNED_BYTE,
+        dataType,
         nullptr);
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[nextIndex]);

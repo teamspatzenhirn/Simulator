@@ -26,7 +26,7 @@ int main (int argc, char* argv[]) {
         std::cout << "GL Extension Wrangler initialization failed!" << std::endl;
         std::exit(-1);
     }
-    
+
     // OpenGL and GLFW settings
 
     glClearColor(1.0, 1.0, 1.0, 1.0);

@@ -39,22 +39,25 @@ void main () {
         vec3 specular = ks * is * pow(max(dot(V, R), 0), ns);
 
         fragColor = vec4(ambient + diffuse + specular, 1.0);
-
-        if (int(gl_FragCoord.y) % 2 == 0) {
-           if (int(gl_FragCoord.x) % 2 == 0) {
-               fragColor = vec4(fragColor.r, 0, 0, 1);
-           } else {
-               fragColor = vec4(fragColor.g, 0, 0, 1);
-           }
-        } else {
-           if (int(gl_FragCoord.x) % 2 == 0) {
-               fragColor = vec4(fragColor.g, 0, 0, 1);
-           } else {
-               fragColor = vec4(fragColor.b, 0, 0, 1);
-           }
-        }
-
     } else {
         fragColor = vec4(kd, 1.0);
+    }
+    
+    // bayer conversion
+    // depending on the position in the image either only
+    // the red, blue or green part of the pixel is kept
+
+    if (int(gl_FragCoord.y) % 2 == 0) {
+       if (int(gl_FragCoord.x) % 2 == 0) {
+           fragColor = vec4(fragColor.r, 0, 0, 1);
+       } else {
+           fragColor = vec4(fragColor.g, 0, 0, 1);
+       }
+    } else {
+       if (int(gl_FragCoord.x) % 2 == 0) {
+           fragColor = vec4(fragColor.g, 0, 0, 1);
+       } else {
+           fragColor = vec4(fragColor.b, 0, 0, 1);
+       }
     }
 }
