@@ -182,6 +182,8 @@ void Loop::update(double deltaTime) {
         car.updatePosition(scene.car, deltaTime);
     }
 
+    visModule.addPositionTrace(scene.car.modelPose.position, scene.simulationTime);
+
     car.updateMainCamera(scene.car.mainCamera, scene.car.modelPose);
     car.updateDepthCamera(scene.car.depthCamera, scene.car.modelPose);
 }
@@ -258,6 +260,8 @@ void Loop::renderFpsView() {
         // thus we clean the depth buffer here
 
         glClear(GL_DEPTH_BUFFER_BIT);
+
+        visModule.renderPositionTrace(shaderProgram.id, scene.simulationTime);
 
         editor.renderMarkers(shaderProgram.id, scene.tracks, scene.fpsCamera.pose.position);
         renderMarkers(shaderProgram.id);

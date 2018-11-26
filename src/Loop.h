@@ -15,6 +15,7 @@
 #include "modules/ItemsModule.h"
 #include "modules/CollisionModule.h"
 #include "modules/RuleModule.h"
+#include "modules/VisModule.h"
 
 class Loop {
 
@@ -54,6 +55,7 @@ class Loop {
     ItemsModule itemsModule;
     CollisionModule collisionModule;
     RuleModule ruleModule;
+    VisModule visModule;
 
     PointLight light{10.0f, 10.0f, 20.0f};
 

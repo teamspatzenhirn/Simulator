@@ -383,7 +383,7 @@ struct Scene {
     void addToHistory();
 
     /*
-     * Returns the frist scene object from the history which
+     * Returns the first scene object from the history which
      * time stamp is <= the given time point.
      */
     static Scene& getFromHistory(float simulationTimePoint);
