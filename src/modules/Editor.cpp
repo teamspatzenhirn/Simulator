@@ -284,15 +284,26 @@ void Editor::renderScene(GLuint shaderProgramId, const Scene::Tracks& tracks) {
     }
 }
 
-void Editor::renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks) {
+void Editor::renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks, const glm::vec3 cameraPosition) {
 
     // render control points
     for (const std::shared_ptr<ControlPoint>& cp : tracks.getTracks()) {
-        renderMarker(shaderProgramId, cp->coords, cp == activeControlPoint);
+
+        float scale = glm::length(cameraPosition
+                - glm::vec3(cp->coords.x, 0, cp->coords.y)) * 0.15;
+
+        renderMarker(shaderProgramId, cp->coords, cp == activeControlPoint, scale);
     }
 
     if (activeControlPoint && !tracks.controlPointExists(activeControlPoint)) {
-        renderMarker(shaderProgramId, activeControlPoint->coords, true);
+
+        float scale = glm::length(cameraPosition
+                - glm::vec3(
+                    activeControlPoint->coords.x,
+                    0,
+                    activeControlPoint->coords.y)) * 0.15;
+
+        renderMarker(shaderProgramId, activeControlPoint->coords, true, scale);
     }
 
     // render new track markers
@@ -307,10 +318,11 @@ void Editor::renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks) 
     }
 }
 
-void Editor::renderMarker(GLuint shaderProgramId, const glm::vec2& position, const bool active) {
+void Editor::renderMarker(GLuint shaderProgramId, const glm::vec2& position, const bool active, const float scale) {
 
     // create model matrix
     glm::mat4 modelMat = genPointMatrix(position, 0.0f);
+    modelMat = glm::scale(modelMat, glm::vec3(scale, 0, scale));
 
     // render
     if (active) {

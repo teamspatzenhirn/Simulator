@@ -253,7 +253,7 @@ void Loop::renderFpsView() {
 
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    editor.renderMarkers(shaderProgram.id, scene.tracks);
+    editor.renderMarkers(shaderProgram.id, scene.tracks, scene.fpsCamera.pose.position);
     renderMarkers(shaderProgram.id);
 
     scene = preRenderScene;

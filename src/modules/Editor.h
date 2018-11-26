@@ -86,12 +86,12 @@ public:
     void setAutoAlign(bool autoAlign, const Scene::Tracks& tracks);
 
     void renderScene(GLuint shaderProgramId, const Scene::Tracks& tracks);
-    void renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks);
+    void renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks, const glm::vec3 cameraPosition);
 
 private:
 
     // render a single marker
-    void renderMarker(GLuint shaderProgramId, const glm::vec2& position, const bool active);
+    void renderMarker(GLuint shaderProgramId, const glm::vec2& position, const bool active, const float scale);
 
     void startTrack(const glm::vec2& position, const Scene::Tracks& tracks, float groundSize);
     void endTrack(const glm::vec2& position, Scene::Tracks& tracks, float groundSize);
