@@ -230,8 +230,11 @@ void Loop::renderMarkers(GLuint shaderProgramId) {
 
 void Loop::renderFpsView() {
 
-    markerModule.update(window, scene.fpsCamera);
-    editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
+    if (!scene.markersHidden) {
+        markerModule.update(window, scene.fpsCamera);
+        editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
+    }
+
     itemsModule.update(scene.items, markerModule.getSelection());
 
     Scene preRenderScene = scene;
@@ -248,13 +251,16 @@ void Loop::renderFpsView() {
 
     renderScene(shaderProgram.id);
 
-    // render markers over everything else
-    // thus we clean the depth buffer here
+    if (!scene.markersHidden) {
 
-    glClear(GL_DEPTH_BUFFER_BIT);
+        // render markers over everything else
+        // thus we clean the depth buffer here
 
-    editor.renderMarkers(shaderProgram.id, scene.tracks, scene.fpsCamera.pose.position);
-    renderMarkers(shaderProgram.id);
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        editor.renderMarkers(shaderProgram.id, scene.tracks, scene.fpsCamera.pose.position);
+        renderMarkers(shaderProgram.id);
+    }
 
     scene = preRenderScene;
 }

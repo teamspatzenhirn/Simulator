@@ -105,9 +105,11 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
     // updating hotkeys and stuff ...
     
-    if (!openedFilename.empty()) {
-        for (KeyEvent& e : getKeyEvents()) {
-            if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
+    for (KeyEvent& e : getKeyEvents()) {
+
+        if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
+
+            if (!openedFilename.empty()) {
 
                 uint64_t savedSimulationTime = scene.simulationTime;
 
@@ -118,6 +120,11 @@ void GuiModule::renderRootWindow(Scene& scene) {
                     errorMessage = "Could not open " + selectedFilename + "!";
                 }
             }
+        }
+
+        if (e.key == GLFW_KEY_H && e.action == GLFW_PRESS) {
+
+            scene.markersHidden = !scene.markersHidden;
         }
     }
 }
@@ -346,9 +353,11 @@ void GuiModule::renderHelpWindow() {
         ImGui::Begin("Help", &showHelpWindow);
 
         ImGui::Text("Use w a s d to move the camera");
+        ImGui::Text("Press shift to to move the camera down");
+        ImGui::Text("Press space to to move the camera up");
         ImGui::Text("Use arrow keys to move the vehicle");
         ImGui::Text("Right click and drag to move the camera");
-        ImGui::Text("Press c to toggle car camera");
+        ImGui::Text("Press c to switch car cameras");
         ImGui::Text("Press p to pause the simulation");
 
         ImGui::Separator();
@@ -367,6 +376,7 @@ void GuiModule::renderHelpWindow() {
         ImGui::Text("Click on a green marker to select it");
         ImGui::Text("Click again to cycle tranformation modes");
         ImGui::Text("Press ESC or click anywhere to deselect");
+        ImGui::Text("Press h to toggle marker visibility");
 
         ImGui::End();
     }
