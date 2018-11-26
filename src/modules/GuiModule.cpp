@@ -103,7 +103,23 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
     ImGui::End();
 
-    //ImGui::ShowDemoWindow(NULL);
+    // updating hotkeys and stuff ...
+    
+    if (!openedFilename.empty()) {
+        for (KeyEvent& e : getKeyEvents()) {
+            if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
+
+                uint64_t savedSimulationTime = scene.simulationTime;
+
+                if (scene.load(selectedFilename)) {
+                    Scene::history.clear();
+                    scene.simulationTime = savedSimulationTime;
+                } else {
+                    errorMessage = "Could not open " + selectedFilename + "!";
+                }
+            }
+        }
+    }
 }
 
 void GuiModule::renderCreateMenu(Scene& scene) {
@@ -358,22 +374,6 @@ void GuiModule::renderHelpWindow() {
 
 void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
 
-    /*
-     * TODO: This does not really fit in here.
-     * Thematically it seems ok though, if you count reacting to
-     * key presses as "GUI" work.
-     */
-    if (!openedFilename.empty()) {
-        for (KeyEvent& e : getKeyEvents()) {
-            if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
-                if (scene.load(selectedFilename)) {
-                    Scene::history.clear();
-                } else {
-                    errorMessage = "Could not open " + selectedFilename + "!";
-                }
-            }
-        }
-    }
 
     if (show) {
         ImGui::OpenPopup("Open File");

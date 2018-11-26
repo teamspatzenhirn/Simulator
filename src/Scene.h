@@ -127,6 +127,11 @@ struct Scene {
     FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
 
     /*
+     * If set no markers will be rendered.
+     */
+    bool markersHidden = false;
+
+    /*
      * This struct contains the state of the simulated model car.
      */
     struct Car {
