@@ -1,47 +1,59 @@
 #include "Capture.h"
+#include <iostream>
 
-Capture::Capture(GLuint width, GLuint height, GLuint channels = 3)
-        : imageWidth(width),
-          imageHeight(height),
-          imageChannels(channels) {
+Capture::Capture() {
 
+    width = 0;
+    height = 0;
     pboIndex = 0;
 
-    int dataSize = width * height * channels;
-
     glGenBuffers(2, pboIds);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[0]);
-    glBufferData(GL_PIXEL_PACK_BUFFER, dataSize, nullptr, GL_STREAM_READ);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[1]);
-    glBufferData(GL_PIXEL_PACK_BUFFER, dataSize, nullptr, GL_STREAM_READ);
-    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 }
 
-void Capture::capture(GLubyte* buffer) {
+Capture::~Capture() {
+
+    glDeleteBuffers(2, pboIds);
+}
+
+bool Capture::capture(
+        GLubyte* buffer,
+        GLuint width,
+        GLuint height,
+        GLuint elementSize,
+        GLenum format,
+        GLenum dataType) {
+
+    int dataSize = width * height * elementSize;
+
+    if (this->width != width || this->height != height) {
+        this->height = height;
+        this->width = width;
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[0]);
+        glBufferData(GL_PIXEL_PACK_BUFFER, dataSize, nullptr, GL_STREAM_READ);
+        glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[1]);
+        glBufferData(GL_PIXEL_PACK_BUFFER, dataSize, nullptr, GL_STREAM_READ);
+    }
 
     pboIndex = (pboIndex + 1) % 2;
     int nextIndex = (pboIndex + 1) % 2;
 
-    glReadBuffer(GL_FRONT);
-
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[pboIndex]);
     glReadPixels(
         0, 0,
-        imageWidth, imageHeight,
-        GL_RGB,
-        GL_UNSIGNED_BYTE,
+        width, height,
+        format,
+        dataType,
         nullptr);
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[nextIndex]);
     GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
     if (ptr) {
-        std::memcpy(
-            (void*)buffer,
-            ptr,
-            imageWidth * imageHeight * imageChannels);
+        memcpy(buffer, ptr, dataSize);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
 
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    return ptr != nullptr;
 }

@@ -4,31 +4,49 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/glm.hpp>
+#include <glm/gtx/io.hpp>
 
 #include "ObjLoader.h"
 
 class Model {
-
-public:
 
     GLuint vaoId;
     GLuint vboId;
 
     GLenum storageType;
 
-    std::vector<objl::Vertex> vertices;
-    objl::Material material;
+    void renderMaterialAndVertices(GLuint shaderProgramId);
 
+public:
+
+    Model();
+    Model(const Model& model);
+    Model(GLenum storageType);
     Model(std::string path);
     Model(std::string path, GLenum storageType);
     ~Model();
+
+    std::vector<Model> subModels;
+
+    objl::Material material;
+    std::vector<objl::Vertex> vertices;
+
+    struct BoundingBox {
+
+        glm::vec3 center{0, 0, 0};
+        glm::vec3 size{0, 0, 0};
+
+    } boundingBox;
+
+    void updateBoundingBox();
 
     void upload(GLuint positionLocation = 0,
                 GLuint normalLocation = 1,
                 GLuint texCoordLocation = 2);
 
-    void render(GLuint shaderProgramId, glm::mat4& modelMatrix);
+    void render(GLuint shaderProgramId, glm::mat4 modelMatrix);
 };
 
 #endif

@@ -1,6 +1,30 @@
 #include "Model.h"
 
+Model::Model() : Model(GL_STATIC_DRAW) {
+}
+
+Model::Model(GLenum storageType) : storageType(storageType) {
+
+    glGenVertexArrays(1, &vaoId);
+    glGenBuffers(1, &vboId);
+}
+
+Model::Model(const Model& model) {
+
+    glGenVertexArrays(1, &vaoId);
+    glGenBuffers(1, &vboId);
+
+    storageType = model.storageType;
+    subModels = model.subModels;
+    material = model.material;
+    vertices = model.vertices;
+    boundingBox = model.boundingBox;
+
+    upload();
+}
+
 Model::Model(std::string path) : Model(path, GL_STATIC_DRAW) {
+
 }
 
 Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
@@ -20,16 +44,82 @@ Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
         std::exit(-1);
     }
 
-    objl::Mesh mesh = loader.LoadedMeshes.at(0);
+    if (loader.LoadedMeshes.size() == 1) {
+        objl::Mesh mesh = loader.LoadedMeshes.back();
+        material = mesh.MeshMaterial;
+        vertices = mesh.Vertices;
+    } else {
+        for (objl::Mesh& m : loader.LoadedMeshes) {
+            subModels.emplace_back(storageType);
+            Model& model = subModels.back();
+            model.material = m.MeshMaterial;
+            model.vertices = m.Vertices;
+        }
+    }
 
-    material = mesh.MeshMaterial;
-    vertices = mesh.Vertices;
+    upload();
+    updateBoundingBox();
 }
 
 Model::~Model() {
 
     glDeleteVertexArrays(1, &vaoId);
     glDeleteBuffers(1, &vboId);
+}
+
+void Model::updateBoundingBox() {
+
+    glm::vec3 bboxMins;
+    glm::vec3 bboxMaxs;
+
+    // initializing bboxMins and bboxMax 
+
+    if (vertices.size() > 0) {
+
+        objl::Vertex& q = vertices.at(0);
+
+        bboxMins = glm::vec3(q.Position.X, q.Position.Y, q.Position.Z);
+        bboxMaxs = bboxMins;
+
+        for (objl::Vertex& v : vertices) {
+
+            bboxMins.x = std::min(bboxMins.x, v.Position.X);
+            bboxMins.y = std::min(bboxMins.y, v.Position.Y);
+            bboxMins.z = std::min(bboxMins.z, v.Position.Z);
+
+            bboxMaxs.x = std::max(bboxMaxs.x, v.Position.X);
+            bboxMaxs.y = std::max(bboxMaxs.y, v.Position.Y);
+            bboxMaxs.z = std::max(bboxMaxs.z, v.Position.Z);
+        }
+
+    } else if (subModels.size() > 0) {
+    
+        Model& m = subModels.at(0);
+
+        m.updateBoundingBox();
+
+        bboxMins = m.boundingBox.center - m.boundingBox.size / 2.0f;
+        bboxMaxs = m.boundingBox.center + m.boundingBox.size / 2.0f;
+    }
+
+    // incorporating the bounding boxes of sub models
+
+    for (Model& m: subModels) {
+
+        glm::vec3 bmin = m.boundingBox.center - m.boundingBox.size / 2.0f;
+        glm::vec3 bmax = m.boundingBox.center + m.boundingBox.size / 2.0f;
+
+        bboxMins.x = std::min(bboxMins.x, bmin.x);
+        bboxMins.y = std::min(bboxMins.y, bmin.y);
+        bboxMins.z = std::min(bboxMins.z, bmin.z);
+
+        bboxMaxs.x = std::max(bboxMaxs.x, bmax.x);
+        bboxMaxs.y = std::max(bboxMaxs.y, bmax.y);
+        bboxMaxs.z = std::max(bboxMaxs.z, bmax.z);
+    }
+
+    boundingBox.size = bboxMaxs - bboxMins;
+    boundingBox.center = bboxMins + boundingBox.size / 2.0f;
 }
 
 void Model::upload(GLuint positionLocation,
@@ -73,18 +163,13 @@ void Model::upload(GLuint positionLocation,
         (const void*)24);
 
     glBindVertexArray(0);
+
+    for (Model& m : subModels) {
+        m.upload(positionLocation, normalLocation, texCoordLocation);
+    }
 }
 
-void Model::render(GLuint shaderProgramId, glm::mat4& modelMatrix) {
-
-    GLint modelLocation = glGetUniformLocation(shaderProgramId, "model");
-    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &modelMatrix[0][0]);
-
-    glm::mat3 normalMat =
-        glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
-    GLint normalMatLocation =
-        glGetUniformLocation(shaderProgramId, "normalMat");
-    glUniformMatrix3fv(normalMatLocation, 1, GL_FALSE, &normalMat[0][0]);
+void Model::renderMaterialAndVertices(GLuint shaderProgramId) {
 
     // phong coefficients for ambient, diffuse and specular shading
     GLint kaLocation = glGetUniformLocation(shaderProgramId, "ka");
@@ -102,4 +187,23 @@ void Model::render(GLuint shaderProgramId, glm::mat4& modelMatrix) {
 
     glBindVertexArray(vaoId);
     glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+    glBindVertexArray(0);
+}
+
+void Model::render(GLuint shaderProgramId, glm::mat4 modelMatrix) {
+
+    GLint modelLocation = glGetUniformLocation(shaderProgramId, "model");
+    glUniformMatrix4fv(modelLocation, 1, GL_FALSE, &modelMatrix[0][0]);
+
+    glm::mat3 normalMat =
+        glm::mat3(glm::transpose(glm::inverse(modelMatrix)));
+    GLint normalMatLocation =
+        glGetUniformLocation(shaderProgramId, "normalMat");
+    glUniformMatrix3fv(normalMatLocation, 1, GL_FALSE, &normalMat[0][0]);
+
+    renderMaterialAndVertices(shaderProgramId);
+
+    for (Model& m : subModels) {
+        m.renderMaterialAndVertices(shaderProgramId);
+    }
 }

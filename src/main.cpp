@@ -1,66 +1,66 @@
-#include <chrono>
 #include <iostream>
 
-#include "helpers/Helpers.h" 
-#include "Marker.h"
+#include "Loop.h"
+#include "helpers/Input.h"
 
-int main () {
+int main (int argc, char* argv[]) {
 
-    Renderer renderer(800, 600);
+    int windowWidth = 800;
+    int windowHeight = 600;
 
-    Shader vertexShader("shaders/VertexShader.glsl", GL_VERTEX_SHADER);
-    Shader fragmentShader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER);
+    // initialize OpenGL and GLEW
 
-    ShaderProgram shaderProgram(vertexShader, fragmentShader);
+    if (!glfwInit()) {
+        std::cout << "Could not initialize GLFW!" << std::endl;
+        std::exit(-1);
+    }
 
-    // Marker markerModule;
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
-    glUseProgram(shaderProgram.id);
+    GLFWwindow* window = glfwCreateWindow(
+        windowWidth, windowHeight, "Spatz Simulator", nullptr, nullptr);
 
-    FpsCamera camera(45, 4.0f/3.0f);
-    camera.view = glm::translate(camera.view, glm::vec3(0.0f, 0.0f, -4.0f));
+    glfwMakeContextCurrent(window);
 
-    PointLight light(10.0f, 10.0f, 20.0f);
+    if (GLEW_OK != glewInit()) {
+        std::cout << "GL Extension Wrangler initialization failed!" << std::endl;
+        std::exit(-1);
+    }
 
-    glm::mat4 model = glm::mat4(1.0f);
-    // markerModule.addMarker(model);
-    model = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
+    // OpenGL and GLFW settings
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
     glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
+    glEnable(GL_MULTISAMPLE);
 
-    Model cube("models/test_cube.obj");
-    cube.upload();
+    glDepthFunc(GL_LEQUAL);
 
     glfwSwapInterval(1);
 
-    while (!glfwWindowShouldClose(renderer.window)) {
-                
-        renderer.beginFrame();
-
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        camera.update(renderer.window, renderer.dt.count());
-        camera.render(shaderProgram.id);
-
-        light.render(shaderProgram.id);
-
-        model = glm::rotate(model, 0.0025f, glm::vec3(0.0, 0.0f, 1.0f));
-
-        cube.render(shaderProgram.id, model);
-
-        // markerModule.render(renderer.window, shaderProgram.id, camera);
-
-        //std::cout << renderer->dt.count() << std::endl;
-        //std::cout << glGetError() << std::endl;
-
-        renderer.endFrame();
-
-        glfwPollEvents();
+    // loop setup
+    
+    std::string scenePath = "default.json";
+    if (argc > 1) {
+        scenePath = std::string(argv[1]);
     }
 
+    std::shared_ptr<Loop> loop = std::make_shared<Loop>(
+            window, windowWidth, windowHeight, scenePath);
+
+    Loop::instance = loop;
+
+    glfwSetFramebufferSizeCallback(window, Loop::framebufferSizeCallback);
+    /* 
+     * GLFW only supports setting one callback!
+     * If this is commented in imgui input will no longer work!
+     */
+    //glfwSetKeyCallback(window, Loop::keyCallback);
+    
+    // main loop
+    loop->loop();
+
+    glfwDestroyWindow(window);
     glfwTerminate();
 
     return 0;

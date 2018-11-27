@@ -7,21 +7,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
+#include "Input.h"
 #include "Camera.h"
 
 class FpsCamera : public Camera {
 
-    glm::mat4 translation;
-
     float prevMouseX;
     float prevMouseY;
 
-    // rotation about x axis
-    float pitch;
-    // rotation about y axis
-    float yaw;
+public:
 
     /*
      * The two rotation parameters are stored separate
@@ -30,8 +25,12 @@ class FpsCamera : public Camera {
      * result in quite weird camera behaviour.
      */
 
-public:
+    // rotation about x axis
+    float pitch;
+    // rotation about y axis
+    float yaw;
 
+    FpsCamera();
     FpsCamera(float fov, float aspectRatio);
 
     /*

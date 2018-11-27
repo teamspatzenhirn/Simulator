@@ -1,8 +1,9 @@
 #include "FpsCamera.h"
 
-FpsCamera::FpsCamera(float fov, float aspectRatio) : Camera(fov, aspectRatio) {
+FpsCamera::FpsCamera() {
+}
 
-    translation = glm::mat4(1.0f);
+FpsCamera::FpsCamera(float fov, float aspectRatio) : Camera(fov, aspectRatio) {
 
     prevMouseX = -1;
     prevMouseY = -1;
@@ -13,6 +14,8 @@ FpsCamera::FpsCamera(float fov, float aspectRatio) : Camera(fov, aspectRatio) {
 
 void FpsCamera::update(GLFWwindow* window, float dt) {
 
+    glm::mat4 view = pose.getInverseMatrix();
+
     glm::vec3 eye = glm::normalize(
         glm::vec3(view[0][2], 0.0f, view[2][2]));
 
@@ -21,38 +24,46 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    float speed = 0.1f * dt / 10.0f;
+    float speed = 0.0015f * dt;
 
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_W)) {
-        translation = glm::translate(translation, eye * speed);
+    if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_CONTROL)) {
+        speed *= 4;
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_A)) {
-        translation = glm::translate(translation, right * speed);
+
+    if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_ALT)) {
+        speed /= 4;
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_S)) {
-        translation = glm::translate(translation, eye * -speed);
+
+    if (GLFW_PRESS == getKey(GLFW_KEY_W)) {
+        pose.position -= eye * speed;
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_D)) {
-        translation = glm::translate(translation, right * -speed);
+    if (GLFW_PRESS == getKey(GLFW_KEY_A)) {
+        pose.position -= right * speed;
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_SPACE)) {
-        translation = glm::translate(translation, up * -speed);
+    if (GLFW_PRESS == getKey(GLFW_KEY_S)) {
+        pose.position += eye * speed;
     }
-    if (GLFW_PRESS == glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
-        translation = glm::translate(translation, up * speed);
+    if (GLFW_PRESS == getKey(GLFW_KEY_D)) {
+        pose.position += right * speed;
+    }
+    if (GLFW_PRESS == getKey(GLFW_KEY_SPACE)) {
+        pose.position += up * speed;
+    }
+    if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_SHIFT)) {
+        pose.position -= up * speed;
     }
     
-    int leftMouseBtnState = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT);
+    int rightMouseBtnState = getMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
 
-    if (GLFW_PRESS == leftMouseBtnState) {
+    if (GLFW_PRESS == rightMouseBtnState) {
         double mouseX;
         double mouseY;
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
         if (prevMouseX > 0 && prevMouseY > 0) {
             pitch = std::min(1.56, std::max(-1.56,
-                pitch + std::asin((mouseY - prevMouseY) / 10000.0f * dt)));
-            yaw += std::asin((mouseX - prevMouseX) / 10000.0f * dt);
+                pitch + std::asin((mouseY - prevMouseY) / 700.0f * dt)));
+            yaw += std::asin((mouseX - prevMouseX) / 700.0f * dt);
         }
 
         prevMouseX = mouseX;
@@ -62,12 +73,10 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
         prevMouseY = -1.0f;
     }
 
-    glm::mat4 rotateX = glm::rotate(
-        glm::mat4(1.0f), pitch, glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 rotateY = glm::rotate(
-        glm::mat4(1.0f), yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    pose.rotation = glm::quat(1, 0, 0, 0);
 
-    glm::mat4 rotation = rotateX * rotateY;
-
-    view = rotation * translation;
+    pose.rotation = glm::rotate(
+        pose.rotation, -yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+    pose.rotation = glm::rotate(
+        pose.rotation, -pitch, glm::vec3(1.0f, 0.0f, 0.0f));
 }
