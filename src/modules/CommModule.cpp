@@ -79,15 +79,12 @@ void CommModule::transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebuf
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void CommModule::transmitCar(Scene::Car& car, uint64_t time) {
+void CommModule::transmitCar(Scene::Car& car, bool paused, uint64_t time) {
 
     Car* obj = txCar.lock(SimulatorSHM::WRITE_OVERWRITE_OLDEST); 
 
     if (obj != nullptr) {
-        /*
-         * Why is it necessary to negate the y-axis, psi, dPsi and
-         * the steeringAngle here?! Does not make any sence!
-         */
+
         obj->x = car.simulatorState.x1;
         obj->y = car.simulatorState.x2;
         obj->psi = car.simulatorState.psi;
@@ -100,6 +97,15 @@ void CommModule::transmitCar(Scene::Car& car, uint64_t time) {
         obj->alphaFront = car.alphaFront;
         obj->alphaRear = car.alphaRear;
         obj->time = time;
+
+        /*
+         * TODO: sucks
+         */
+        for (KeyEvent& e : getKeyEvents()) {
+            if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
+                obj->paused = true;
+            }
+        }
 
         txCar.unlock(obj);
     }

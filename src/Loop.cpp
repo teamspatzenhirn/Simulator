@@ -44,13 +44,13 @@ void Loop::loop() {
 
             commModule.receiveVesc(scene.car.vesc);
 
-            update(simDeltaTime);
+            update(deltaTime, simDeltaTime);
 
             if (!scene.paused) {
                 scene.simulationTime += simDeltaTime;
             }
 
-            commModule.transmitCar(scene.car, scene.simulationTime);
+            commModule.transmitCar(scene.car, scene.paused, scene.simulationTime);
         }
 
         ruleModule.update(
@@ -172,14 +172,14 @@ void Loop::loop() {
     }
 }
 
-void Loop::update(double deltaTime) {
+void Loop::update(double deltaTime, double simDeltaTime) {
 
     scene.fpsCamera.update(window, deltaTime);
 
     updateCollisions();
 
     if (!scene.paused) {
-        car.updatePosition(scene.car, deltaTime);
+        car.updatePosition(scene.car, simDeltaTime);
     }
 
     visModule.addPositionTrace(scene.car.modelPose.position, scene.simulationTime);
@@ -241,7 +241,7 @@ void Loop::renderFpsView() {
     itemsModule.update(scene.items, markerModule.getSelection());
 
     Scene preRenderScene = scene;
-    update(timer.accumulator);
+    update(timer.accumulator, timer.accumulator * scene.simulationSpeed);
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
@@ -273,7 +273,7 @@ void Loop::renderFpsView() {
 void Loop::renderCarView() {
 
     Scene preRenderScene = scene;
-    update(timer.accumulator);
+    update(timer.accumulator, timer.accumulator * scene.simulationSpeed);
 
     glUseProgram(carShaderProgram.id);
 
@@ -314,7 +314,8 @@ void Loop::renderCarView() {
 void Loop::renderDepthView() {
 
     Scene preRenderScene = scene;
-    update(timer.accumulator);
+
+    update(timer.accumulator, timer.accumulator * scene.simulationSpeed);
 
     glUseProgram(depthCameraShaderProgram.id);
 

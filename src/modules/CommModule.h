@@ -58,6 +58,8 @@ class CommModule {
         double alphaRear;
 
         uint64_t time;
+
+        bool paused;
     };
 
     struct Vesc {
@@ -88,7 +90,7 @@ public:
 
     void transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebufferId);
     void transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebufferId);
-    void transmitCar(Scene::Car& car, uint64_t time);
+    void transmitCar(Scene::Car& car, bool paused, uint64_t time);
     void receiveVesc(Scene::Car::Vesc& car);
 };
 

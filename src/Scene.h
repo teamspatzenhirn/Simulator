@@ -119,7 +119,7 @@ struct Scene {
     /*
      * The current time of the simulation in milliseconds.
      */
-    uint64_t simulationTime = 0;
+    double simulationTime = 0;
 
     /*
      * The speed of the simulation given as fraction of real time.

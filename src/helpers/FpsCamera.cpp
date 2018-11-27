@@ -24,7 +24,7 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    float speed = 0.004f * dt;
+    float speed = 0.0015f * dt;
 
     if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_CONTROL)) {
         speed *= 4;
@@ -62,8 +62,8 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
         if (prevMouseX > 0 && prevMouseY > 0) {
             pitch = std::min(1.56, std::max(-1.56,
-                pitch + std::asin((mouseY - prevMouseY) / 200.0f * dt)));
-            yaw += std::asin((mouseX - prevMouseX) / 200.0f * dt);
+                pitch + std::asin((mouseY - prevMouseY) / 700.0f * dt)));
+            yaw += std::asin((mouseX - prevMouseX) / 700.0f * dt);
         }
 
         prevMouseX = mouseX;
