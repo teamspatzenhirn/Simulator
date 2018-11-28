@@ -116,7 +116,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
                 uint64_t savedSimulationTime = scene.simulationTime;
 
-                if (scene.load(selectedFilename)) {
+                if (scene.load(openedPath + openedFilename)) {
                     Scene::history.clear();
                     scene.simulationTime = savedSimulationTime;
                 } else {
@@ -410,11 +410,11 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
         renderDirectoryListing();
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
-            if (scene.load(selectedFilename)) {
+
+            if (scene.load(currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
                 ImGui::CloseCurrentPopup();
-
                 Scene::history.clear();
             } else {
                 errorMessage = "Could not open " + selectedFilename + "!";
