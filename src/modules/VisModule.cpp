@@ -7,8 +7,6 @@ VisModule::VisModule() {
 
 void VisModule::addPositionTrace(glm::vec3 position, uint64_t simulationTime) {
 
-    std::cout << simulationTime << std::endl;
-
     if (simulationTime - lastTraceTime > 50) {
 
         if (tracedPositions.size() > 200) {

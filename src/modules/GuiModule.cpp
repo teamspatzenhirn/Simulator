@@ -356,6 +356,7 @@ void GuiModule::renderSettingsWindow(Scene& scene) {
         ImGui::Begin("Settings", &showSettingsWindow);
 
         ImGui::DragFloat("Simulation speed", &scene.simulationSpeed, 0.05f, 0.01f, 4.0f);
+        scene.simulationSpeed = std::max(std::min(scene.simulationSpeed, 4.0f), 0.01f);
 
         ImGui::End();
     }
