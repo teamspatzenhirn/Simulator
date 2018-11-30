@@ -160,12 +160,17 @@ void Loop::loop() {
         commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
         commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
+
         guiModule.renderRootWindow(scene);
-        guiModule.renderCarPropertiesWindow(scene.car);
-        guiModule.renderRulePropertiesWindow(scene.rules);
-        guiModule.renderPoseWindow(markerModule.getSelection());
-        guiModule.renderSettingsWindow(scene);
-        guiModule.renderHelpWindow();
+
+        if (!scene.markersHidden) {
+            guiModule.renderCarPropertiesWindow(scene.car);
+            guiModule.renderRulePropertiesWindow(scene.rules);
+            guiModule.renderPoseWindow(markerModule.getSelection());
+            guiModule.renderSettingsWindow(scene);
+            guiModule.renderHelpWindow();
+        }
+
         guiModule.end();
 
         glfwSwapBuffers(window);
@@ -254,18 +259,18 @@ void Loop::renderFpsView() {
 
     renderScene(shaderProgram.id);
 
+    // render markers over everything else
+    // thus we clean the depth buffer here
+
+    glClear(GL_DEPTH_BUFFER_BIT);
+
     if (!scene.markersHidden) {
-
-        // render markers over everything else
-        // thus we clean the depth buffer here
-
-        glClear(GL_DEPTH_BUFFER_BIT);
-
-        visModule.renderPositionTrace(shaderProgram.id, scene.simulationTime);
 
         editor.renderMarkers(shaderProgram.id, scene.tracks, scene.fpsCamera.pose.position);
         renderMarkers(shaderProgram.id);
     }
+
+    visModule.renderPositionTrace(shaderProgram.id, scene.simulationTime);
 
     scene = preRenderScene;
 }

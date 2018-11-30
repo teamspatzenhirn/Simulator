@@ -40,9 +40,14 @@ void GuiModule::renderRootWindow(Scene& scene) {
     bool showSaveFileDialog = false;
     bool showSaveAsFileDialog = false;
 
-    ImGui::Begin("", NULL, ImGuiWindowFlags_MenuBar);
+    ImGui::Begin("", NULL, ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_AlwaysAutoResize
+            | ImGuiWindowFlags_NoSavedSettings
+            | ImGuiWindowFlags_NoFocusOnAppearing
+            | ImGuiWindowFlags_NoNav );
 
-    if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMainMenuBar()) {
 
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New")) {
@@ -77,7 +82,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
             ImGui::EndMenu();
         }
 
-        ImGui::EndMenuBar();
+        ImGui::EndMainMenuBar();
     }
 
     renderOpenFileDialog(scene, showOpenFileDialog);
@@ -85,7 +90,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
     // rendering the status text
 
-    ImGui::Text("Carolo Simulator v0.3");
+    ImGui::Text("Carolo Simulator v1.0");
 
     std::string msg = "Config: ";
     if (openedFilename.empty()) { 
@@ -102,7 +107,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
         ImGui::Text("PAUSED");
     }
 
-    //ImGui::ShowDemoWindow();
+    ImGui::ShowDemoWindow();
 
     ImGui::End();
 
