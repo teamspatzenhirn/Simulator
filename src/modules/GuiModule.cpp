@@ -107,7 +107,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
         ImGui::Text("PAUSED");
     }
 
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 
     ImGui::End();
 
