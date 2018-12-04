@@ -40,9 +40,14 @@ void GuiModule::renderRootWindow(Scene& scene) {
     bool showSaveFileDialog = false;
     bool showSaveAsFileDialog = false;
 
-    ImGui::Begin("", NULL, ImGuiWindowFlags_MenuBar);
+    ImGui::Begin("", NULL, ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoResize
+            | ImGuiWindowFlags_AlwaysAutoResize
+            | ImGuiWindowFlags_NoSavedSettings
+            | ImGuiWindowFlags_NoFocusOnAppearing
+            | ImGuiWindowFlags_NoNav );
 
-    if (ImGui::BeginMenuBar()) {
+    if (ImGui::BeginMainMenuBar()) {
 
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New")) {
@@ -77,7 +82,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
             ImGui::EndMenu();
         }
 
-        ImGui::EndMenuBar();
+        ImGui::EndMainMenuBar();
     }
 
     renderOpenFileDialog(scene, showOpenFileDialog);
@@ -85,7 +90,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
     // rendering the status text
 
-    ImGui::Text("Carolo Simulator v0.3");
+    ImGui::Text("Carolo Simulator v1.0");
 
     std::string msg = "Config: ";
     if (openedFilename.empty()) { 
@@ -102,7 +107,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
         ImGui::Text("PAUSED");
     }
 
-    //ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 
     ImGui::End();
 
@@ -116,7 +121,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
                 uint64_t savedSimulationTime = scene.simulationTime;
 
-                if (scene.load(selectedFilename)) {
+                if (scene.load(openedPath + openedFilename)) {
                     Scene::history.clear();
                     scene.simulationTime = savedSimulationTime;
                 } else {
@@ -356,6 +361,7 @@ void GuiModule::renderSettingsWindow(Scene& scene) {
         ImGui::Begin("Settings", &showSettingsWindow);
 
         ImGui::DragFloat("Simulation speed", &scene.simulationSpeed, 0.05f, 0.01f, 4.0f);
+        scene.simulationSpeed = std::max(std::min(scene.simulationSpeed, 4.0f), 0.01f);
 
         ImGui::End();
     }
@@ -409,11 +415,11 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
         renderDirectoryListing();
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
-            if (scene.load(selectedFilename)) {
+
+            if (scene.load(currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
                 ImGui::CloseCurrentPopup();
-
                 Scene::history.clear();
             } else {
                 errorMessage = "Could not open " + selectedFilename + "!";

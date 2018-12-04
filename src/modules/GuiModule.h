@@ -22,7 +22,7 @@ class GuiModule {
     bool showCreateItemsWindow = true;
     bool showPoseWindow = true;
     bool showCarPropertiesWindow = false;
-    bool showRulePropertiesWindow = true;
+    bool showRulePropertiesWindow = false;
     bool showSettingsWindow = false;
     bool showHelpWindow = false;
 
