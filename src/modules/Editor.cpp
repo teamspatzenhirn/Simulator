@@ -117,7 +117,7 @@ void Editor::updateInput(Camera& camera, Scene::Tracks& tracks, float groundSize
         int windowWidth{0}, windowHeight{0};
         glfwGetWindowSize(event.window, &windowWidth, &windowHeight);
 
-        onMouseMoved(getCursorX(), getCursorY(), windowWidth, windowHeight, camera, tracks);
+        onMouseMoved(getCursorX(), getCursorY(), windowWidth, windowHeight, camera, tracks, groundSize);
     }
 }
 
@@ -149,7 +149,7 @@ void Editor::onKey(int key, int action, const Scene::Tracks& tracks) {
             || (key == GLFW_KEY_DELETE && action == GLFW_PRESS)) {
         if (activeControlPoint != nullptr) {
             ((Scene::Tracks&)tracks).removeControlPoint(activeControlPoint);
-            activeControlPoint = nullptr;
+            deselect();
         }
     }
 }
@@ -173,10 +173,22 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
                 } else {
                     std::shared_ptr<ControlPoint> selectedPoint = selectControlPoint(groundCoords, tracks);
                     if (selectedPoint == activeControlPoint) {
-                        activeControlPoint = nullptr;
+                        if (isStartConnected()) {
+                            dragState.dragging = true;
+                            dragControlPoint(*activeControlPoint, tracks);
+                        }
                     } else {
                         endTrack(groundCoords, tracks, groundSize);
                     }
+                }
+            } else {
+                if (dragState.dragging) {
+                    dragState.dragging = false;
+                    moveControlPoint(activeControlPoint, tracks, groundSize);
+                }
+
+                if (activeControlPoint) {
+                    updateMarkers(*activeControlPoint, tracks);
                 }
             }
 
@@ -184,14 +196,15 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
         case GLFW_MOUSE_BUTTON_RIGHT:
             if (action == GLFW_PRESS) {
                 // cancel track
-                activeControlPoint = nullptr;
+                deselect();
             }
 
             break;
     }
 }
 
-void Editor::onMouseMoved(double cursorX, double cursorY, int windowWidth, int windowHeight, Camera& camera, const Scene::Tracks& tracks) {
+void Editor::onMouseMoved(double cursorX, double cursorY, int windowWidth, int windowHeight,
+        Camera& camera, const Scene::Tracks& tracks, float groundSize) {
 
     if (!activeControlPoint) {
         return;
@@ -205,7 +218,11 @@ void Editor::onMouseMoved(double cursorX, double cursorY, int windowWidth, int w
 
     cursorPos = groundCoords;
 
-    updateMarkers(*activeControlPoint, tracks);
+    if (dragState.dragging) {
+        dragControlPoint(*activeControlPoint, tracks);
+    } else {
+        updateMarkers(*activeControlPoint, tracks);
+    }
 }
 
 void Editor::setTrackMode(TrackMode trackMode, const Scene::Tracks& tracks) {
@@ -280,7 +297,11 @@ void Editor::renderScene(GLuint shaderProgramId, const Scene::Tracks& tracks) {
             }
         }
 
-        trackModels[track]->render(shaderProgramId, trackModelMats[track]);
+        if (dragState.dragging && isConnected(*activeControlPoint, track)) {
+            dragState.trackModels[track]->render(shaderProgramId, dragState.trackModelMats[track]);
+        } else {
+            trackModels[track]->render(shaderProgramId, trackModelMats[track]);
+        }
     }
 }
 
@@ -289,25 +310,25 @@ void Editor::renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks, 
     // render control points
     for (const std::shared_ptr<ControlPoint>& cp : tracks.getTracks()) {
 
-        float scale = glm::length(cameraPosition
-                - glm::vec3(cp->coords.x, 0, cp->coords.y)) * 0.15;
+        // only render active point at connection
+        if (cp == dragState.connectedPoint) {
+            continue;
+        }
 
-        renderMarker(shaderProgramId, cp->coords, cp == activeControlPoint, scale);
+        if (cp == activeControlPoint && dragState.dragging) {
+            renderMarker(shaderProgramId, dragState.connectedPoint ? dragState.connectedPoint->coords : cursorPos, true, cameraPosition);
+        } else {
+            renderMarker(shaderProgramId, cp->coords, cp == activeControlPoint, cameraPosition);
+        }
     }
 
     if (activeControlPoint && !tracks.controlPointExists(activeControlPoint)) {
 
-        float scale = glm::length(cameraPosition
-                - glm::vec3(
-                    activeControlPoint->coords.x,
-                    0,
-                    activeControlPoint->coords.y)) * 0.15;
-
-        renderMarker(shaderProgramId, activeControlPoint->coords, true, scale);
+        renderMarker(shaderProgramId, activeControlPoint->coords, true, cameraPosition);
     }
 
     // render new track markers
-    if (activeControlPoint) {
+    if (activeControlPoint && !dragState.dragging && selectControlPoint(cursorPos, tracks) != activeControlPoint) {
         activeMarker.render(shaderProgramId, markerModelMatEnd);
 
         if (getEffectiveTrackMode() == TrackMode::Line) {
@@ -318,7 +339,11 @@ void Editor::renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks, 
     }
 }
 
-void Editor::renderMarker(GLuint shaderProgramId, const glm::vec2& position, const bool active, const float scale) {
+void Editor::renderMarker(GLuint shaderProgramId, const glm::vec2& position,
+        const bool active, const glm::vec3& cameraPosition) {
+
+    // scale marker by distance
+    float scale = glm::length(cameraPosition - glm::vec3(position.x, 0, position.y)) * 0.15;
 
     // create model matrix
     glm::mat4 modelMat = genPointMatrix(position, 0.0f);
@@ -363,7 +388,7 @@ void Editor::endTrack(const glm::vec2& position, Scene::Tracks& tracks, float gr
 
     if (end.x < -groundSize || end.x > groundSize || end.y < -groundSize || end.y > groundSize) {
         if (!isStartConnected()) {
-            activeControlPoint = nullptr;
+            deselect();
         }
 
         return;
@@ -406,16 +431,9 @@ void Editor::addTrackLine(const std::shared_ptr<ControlPoint>& start,
     // add track
     std::shared_ptr<TrackLine> track = tracks.addTrackLine(start, end);
 
-    // model
-    std::shared_ptr<Model> model = std::make_shared<Model>();
-    genTrackLineVertices(start->coords, end->coords, tracks, *model);
-    genTrackMaterial(*model);
-    model->upload();
-    trackModels[track] = model;
-
-    // model mat
-    glm::mat4 modelMat = genTrackLineMatrix(start->coords, end->coords, trackYOffset);
-    trackModelMats[track] = modelMat;
+    // create model
+    trackModels[track] = genTrackLineModel(start->coords, end->coords, tracks);
+    trackModelMats[track] = genTrackLineMatrix(start->coords, end->coords, trackYOffset);
 }
 
 void Editor::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc, Scene::Tracks& tracks) {
@@ -423,25 +441,153 @@ void Editor::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::
     // add track
     std::shared_ptr<TrackArc> track = tracks.addTrackArc(start, end, center, radius, rightArc);
 
-    // model
-    std::shared_ptr<Model> model = std::make_shared<Model>();
-    genTrackArcVertices(start->coords, end->coords, center, radius, rightArc, tracks, *model);
-    genTrackMaterial(*model);
-    model->upload();
-    trackModels[track] = model;
+    // create model
+    trackModels[track] = genTrackArcModel(start->coords, end->coords, center, radius, rightArc, tracks);
+    trackModelMats[track] = genTrackArcMatrix(center, trackYOffset);
+}
 
-    // model mat
-    glm::mat4 modelMat = genTrackArcMatrix(center, trackYOffset);
-    trackModelMats[track] = modelMat;
+void Editor::dragControlPoint(ControlPoint& controlPoint, const Scene::Tracks& tracks) {
+
+    std::shared_ptr<ControlPoint> selectedPoint = selectControlPoint(cursorPos, tracks, false);
+
+    dragState.connectedPoint = selectedPoint;
+
+    if (selectedPoint) {
+        moveTracksAtControlPoint(controlPoint, selectedPoint->coords, false, tracks);
+    } else {
+        moveTracksAtControlPoint(controlPoint, cursorPos, false, tracks);
+    }
+}
+
+void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Scene::Tracks& tracks, float groundSize) {
+
+    // validate new position
+    glm::vec2& newPos = (dragState.connectedPoint ? dragState.connectedPoint->coords : cursorPos);
+    if (newPos.x < -groundSize || newPos.x > groundSize || newPos.y < -groundSize || newPos.y > groundSize) {
+        return;
+    }
+
+    // update control point
+    controlPoint->coords = newPos;
+
+    // update connected tracks
+    moveTracksAtControlPoint(*controlPoint, newPos, true, tracks);
+
+    // connect control points
+    if (dragState.connectedPoint) {
+        for (auto it = controlPoint->tracks.begin(); it != controlPoint->tracks.end();) {
+            std::shared_ptr<TrackBase>& track = *it;
+
+            if (isConnected(*dragState.connectedPoint, track)) {
+                dragState.connectedPoint->tracks.erase(
+                        std::remove(dragState.connectedPoint->tracks.begin(),
+                            dragState.connectedPoint->tracks.end(),
+                            track),
+                        dragState.connectedPoint->tracks.end());
+
+                it = controlPoint->tracks.erase(it);
+
+                continue;
+            }
+
+            if (track->start.lock() == controlPoint) {
+                track->start = dragState.connectedPoint;
+            } else {
+                track->end = dragState.connectedPoint;
+            }
+
+            dragState.connectedPoint->tracks.push_back(track);
+
+            it++;
+        }
+
+        controlPoint->tracks.clear();
+        tracks.removeControlPoint(controlPoint);
+
+        activeControlPoint = dragState.connectedPoint;
+    }
+
+    // clear drag state
+    dragState.connectedPoint = nullptr;
+    dragState.trackModels.clear();
+    dragState.trackModelMats.clear();
+}
+
+void Editor::moveTracksAtControlPoint(ControlPoint& controlPoint,
+        const glm::vec2& position, bool applyMovement, const Scene::Tracks& tracks) {
+
+    for (const std::shared_ptr<TrackBase>& track : controlPoint.tracks) {
+        // moving start point or end point
+        bool movingStart = (track->start.lock().get() == &controlPoint);
+
+        // connected control point
+        ControlPoint& connectedPoint = *(movingStart ? track->end : track->start).lock();
+
+        glm::vec2 startCoords{movingStart ? position : connectedPoint.coords};
+        glm::vec2 endCoords{movingStart ? connectedPoint.coords : position};
+
+        std::shared_ptr<TrackArc> trackArc = std::dynamic_pointer_cast<TrackArc>(track);
+
+        if (trackArc) {
+            // keep direction at connected point
+            std::vector<glm::vec2> directions = {-track->getDirection(connectedPoint)};
+
+            glm::vec2 center;
+            float radius{0};
+            bool rightArc{false};
+            bool isArc = getArc(connectedPoint.coords, position, directions, center, radius, rightArc);
+
+            if (isArc) {
+                if (movingStart) {
+                    rightArc = !rightArc;
+                }
+
+                if (applyMovement) {
+                    // update data
+                    trackArc->center = center;
+                    trackArc->radius = radius;
+                    trackArc->rightArc = rightArc;
+
+                    // update model
+                    trackModels[track] = dragState.trackModels[track];
+                    trackModelMats[track] = dragState.trackModelMats[track];
+                } else {
+                    // update temporary model
+                    dragState.trackModels[track] = genTrackArcModel(startCoords, endCoords, center, radius, rightArc, tracks);
+                    dragState.trackModelMats[track] = genTrackArcMatrix(center, trackYOffset);
+                }
+            } // TODO properly handle else case
+        } else {
+            if (applyMovement) {
+                // update model
+                trackModels[track] = dragState.trackModels[track];
+                trackModelMats[track] = dragState.trackModelMats[track];
+            } else {
+                // update temporary model
+                dragState.trackModels[track] = genTrackLineModel(startCoords, endCoords, tracks);
+                dragState.trackModelMats[track] = genTrackLineMatrix(startCoords, endCoords, trackYOffset);
+            }
+        }
+    }
 }
 
 std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& position, const Scene::Tracks& tracks) const {
+
+    return selectControlPoint(position, tracks, true);
+}
+
+std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& position,
+        const Scene::Tracks& tracks, const bool includeActiveControlPoint) const {
 
     std::shared_ptr<ControlPoint> controlPoint;
     float closest{controlPointClickRadius};
 
     // check scene control points
     for (std::shared_ptr<ControlPoint> const& cp : tracks.getTracks()) {
+        if (cp == activeControlPoint && !includeActiveControlPoint) {
+            continue;
+        }
+
         float distance = glm::distance(cp->coords, position);
         if (distance < closest) {
             controlPoint = cp;
@@ -451,7 +597,7 @@ std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& positi
     }
 
     // check active control point (can also be a scene control point)
-    if (activeControlPoint) {
+    if (activeControlPoint && includeActiveControlPoint) {
         float distance = glm::distance(activeControlPoint->coords, position);
         if (distance < closest) {
             return activeControlPoint;
@@ -483,6 +629,10 @@ bool Editor::toGroundCoordinates(const double cursorX, const double cursorY, con
 }
 
 void Editor::updateMarkers(const ControlPoint& startPoint, const Scene::Tracks& tracks) {
+
+    if (dragState.dragging || selectControlPoint(cursorPos, tracks).get() == &startPoint) {
+        return;
+    }
 
     glm::vec2 end = align(startPoint, cursorPos, tracks);
 
@@ -535,11 +685,17 @@ void Editor::updateTrackArcMarker(const ControlPoint& startPoint,
     }
 }
 
-bool Editor::getArc(const ControlPoint& startPoint, const glm::vec2& end, glm::vec2& center, float& radius, bool& rightArc) {
+bool Editor::getArc(const ControlPoint& start, const glm::vec2& end,
+        glm::vec2& center, float& radius, bool& rightArc) {
 
-    glm::vec2 start = startPoint.coords;
+    std::vector<glm::vec2> directions = getAlignmentVectors(start);
+    return getArc(start.coords, end, directions, center, radius, rightArc);
+}
 
-    glm::vec2 direction = getAlignedUnitVector(startPoint, end);
+bool Editor::getArc(const glm::vec2& start, const glm::vec2& end, const std::vector<glm::vec2>& directions,
+        glm::vec2& center, float& radius, bool& rightArc) {
+
+    glm::vec2 direction = getAlignedUnitVector(start, end, directions);
     glm::vec2 r1 = glm::vec2(-direction.y, direction.x); // 90 degrees right
 
     glm::vec2 m = (start + end) * 0.5f;
@@ -596,7 +752,8 @@ glm::vec2 Editor::align(const ControlPoint& startPoint, const glm::vec2& positio
 
     if (autoAlign) {
         glm::vec2 exactVector = position - startPoint.coords;
-        glm::vec2 alignedUnitVector = getAlignedUnitVector(startPoint, position);
+        std::vector<glm::vec2> directions = getAlignmentVectors(startPoint);
+        glm::vec2 alignedUnitVector = getAlignedUnitVector(startPoint.coords, position, directions);
 
         if (getEffectiveTrackMode() == TrackMode::Line) {
 
@@ -616,15 +773,35 @@ glm::vec2 Editor::align(const ControlPoint& startPoint, const glm::vec2& positio
     }
 }
 
-glm::vec2 Editor::getAlignedUnitVector(const ControlPoint& startPoint, const glm::vec2& endPoint) {
+glm::vec2 Editor::getAlignedUnitVector(const glm::vec2& startPoint, const glm::vec2& endPoint,
+        const std::vector<glm::vec2>& directions) {
 
-    // calculate directions for alignment
+    glm::vec2 exactVector = endPoint - startPoint;
+    glm::vec2 exactUnitVector = glm::normalize(exactVector);
+
+    glm::vec2 alignedUnitVector;
+    float maxDot = -2.0f; // less than -1.0f
+    for (glm::vec2 const& dir : directions) {
+        glm::vec2 unitDir = glm::normalize(dir);
+        float dot = glm::dot(exactUnitVector, unitDir);
+        if (dot > maxDot) {
+            alignedUnitVector = unitDir;
+            maxDot = dot;
+        }
+    }
+
+    return alignedUnitVector;
+}
+
+std::vector<glm::vec2> Editor::getAlignmentVectors(const ControlPoint& cp) {
+
     std::vector<glm::vec2> directions;
 
-    for (const std::shared_ptr<TrackBase>& track : startPoint.tracks) {
-        glm::vec2 dir = track->getDirection(startPoint);
+    // calculate directions from connected tracks
+    for (const std::shared_ptr<TrackBase>& track : cp.tracks) {
+        glm::vec2 dir = track->getDirection(cp);
 
-        directions.push_back(glm::normalize(dir));
+        directions.push_back(dir);
     }
 
     // use default directions if no tracks are connected
@@ -635,21 +812,7 @@ glm::vec2 Editor::getAlignedUnitVector(const ControlPoint& startPoint, const glm
         }
     }
 
-    // calculate alignment
-    glm::vec2 exactVector = endPoint - startPoint.coords;
-    glm::vec2 exactUnitVector = glm::normalize(exactVector);
-
-    glm::vec2 alignedUnitVector;
-    float maxDot = -2.0f; // less than -1.0f
-    for (glm::vec2 const& dir : directions) {
-        float dot = glm::dot(exactUnitVector, dir);
-        if (dot > maxDot) {
-            alignedUnitVector = dir;
-            maxDot = dot;
-        }
-    }
-
-    return alignedUnitVector;
+    return directions;
 }
 
 Editor::TrackMode Editor::getEffectiveTrackMode() {
@@ -663,6 +826,43 @@ Editor::TrackMode Editor::getEffectiveTrackMode() {
 bool Editor::isStartConnected() {
 
     return activeControlPoint && !activeControlPoint->tracks.empty();
+}
+
+bool Editor::isConnected(const ControlPoint& controlPoint, const std::shared_ptr<TrackBase>& track) {
+
+    return &controlPoint == track->start.lock().get() || &controlPoint == track->end.lock().get();
+}
+
+void Editor::deselect() {
+
+    activeControlPoint = nullptr;
+
+    dragState.dragging = false;
+    dragState.connectedPoint = nullptr;
+    dragState.trackModels.clear();
+    dragState.trackModelMats.clear();
+}
+
+std::shared_ptr<Model> Editor::genTrackLineModel(const glm::vec2& start, const glm::vec2& end,
+        const Scene::Tracks& tracks) {
+
+    std::shared_ptr<Model> model = std::make_shared<Model>();
+    genTrackLineVertices(start, end, tracks, *model);
+    genTrackMaterial(*model);
+    model->upload();
+
+    return model;
+}
+
+std::shared_ptr<Model> Editor::genTrackArcModel(const glm::vec2& start, const glm::vec2& end,
+        const glm::vec2& center, const float radius, const bool rightArc, const Scene::Tracks& tracks) {
+
+    std::shared_ptr<Model> model = std::make_shared<Model>();
+    genTrackArcVertices(start, end, center, radius, rightArc, tracks, *model);
+    genTrackMaterial(*model);
+    model->upload();
+
+    return model;
 }
 
 void Editor::genDefaultMarkerMaterial(Model& model) {
