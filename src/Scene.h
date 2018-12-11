@@ -58,34 +58,34 @@ struct TrackArc : TrackBase {
  */
 enum ItemType {
 
-    NONE,
-    OBSTACLE,
-    START_LINE,
-    STOP_LINE,
-    GIVE_WAY_LINE,
-    CROSSWALK,
-    GROUND_10,
-    GROUND_20,
-    GROUND_30,
-    GROUND_40,
-    GROUND_50,
-    GROUND_60,
-    GROUND_70,
-    GROUND_80,
-    GROUND_90,
-    GROUND_10_END,
-    GROUND_20_END,
-    GROUND_30_END,
-    GROUND_40_END,
-    GROUND_50_END,
-    GROUND_60_END,
-    GROUND_70_END,
-    GROUND_80_END,
-    GROUND_90_END,
-    GROUND_ARROW_LEFT,
-    GROUND_ARROW_RIGHT,
-    END,
-    CALIB_MAT,
+    NONE = 0,
+    OBSTACLE = 1,
+    START_LINE = 2,
+    STOP_LINE = 3,
+    GIVE_WAY_LINE = 4,
+    CROSSWALK = 5,
+    GROUND_10 = 6,
+    GROUND_20 = 7,
+    GROUND_30 = 8,
+    GROUND_40 = 9,
+    GROUND_50 = 10,
+    GROUND_60 = 11,
+    GROUND_70 = 12,
+    GROUND_80 = 13,
+    GROUND_90 = 14,
+    GROUND_10_END = 15,
+    GROUND_20_END = 16,
+    GROUND_30_END = 17,
+    GROUND_40_END = 18,
+    GROUND_50_END = 19,
+    GROUND_60_END = 20,
+    GROUND_70_END = 21,
+    GROUND_80_END = 22,
+    GROUND_90_END = 23,
+    GROUND_ARROW_LEFT = 24,
+    GROUND_ARROW_RIGHT = 25,
+    END = 26,
+    CALIB_MAT = 27,
 };
 
 /*
@@ -330,8 +330,13 @@ struct Scene {
 
         ItemType type = NONE;
         Pose pose{0, 0, 0};
+        std::string name = "unnamed_item";
+
+        Item () {
+        }
         
         Item (ItemType type) : type(type) {
+
         }
     };
 

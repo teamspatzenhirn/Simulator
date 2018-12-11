@@ -160,12 +160,10 @@ void Loop::loop() {
         commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
         commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
-
         guiModule.renderRootWindow(scene);
 
         if (!scene.markersHidden) {
-            guiModule.renderCarPropertiesWindow(scene.car);
-            guiModule.renderRulePropertiesWindow(scene.rules);
+            guiModule.renderSceneWindow(scene);
             guiModule.renderPoseWindow(markerModule.getSelection());
             guiModule.renderSettingsWindow(scene);
             guiModule.renderHelpWindow();
@@ -199,7 +197,7 @@ void Loop::updateCollisions() {
 
     for (auto& i : scene.items) {
         if (i->type == OBSTACLE) {
-            collisionModule.add(i->pose, itemsModule.obstacleModel);
+            collisionModule.add(i->pose, itemsModule.models[OBSTACLE]);
         }
     }
 

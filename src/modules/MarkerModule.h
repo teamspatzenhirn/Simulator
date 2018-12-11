@@ -27,8 +27,9 @@ class MarkerModule {
 
         // 1 = enabled, 0 = disabled
         int transformRestriction;
-
-    } selectedModelPose;
+    };
+    
+    RestrictedPose selectedModelPose;
 
     std::vector<RestrictedPose> modelPoses;
 

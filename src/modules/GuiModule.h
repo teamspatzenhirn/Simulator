@@ -21,7 +21,7 @@ class GuiModule {
 
     bool showCreateItemsWindow = true;
     bool showPoseWindow = true;
-    bool showCarPropertiesWindow = false;
+    bool showSceneWindow = false;
     bool showRulePropertiesWindow = false;
     bool showSettingsWindow = false;
     bool showHelpWindow = false;
@@ -47,11 +47,9 @@ public:
 
     void renderRootWindow(Scene& scene);
     void renderPoseWindow(Pose* pose);
-    void renderCarPropertiesWindow(Scene::Car& car);
-    void renderRulePropertiesWindow(Scene::Rules& rules);
+    void renderSceneWindow(Scene& scene);
     void renderSettingsWindow(Scene& scene);
     void renderHelpWindow();
-    void renderCreateDialog();
 
     void begin();
     void end();

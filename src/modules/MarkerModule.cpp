@@ -124,7 +124,7 @@ void MarkerModule::updateSelectionState(Camera& camera) {
             if (selectedModelPose.pose == pose.pose) {
 
                 // finally! i can use a do while loop!
-                // *tear of joy* 
+                // *tears of joy* 
                 do {
                     selectionMode = (SelectionMode)((selectionMode + 1) % 3);
                 } while (!isTransformAllowed(
