@@ -365,6 +365,16 @@ struct Scene {
         bool exitIfOnEndItem = false;
 
     } rules;
+    
+    /*
+     * This struct contains visualization information
+     * like the trajectory, ...
+     */
+    struct Visualization {
+
+        std::vector<glm::vec2> trajectoryPoints;
+
+    } visualization;
 
     Scene();
     ~Scene();

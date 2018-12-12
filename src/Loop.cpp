@@ -43,6 +43,7 @@ void Loop::loop() {
         while (timer.updateStep(deltaTime)) {
 
             commModule.receiveVesc(scene.car.vesc);
+            commModule.receiveVisualization(scene.visualization);
 
             update(deltaTime, simDeltaTime);
 
@@ -271,6 +272,7 @@ void Loop::renderFpsView() {
     }
 
     visModule.renderPositionTrace(shaderProgram.id, scene.simulationTime);
+    visModule.renderVisualization(shaderProgram.id, scene.visualization);
 
     scene = preRenderScene;
 }

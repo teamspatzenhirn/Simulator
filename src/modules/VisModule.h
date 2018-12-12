@@ -13,6 +13,7 @@
 #include <glm/gtx/io.hpp>
 
 #include "helpers/Helpers.h"
+#include "Scene.h"
 
 class VisModule {
 
@@ -22,10 +23,15 @@ class VisModule {
         glm::vec3 position;
     };
 
-    std::shared_ptr<Model> markerModel;
+    std::shared_ptr<Model> circleModel;
+
+    std::shared_ptr<Model> lineModel;
 
     uint64_t lastTraceTime;
     std::deque<StampedPosition> tracedPositions;
+
+    void drawCircle(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color);
+    void drawLine(GLuint shaderProgramId, glm::vec2 start, glm::vec2 end, float width, glm::vec3 color);
 
 public:
 
@@ -34,6 +40,7 @@ public:
     void addPositionTrace(glm::vec3 position, uint64_t simulationTime);
 
     void renderPositionTrace(GLuint shaderProgramId, uint64_t simulationTime);
+    void renderVisualization(GLuint shaderProgramId, Scene::Visualization& visualization);
 };
 
 #endif
