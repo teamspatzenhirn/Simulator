@@ -96,7 +96,7 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, uint64_t simulationT
 void VisModule::renderVisualization(
         GLuint shaderProgramId,
         Scene::Visualization& visualization,
-        Scene::Settings& settings) {
+        Settings& settings) {
 
     GLuint lightingLocation = 
         glGetUniformLocation(shaderProgramId, "lighting");

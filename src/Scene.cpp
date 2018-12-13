@@ -123,6 +123,32 @@ void from_json(const json& j, FpsCamera& o) {
 }
 
 /*
+ * Settings
+ */
+
+void to_json(json& j, const Settings& s) {
+
+    j = json({
+            {"simulationSpeed", s.simulationSpeed},
+            {"configPath", s.configPath},
+            {"showMarkers", s.showMarkers},
+            {"showVehiclePath", s.showVehiclePath},
+            {"fancyVehiclePath", s.fancyVehiclePath},
+            {"showVehicleTrajectory", s.showVehicleTrajectory}
+        });
+}
+
+void from_json(const json& j, Settings& s) {
+
+    s.simulationSpeed = j.at("simulationSpeed").get<float>();
+    s.configPath = j.at("configPath").get<std::string>();
+    s.showMarkers = j.at("showMarkers").get<bool>();
+    s.showVehiclePath = j.at("showVehiclePath").get<bool>();
+    s.fancyVehiclePath = j.at("fancyVehiclePath").get<bool>();
+    s.showVehicleTrajectory = j.at("showVehicleTrajectory").get<bool>();
+}
+
+/*
  * Scene::Car::SystemParams
  */
 
@@ -477,6 +503,45 @@ void from_json(const json& j, Scene& s) {
     }
 }
 
+/*
+ * Settings comin right up, mate!
+ */
+
+bool Settings::save() {
+
+    std::ofstream out(settingsFilePath);
+
+    if (!out) {
+        return false;
+    } 
+
+    out << json(*this).dump(4);
+    out.close();
+
+    return true;
+}
+
+bool Settings::load() {
+
+    std::ifstream in(settingsFilePath);
+
+    if (!in) {
+        return false;
+    }
+
+    try {
+        json j;
+        in >> j;
+        *this = j;
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+        return false;
+    }
+
+    in.close();
+
+    return true;
+}
 
 /*
  * Now that's the actual Scene implementation, fellas!
@@ -616,6 +681,10 @@ void Scene::Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoi
 }
 
 Scene::Scene() : version{VERSION} {
+}
+
+Scene::Scene(std::string path) : version{VERSION} {
+    load(path);
 }
 
 Scene::~Scene() {

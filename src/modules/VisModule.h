@@ -48,7 +48,7 @@ public:
     void renderVisualization(
             GLuint shaderProgramId,
             Scene::Visualization& visualization,
-            Scene::Settings& settings);
+            Settings& settings);
 };
 
 #endif

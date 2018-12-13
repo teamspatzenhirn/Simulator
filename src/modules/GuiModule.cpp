@@ -34,7 +34,7 @@ GuiModule::~GuiModule() {
     ImGui::DestroyContext();
 }
 
-void GuiModule::renderRootWindow(Scene& scene) {
+void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
     bool showOpenFileDialog = false;
     bool showSaveFileDialog = false;
@@ -85,7 +85,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
         ImGui::EndMainMenuBar();
     }
 
-    renderOpenFileDialog(scene, showOpenFileDialog);
+    renderOpenFileDialog(scene, settings, showOpenFileDialog);
     renderSaveFileDialog(scene, showSaveFileDialog, showSaveAsFileDialog);
 
     // rendering the status text
@@ -132,7 +132,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
         if (e.key == GLFW_KEY_H && e.action == GLFW_PRESS) {
 
-            scene.settings.showMarkers = !scene.settings.showMarkers;
+            settings.showMarkers = !settings.showMarkers;
         }
     }
 }
@@ -354,23 +354,29 @@ void GuiModule::renderCarPropertiesWindow(Scene::Car& car) {
     }
 }
 
-void GuiModule::renderSettingsWindow(Scene& scene) {
+void GuiModule::renderSettingsWindow(Settings& settings) {
 
     if (showSettingsWindow) { 
 
+        bool changed = false;
+
         ImGui::Begin("Settings", &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
 
-        ImGui::DragFloat("Simulation speed", &scene.settings.simulationSpeed, 0.05f, 0.01f, 4.0f);
-        scene.settings.simulationSpeed = std::max(std::min(scene.settings.simulationSpeed, 4.0f), 0.01f);
+        changed |= ImGui::DragFloat("Simulation speed", &settings.simulationSpeed, 0.05f, 0.01f, 4.0f);
+        settings.simulationSpeed = std::max(std::min(settings.simulationSpeed, 4.0f), 0.01f);
 
         ImGui::Separator();
 
-        ImGui::Checkbox("Show markers", &scene.settings.showMarkers);
-        ImGui::Checkbox("Show vehicle path", &scene.settings.showVehiclePath);
-        ImGui::Checkbox("Fancy vehicle path", &scene.settings.fancyVehiclePath);
-        ImGui::Checkbox("Show vehicle trajectory", &scene.settings.showVehicleTrajectory);
+        changed |= ImGui::Checkbox("Show markers", &settings.showMarkers);
+        changed |= ImGui::Checkbox("Show vehicle path", &settings.showVehiclePath);
+        changed |= ImGui::Checkbox("Fancy vehicle path", &settings.fancyVehiclePath);
+        changed |= ImGui::Checkbox("Show vehicle trajectory", &settings.showVehicleTrajectory);
 
         ImGui::End();
+
+        if (changed) {
+            settings.save();
+        }
     }
 }
 
@@ -410,8 +416,7 @@ void GuiModule::renderHelpWindow() {
     }
 }
 
-void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
-
+void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show) {
 
     if (show) {
         ImGui::OpenPopup("Open File");
@@ -426,8 +431,13 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
             if (scene.load(currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
-                ImGui::CloseCurrentPopup();
+
+                settings.configPath = currentDirectory + selectedFilename;
+                settings.save();
+
                 Scene::history.clear();
+
+                ImGui::CloseCurrentPopup();
             } else {
                 errorMessage = "Could not open " + selectedFilename + "!";
             }
