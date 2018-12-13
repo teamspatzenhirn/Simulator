@@ -122,19 +122,45 @@ struct Scene {
     double simulationTime = 0;
 
     /*
-     * The speed of the simulation given as fraction of real time.
-     */
-    float simulationSpeed = 0.25f;
-
-    /*
      * This is free camera that is used in the editor.
      */
-    FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
+    FpsCamera fpsCamera{{0, 1, 1.5}, 0.5, 0, M_PI * 0.3f, 4.0f/3.0f};
 
-    /*
-     * If set no markers will be rendered.
+    /* 
+     * This contains settings that are not stored per config
+     * but globally in the .config directory.
      */
-    bool markersHidden = false;
+    struct Settings {
+
+        /*
+         * The speed of the simulation given as fraction of real time.
+         */
+        float simulationSpeed = 0.25f;
+
+        /*
+         * If set marker/modifier points will be rendered.
+         */
+        bool showMarkers = true;
+
+        /*
+         * If set the path of the vehicle, that is the position
+         * history will be draw.
+         */
+        bool showVehiclePath = true;
+
+        /*
+         * If set the vehicle path will be draw in the prettiest
+         * rainbow colors one can imagine.
+         */
+        bool fancyVehiclePath = true;
+
+        /*
+         * If set the vehicle trajectory points set in 
+         * "visualization" struct will be drawn.
+         */
+        bool showVehicleTrajectory = true;
+
+    } settings;
 
     /*
      * This struct contains the state of the simulated model car.

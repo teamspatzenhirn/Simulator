@@ -3,13 +3,18 @@
 FpsCamera::FpsCamera() {
 }
 
-FpsCamera::FpsCamera(float fov, float aspectRatio) : Camera(fov, aspectRatio) {
+FpsCamera::FpsCamera(float fov, float aspectRatio)
+    : FpsCamera({0, 0, 0}, 0, 0, fov, aspectRatio) {
+
+}
+
+FpsCamera::FpsCamera(glm::vec3 position, float pitch, float yaw, float fov, float aspectRatio)
+    : Camera(fov, aspectRatio), pitch{pitch}, yaw{yaw} {
 
     prevMouseX = -1;
     prevMouseY = -1;
 
-    pitch = 0.0f;
-    yaw = 0.0f;
+    pose.position = position;
 }
 
 void FpsCamera::update(GLFWwindow* window, float dt) {

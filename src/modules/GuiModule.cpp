@@ -132,7 +132,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
         if (e.key == GLFW_KEY_H && e.action == GLFW_PRESS) {
 
-            scene.markersHidden = !scene.markersHidden;
+            scene.settings.showMarkers = !scene.settings.showMarkers;
         }
     }
 }
@@ -358,10 +358,17 @@ void GuiModule::renderSettingsWindow(Scene& scene) {
 
     if (showSettingsWindow) { 
 
-        ImGui::Begin("Settings", &showSettingsWindow);
+        ImGui::Begin("Settings", &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
 
-        ImGui::DragFloat("Simulation speed", &scene.simulationSpeed, 0.05f, 0.01f, 4.0f);
-        scene.simulationSpeed = std::max(std::min(scene.simulationSpeed, 4.0f), 0.01f);
+        ImGui::DragFloat("Simulation speed", &scene.settings.simulationSpeed, 0.05f, 0.01f, 4.0f);
+        scene.settings.simulationSpeed = std::max(std::min(scene.settings.simulationSpeed, 4.0f), 0.01f);
+
+        ImGui::Separator();
+
+        ImGui::Checkbox("Show markers", &scene.settings.showMarkers);
+        ImGui::Checkbox("Show vehicle path", &scene.settings.showVehiclePath);
+        ImGui::Checkbox("Fancy vehicle path", &scene.settings.fancyVehiclePath);
+        ImGui::Checkbox("Show vehicle trajectory", &scene.settings.showVehicleTrajectory);
 
         ImGui::End();
     }

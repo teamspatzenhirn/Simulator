@@ -38,7 +38,7 @@ void Loop::loop() {
         guiModule.begin();
 
         double deltaTime = 4.0f;
-        double simDeltaTime = deltaTime * scene.simulationSpeed;
+        double simDeltaTime = deltaTime * scene.settings.simulationSpeed;
 
         while (timer.updateStep(deltaTime)) {
 
@@ -161,16 +161,13 @@ void Loop::loop() {
         commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
         commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
-
         guiModule.renderRootWindow(scene);
 
-        if (!scene.markersHidden) {
-            guiModule.renderCarPropertiesWindow(scene.car);
-            guiModule.renderRulePropertiesWindow(scene.rules);
-            guiModule.renderPoseWindow(markerModule.getSelection());
-            guiModule.renderSettingsWindow(scene);
-            guiModule.renderHelpWindow();
-        }
+        guiModule.renderCarPropertiesWindow(scene.car);
+        guiModule.renderRulePropertiesWindow(scene.rules);
+        guiModule.renderPoseWindow(markerModule.getSelection());
+        guiModule.renderSettingsWindow(scene);
+        guiModule.renderHelpWindow();
 
         guiModule.end();
 
@@ -239,7 +236,7 @@ void Loop::renderMarkers(GLuint shaderProgramId) {
 
 void Loop::renderFpsView() {
 
-    if (!scene.markersHidden) {
+    if (scene.settings.showMarkers) {
         markerModule.update(window, scene.fpsCamera);
         editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
     }
@@ -247,7 +244,7 @@ void Loop::renderFpsView() {
     itemsModule.update(scene.items, markerModule.getSelection());
 
     Scene preRenderScene = scene;
-    update(timer.accumulator, timer.accumulator * scene.simulationSpeed);
+    update(timer.accumulator, timer.accumulator * scene.settings.simulationSpeed);
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
@@ -265,14 +262,25 @@ void Loop::renderFpsView() {
 
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    if (!scene.markersHidden) {
-
-        editor.renderMarkers(shaderProgram.id, scene.tracks, scene.fpsCamera.pose.position);
+    if (scene.settings.showMarkers) {
+        editor.renderMarkers(
+                shaderProgram.id,
+                scene.tracks,
+                scene.fpsCamera.pose.position);
         renderMarkers(shaderProgram.id);
     }
 
-    visModule.renderPositionTrace(shaderProgram.id, scene.simulationTime);
-    visModule.renderVisualization(shaderProgram.id, scene.visualization);
+    if (scene.settings.showVehiclePath) {
+        visModule.renderPositionTrace(
+                shaderProgram.id,
+                scene.simulationTime,
+                scene.settings.fancyVehiclePath);
+    }
+
+    visModule.renderVisualization(
+            shaderProgram.id,
+            scene.visualization,
+            scene.settings);
 
     scene = preRenderScene;
 }
@@ -280,7 +288,7 @@ void Loop::renderFpsView() {
 void Loop::renderCarView() {
 
     Scene preRenderScene = scene;
-    update(timer.accumulator, timer.accumulator * scene.simulationSpeed);
+    update(timer.accumulator, timer.accumulator * scene.settings.simulationSpeed);
 
     glUseProgram(carShaderProgram.id);
 
@@ -322,7 +330,7 @@ void Loop::renderDepthView() {
 
     Scene preRenderScene = scene;
 
-    update(timer.accumulator, timer.accumulator * scene.simulationSpeed);
+    update(timer.accumulator, timer.accumulator * scene.settings.simulationSpeed);
 
     glUseProgram(depthCameraShaderProgram.id);
 
