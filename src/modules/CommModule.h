@@ -11,9 +11,10 @@
 class CommModule {
 
     static constexpr int mainCameraMemId = 428769;
-    static constexpr int depthCameraMemId = 428772;
     static constexpr int carMemId = 428770;
     static constexpr int vescMemId = 428771;
+    static constexpr int depthCameraMemId = 428772;
+    static constexpr int visualMemId = 428773;
 
     struct MainCameraImage {
 
@@ -68,6 +69,11 @@ class CommModule {
         double steeringAngle;
     };
 
+    struct Visualization {
+
+        glm::vec2 trajectoryPoints[128];
+    };
+
     int vescFailCounter = 0;
 
     Capture mainCameraCapture;
@@ -79,6 +85,7 @@ class CommModule {
     SimulatorSHM::SHMComm<DepthCameraImage> txDepthCamera; 
     SimulatorSHM::SHMComm<Car> txCar; 
     SimulatorSHM::SHMComm<Vesc> rxVesc; 
+    SimulatorSHM::SHMComm<Visualization> rxVisual; 
 
     template<typename T>
     void initSharedMemory(SimulatorSHM::SHMComm<T>& mem);
@@ -92,6 +99,7 @@ public:
     void transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebufferId);
     void transmitCar(Scene::Car& car, bool paused, uint64_t time);
     void receiveVesc(Scene::Car::Vesc& car);
+    void receiveVisualization(Scene::Visualization& vis);
 };
 
 #endif

@@ -20,9 +20,7 @@ class GuiModule {
     GLFWwindow* window;
 
     bool showCreateItemsWindow = true;
-    bool showPoseWindow = true;
-    bool showSceneWindow = false;
-    bool showRulePropertiesWindow = false;
+    bool showSceneWindow = true;
     bool showSettingsWindow = false;
     bool showHelpWindow = false;
 
@@ -34,21 +32,21 @@ class GuiModule {
     std::string errorMessage;
 
     void renderErrorDialog(std::string& msg);
-    void renderOpenFileDialog(Scene& scene, bool show);
+    void renderOpenFileDialog(Scene& scene, Settings& settings, bool show);
     void renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs);
     void renderDirectoryListing();
 
     void renderCreateMenu(Scene& scene);
+    void renderPoseGui(Pose& pose);
  
 public:
 
     GuiModule(GLFWwindow* window, std::string scenePath);
     ~GuiModule();
 
-    void renderRootWindow(Scene& scene);
-    void renderPoseWindow(Pose* pose);
+    void renderRootWindow(Scene& scene, Settings& settings);
     void renderSceneWindow(Scene& scene);
-    void renderSettingsWindow(Scene& scene);
+    void renderSettingsWindow(Settings& settings);
     void renderHelpWindow();
 
     void begin();

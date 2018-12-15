@@ -18,6 +18,7 @@
 
 #include "imgui/imgui.h"
 #include "helpers/Helpers.h"
+#include "Scene.h"
 
 class MarkerModule {
 
@@ -29,7 +30,7 @@ class MarkerModule {
         int transformRestriction;
     };
     
-    RestrictedPose selectedModelPose;
+    int selectedTransformRestriction;
 
     std::vector<RestrictedPose> modelPoses;
 
@@ -43,9 +44,7 @@ class MarkerModule {
         float y;
         bool click;
         bool pressed;
-        bool handled;
         glm::vec3 clickRay;
-        int prevButtonState = GLFW_RELEASE;
     } mouse;
 
     struct {
@@ -69,20 +68,33 @@ class MarkerModule {
 
     float getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition);
 
-    bool hasSelection();
-    void deselect();
+    bool hasSelection(Scene::Selection& selection);
+    void deselect(Scene::Selection& selection);
 
-    bool isTransformAllowed(int transformRestriction, SelectionMode selectionMode, Axis axis);
+    bool isTransformAllowed(
+            int transformRestriction,
+            SelectionMode selectionMode,
+            Axis axis);
 
     void updateMouseState(GLFWwindow* window, Camera& camera);
 
-    void updateSelectionState(Camera& camera);
+    void updateSelectionState(
+            Camera& camera,
+            Scene::Selection& selection);
 
-    void updateModifiers(Camera& camera);
+    void updateModifiers(
+            Camera& camera,
+            Scene::Selection& selection);
 
-    void renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition);
+    void renderMarkers(
+            GLuint shaderProgramId,
+            glm::vec3& cameraPosition,
+            Scene::Selection& selection);
 
-    void renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosition);
+    void renderModifiers(
+            GLuint shaderProgramId,
+            glm::vec3& cameraPosition,
+            Scene::Selection& selection);
 
     void renderGlyphTriplet(
             GLuint shaderProgramId,
@@ -132,13 +144,16 @@ public:
 
     void add(Pose& modelPose, int transformRestriction);
 
-    Pose* getSelection();
+    void update(
+            GLFWwindow* window,
+            Camera& camera,
+            Scene::Selection& selection);
 
-    void update(GLFWwindow* window, Camera& camera);
-
-    void render(GLFWwindow* window,
+    void render(
+            GLFWwindow* window,
             GLuint shaderProgramId,
-            Camera& cameraMatrix);
+            Camera& cameraMatrix,
+            Scene::Selection& selection);
 };
 
 #endif

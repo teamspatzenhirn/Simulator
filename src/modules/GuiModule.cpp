@@ -7,7 +7,7 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
     int separatorIndex = scenePath.find_last_of("\\/");
 
     if (separatorIndex > 0) { 
-        openedPath = scenePath.substr(0, separatorIndex);
+        openedPath = scenePath.substr(0, separatorIndex+1);
         openedFilename = scenePath.substr(
                 separatorIndex+1, scenePath.size());
     } else {
@@ -34,7 +34,7 @@ GuiModule::~GuiModule() {
     ImGui::DestroyContext();
 }
 
-void GuiModule::renderRootWindow(Scene& scene) {
+void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
     bool showOpenFileDialog = false;
     bool showSaveFileDialog = false;
@@ -83,7 +83,6 @@ void GuiModule::renderRootWindow(Scene& scene) {
         if (ImGui::BeginMenu("Show")) {
 
             ImGui::MenuItem("Scene", NULL, &showSceneWindow);
-            ImGui::MenuItem("Pose", NULL, &showPoseWindow);
             ImGui::MenuItem("Settings", NULL, &showSettingsWindow);
             ImGui::MenuItem("Help", NULL, &showHelpWindow);
 
@@ -93,12 +92,12 @@ void GuiModule::renderRootWindow(Scene& scene) {
         ImGui::EndMainMenuBar();
     }
 
-    renderOpenFileDialog(scene, showOpenFileDialog);
+    renderOpenFileDialog(scene, settings, showOpenFileDialog);
     renderSaveFileDialog(scene, showSaveFileDialog, showSaveAsFileDialog);
 
     // rendering the status text
 
-    ImGui::Text("Version: 1.1");
+    ImGui::Text("Version: 1.2");
 
     std::string msg = "Config: ";
     if (openedFilename.empty()) { 
@@ -115,7 +114,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
         ImGui::Text("PAUSED");
     }
 
-    ImGui::ShowDemoWindow();
+    // ImGui::ShowDemoWindow();
 
     ImGui::End();
 
@@ -140,7 +139,7 @@ void GuiModule::renderRootWindow(Scene& scene) {
 
         if (e.key == GLFW_KEY_H && e.action == GLFW_PRESS) {
 
-            scene.markersHidden = !scene.markersHidden;
+            settings.showMarkers = !settings.showMarkers;
         }
     }
 }
@@ -260,31 +259,21 @@ void GuiModule::renderCreateMenu(Scene& scene) {
     }
 
     if (NONE != newType) {
-        scene.items.emplace_back(std::make_shared<Scene::Item>(newType));
+        scene.items.emplace_back(std::make_shared<Scene::Item>(newType, newName));
     }
 }
 
-void GuiModule::renderPoseWindow(Pose* selectedPose) {
+void GuiModule::renderPoseGui(Pose& pose) {
 
-    if (showPoseWindow) {
+    ImGui::InputFloat3("position",
+            glm::value_ptr(pose.position));
 
-        ImGui::Begin("Pose", &showPoseWindow);
+    ImGui::InputFloat3("scale", glm::value_ptr(pose.scale));
+    
+    glm::vec3 eulerAngles = pose.getEulerAngles();
 
-        if (nullptr != selectedPose) {
-
-            ImGui::InputFloat3("position",
-                    glm::value_ptr(selectedPose->position));
-
-            ImGui::InputFloat3("scale", glm::value_ptr(selectedPose->scale));
-            
-            glm::vec3 eulerAngles = selectedPose->getEulerAngles();
-
-            if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                selectedPose->setEulerAngles(eulerAngles);
-            }
-        }
-
-        ImGui::End();
+    if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+        pose.setEulerAngles(eulerAngles);
     }
 }
 
@@ -313,12 +302,17 @@ void GuiModule::renderSceneWindow(Scene& scene) {
 
         ImGui::Begin("Scene", &showSceneWindow); 
 
-        if (ImGui::TreeNode("Car")) {
+        bool car_open = ImGui::TreeNode("Car");
+
+        if(ImGui::IsItemClicked()) {
+            scene.selection.pose = &scene.car.modelPose;
+            scene.selection.handled = true;
+        }
+
+        if (car_open) {
 
             if (ImGui::TreeNode("Pose")) { 
-
-                ImGui::InputFloat3("position", (float*)&scene.car.modelPose);
-
+                renderPoseGui(scene.car.modelPose);
                 ImGui::TreePop();
             }
 
@@ -411,23 +405,25 @@ void GuiModule::renderSceneWindow(Scene& scene) {
 
                 ImGui::PushID(i.get());
 
-                if (ImGui::TreeNode(i->name.c_str())) {
+                int flags = 0;
+                if (&(i->pose) == scene.selection.pose) {
+                    flags = ImGuiTreeNodeFlags_Selected;
+                }
+                
+                bool open = ImGui::TreeNodeEx((void*)&i, flags, "%s", i->name.c_str());
 
+                if(ImGui::IsItemClicked()) {
+                    scene.selection.pose = &i->pose;
+                    scene.selection.handled = true;
+                }
+
+                if (open) {
                     char nameInputBuf[256];
                     strncpy(nameInputBuf, i->name.c_str(), sizeof(nameInputBuf));
                     ImGui::InputText("name", nameInputBuf, IM_ARRAYSIZE(nameInputBuf));
                     i->name = std::string(nameInputBuf);
 
-                    ImGui::InputFloat3("position",
-                            glm::value_ptr(i->pose.position));
-
-                    ImGui::InputFloat3("scale", glm::value_ptr(i->pose.scale));
-                    
-                    glm::vec3 eulerAngles = i->pose.getEulerAngles();
-
-                    if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                        i->pose.setEulerAngles(eulerAngles);
-                    }
+                    renderPoseGui(i->pose);
 
                     ImGui::TreePop();
                 }
@@ -441,16 +437,29 @@ void GuiModule::renderSceneWindow(Scene& scene) {
     }
 }
 
-void GuiModule::renderSettingsWindow(Scene& scene) {
+void GuiModule::renderSettingsWindow(Settings& settings) {
 
     if (showSettingsWindow) { 
 
-        ImGui::Begin("Settings", &showSettingsWindow);
+        bool changed = false;
 
-        ImGui::DragFloat("Simulation speed", &scene.simulationSpeed, 0.05f, 0.01f, 4.0f);
-        scene.simulationSpeed = std::max(std::min(scene.simulationSpeed, 4.0f), 0.01f);
+        ImGui::Begin("Settings", &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
+
+        changed |= ImGui::DragFloat("Simulation speed", &settings.simulationSpeed, 0.05f, 0.01f, 4.0f);
+        settings.simulationSpeed = std::max(std::min(settings.simulationSpeed, 4.0f), 0.01f);
+
+        ImGui::Separator();
+
+        changed |= ImGui::Checkbox("Show markers", &settings.showMarkers);
+        changed |= ImGui::Checkbox("Show vehicle path", &settings.showVehiclePath);
+        changed |= ImGui::Checkbox("Fancy vehicle path", &settings.fancyVehiclePath);
+        changed |= ImGui::Checkbox("Show vehicle trajectory", &settings.showVehicleTrajectory);
 
         ImGui::End();
+
+        if (changed) {
+            settings.save();
+        }
     }
 }
 
@@ -491,7 +500,7 @@ void GuiModule::renderHelpWindow() {
     }
 }
 
-void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
+void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show) {
 
     if (show) {
         ImGui::OpenPopup("Open File");
@@ -506,8 +515,13 @@ void GuiModule::renderOpenFileDialog(Scene& scene, bool show) {
             if (scene.load(currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
-                ImGui::CloseCurrentPopup();
+
+                settings.configPath = currentDirectory + selectedFilename;
+                settings.save();
+
                 Scene::history.clear();
+
+                ImGui::CloseCurrentPopup();
             } else {
                 errorMessage = "Could not open " + selectedFilename + "!";
             }

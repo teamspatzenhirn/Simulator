@@ -32,7 +32,6 @@ int main (int argc, char* argv[]) {
     glClearColor(1.0, 1.0, 1.0, 1.0);
 
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
 
     glDepthFunc(GL_LEQUAL);
 
@@ -40,24 +39,25 @@ int main (int argc, char* argv[]) {
 
     // loop setup
     
-    std::string scenePath = "default.json";
+    Settings settings;
+    settings.load();
+    
     if (argc > 1) {
-        scenePath = std::string(argv[1]);
+        settings.configPath = std::string(argv[1]);
     }
 
     std::shared_ptr<Loop> loop = std::make_shared<Loop>(
-            window, windowWidth, windowHeight, scenePath);
+            window,
+            windowWidth,
+            windowHeight,
+            settings);
 
     Loop::instance = loop;
 
     glfwSetFramebufferSizeCallback(window, Loop::framebufferSizeCallback);
-    /* 
-     * GLFW only supports setting one callback!
-     * If this is commented in imgui input will no longer work!
-     */
-    //glfwSetKeyCallback(window, Loop::keyCallback);
     
-    // main loop
+    // entering main loop
+    
     loop->loop();
 
     glfwDestroyWindow(window);

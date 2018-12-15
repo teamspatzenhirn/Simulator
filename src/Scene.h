@@ -1,11 +1,12 @@
 #ifndef INC_2019_SCENE_H
 #define INC_2019_SCENE_H
 
+#include <deque>
 #include <string>
 #include <vector>
 #include <fstream>
 #include <memory>
-#include <deque>
+#include <cstdlib>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -88,6 +89,79 @@ enum ItemType {
     CALIB_MAT = 27,
 };
 
+/* 
+ * This contains settings that are not stored per config
+ * but globally as a ~/.config-file.
+ */
+struct Settings {
+
+    Settings () {
+
+        std::string strHomePath("/");
+        char* homePath = getenv("HOME");
+
+        if (homePath) {
+            strHomePath = std::string(homePath);
+        } else {
+            homePath = getenv("HOMEPATH");
+            if (homePath) {
+                strHomePath = std::string(homePath);
+            }
+        }
+
+        settingsFilePath = strHomePath + "/.carolosim";
+    }
+
+    /*
+     * The path where the global settings file is stored.
+     */
+    std::string settingsFilePath;
+
+    /*
+     * The path to the last opened config file or the path set by
+     * command line argument.
+     */
+    std::string configPath;
+
+    /*
+     * The speed of the simulation given as fraction of real time.
+     */
+    float simulationSpeed = 0.25f;
+
+    /*
+     * If set marker/modifier points will be rendered.
+     */
+    bool showMarkers = true;
+
+    /*
+     * If set the path of the vehicle, that is the position
+     * history will be draw.
+     */
+    bool showVehiclePath = true;
+
+    /*
+     * If set the vehicle path will be draw in the prettiest
+     * rainbow colors one can imagine.
+     */
+    bool fancyVehiclePath = true;
+
+    /*
+     * If set the vehicle trajectory points set in 
+     * "visualization" struct will be drawn.
+     */
+    bool showVehicleTrajectory = true;
+
+    /*
+     * This saves the settings to ~/.carolosim
+     */
+    bool save();
+
+    /*
+     * This tries to loads the settings from ~/.carolosim
+     */
+    bool load();
+};
+
 /*
  * In order to make simulation state propagration and retention
  * as simple as possible the complete simulation state should be
@@ -122,19 +196,23 @@ struct Scene {
     double simulationTime = 0;
 
     /*
-     * The speed of the simulation given as fraction of real time.
-     */
-    float simulationSpeed = 0.25f;
-
-    /*
      * This is free camera that is used in the editor.
      */
-    FpsCamera fpsCamera{M_PI * 0.3f, 4.0f/3.0f};
+    FpsCamera fpsCamera{{0, 1, 1.5}, 0.5, 0, M_PI * 0.3f, 4.0f/3.0f};
 
-    /*
-     * If set no markers will be rendered.
-     */
-    bool markersHidden = false;
+    struct Selection {
+
+        /*
+         * This is the currently selected item / object in the scene.
+         */
+        Pose* pose = nullptr;
+
+        /*
+         * This checks if a left mouse click was handled.
+         */
+        bool handled = false;
+
+    } selection;
 
     /*
      * This struct contains the state of the simulated model car.
@@ -336,7 +414,9 @@ struct Scene {
         }
         
         Item (ItemType type) : type(type) {
+        }
 
+        Item (ItemType type, std::string name) : type(type), name(name) {
         }
     };
 
@@ -370,8 +450,20 @@ struct Scene {
         bool exitIfOnEndItem = false;
 
     } rules;
+    
+    /*
+     * This struct contains visualization information
+     * like the trajectory, ...
+     */
+    struct Visualization {
+
+        std::vector<glm::vec2> trajectoryPoints;
+
+    } visualization;
 
     Scene();
+    Scene(std::string path);
+
     ~Scene();
 
     bool save(std::string path);

@@ -32,6 +32,7 @@ public:
 
     FpsCamera();
     FpsCamera(float fov, float aspectRatio);
+    FpsCamera(glm::vec3 position, float pitch, float yaw, float fov, float aspectRatio);
 
     /*
      * Call this method to read in keyboard and mouse
