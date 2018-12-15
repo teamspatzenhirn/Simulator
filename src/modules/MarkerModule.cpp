@@ -13,13 +13,13 @@ float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition
     return glm::length(cameraPosition - modelPosition) * 0.05;
 }
 
-bool MarkerModule::hasSelection() {
+bool MarkerModule::hasSelection(Scene::Selection& selection) {
 
-    if (selectedModelPose.pose == nullptr) {
+    if (selection.pose == nullptr) {
         return false;
     } else {
         for (const RestrictedPose& p : modelPoses) {
-            if (p.pose == selectedModelPose.pose) {
+            if (p.pose == selection.pose) {
                 return true;
             }
         }
@@ -28,10 +28,11 @@ bool MarkerModule::hasSelection() {
     }
 }
 
-void MarkerModule::deselect() {
+void MarkerModule::deselect(Scene::Selection& selection) {
 
-    selectedModelPose.pose = nullptr;
-    selectedModelPose.transformRestriction = ALL;
+    selection.pose = nullptr;
+    selectedTransformRestriction = ALL;
+    selectionMode = TRANSLATE;
 }
 
 bool MarkerModule::isTransformAllowed(int transformRestriction, SelectionMode selectionMode, Axis axis) {
@@ -79,10 +80,15 @@ void MarkerModule::updateMouseState(GLFWwindow* window, Camera& camera) {
     mouse.x = (float)mouseX;
     mouse.y = (float)mouseY;
 
-    int buttonState = getMouseButton(GLFW_MOUSE_BUTTON_LEFT);
+    mouse.click = false;
 
-    mouse.pressed = GLFW_PRESS == buttonState;
-    mouse.click = GLFW_RELEASE == mouse.prevButtonState && GLFW_PRESS == buttonState;
+    for (MouseButtonEvent& evt : getMouseButtonEvents()) {
+        if (evt.action == GLFW_PRESS && evt.button == GLFW_MOUSE_BUTTON_LEFT) {
+            mouse.click = true;
+        }
+    }
+
+    mouse.pressed = GLFW_PRESS == getMouseButton(GLFW_MOUSE_BUTTON_LEFT);
 
     if (mouse.pressed) {
         int windowWidth;
@@ -91,19 +97,9 @@ void MarkerModule::updateMouseState(GLFWwindow* window, Camera& camera) {
         mouse.clickRay = camera.pickRay(
                 mouse.x, mouse.y, windowWidth, windowHeight);
     }
-
-    if (mouse.click) {
-        mouse.handled = false;
-    }
-
-    mouse.prevButtonState = buttonState;
 }
 
-void MarkerModule::updateSelectionState(Camera& camera) {
-
-    if (!mouse.click) {
-        return;
-    }
+void MarkerModule::updateSelectionState(Camera& camera, Scene::Selection& selection) {
 
     glm::mat4 view = camera.pose.getInverseMatrix();
 
@@ -119,38 +115,46 @@ void MarkerModule::updateSelectionState(Camera& camera) {
         glm::vec3 intersectionPoint = intersectLineWithPlane(
                 mouse.clickRay, cameraPosition, eyeVector, pose.pose->position);
 
-        if (glm::length(pose.pose->position - intersectionPoint) < 0.5f * scale) {
+        if (mouse.click) {
 
-            if (selectedModelPose.pose == pose.pose) {
+            if (glm::length(pose.pose->position - intersectionPoint) < 0.5f * scale) {
 
-                // finally! i can use a do while loop!
-                // *tear of joy* 
-                do {
-                    selectionMode = (SelectionMode)((selectionMode + 1) % 3);
-                } while (!isTransformAllowed(
-                            selectedModelPose.transformRestriction,
-                            selectionMode,
-                            X_AXIS) && 
-                       !isTransformAllowed(
-                            selectedModelPose.transformRestriction,
-                            selectionMode,
-                            Y_AXIS) &&
-                       !isTransformAllowed(
-                            selectedModelPose.transformRestriction,
-                            selectionMode,
-                            Z_AXIS) &&
-                        selectionMode != TRANSLATE);
-            } else {
-                selectionMode = TRANSLATE;
+                if (selection.pose == pose.pose) {
+
+                    // finally! i can use a do while loop!
+                    // *tears of joy* 
+                    do {
+                        selectionMode = (SelectionMode)((selectionMode + 1) % 3);
+                    } while (!isTransformAllowed(
+                                selectedTransformRestriction,
+                                selectionMode,
+                                X_AXIS) && 
+                           !isTransformAllowed(
+                                selectedTransformRestriction,
+                                selectionMode,
+                                Y_AXIS) &&
+                           !isTransformAllowed(
+                                selectedTransformRestriction,
+                                selectionMode,
+                                Z_AXIS) &&
+                            selectionMode != TRANSLATE);
+                } else {
+                    selectionMode = TRANSLATE;
+                }
+
+                selection.handled = true;
+                selection.pose = pose.pose;
+                selectedTransformRestriction = pose.transformRestriction;
             }
+        }
 
-            mouse.handled = true;
-            selectedModelPose = pose;
+        if (selection.pose == pose.pose) {
+            selectedTransformRestriction = pose.transformRestriction;
         }
     }
 }
 
-void MarkerModule::updateModifiers(Camera& camera) {
+void MarkerModule::updateModifiers(Camera& camera, Scene::Selection& selection) {
 
     if (!mouse.pressed) {
         return;
@@ -159,7 +163,7 @@ void MarkerModule::updateModifiers(Camera& camera) {
     glm::vec3 cameraPosition = camera.pose.position;
 
     if (mouse.click) {
-        mod.dragStartModelPosition = selectedModelPose.pose->position;
+        mod.dragStartModelPosition = selection.pose->position;
         mod.dragStartScale = getScale(cameraPosition, mod.dragStartModelPosition);
 
         if (selectionMode == TRANSLATE || selectionMode == SCALE) {
@@ -173,18 +177,18 @@ void MarkerModule::updateModifiers(Camera& camera) {
 
             if (xLocalPoint.x < arrowLength && xLocalPoint.x > 0
                     && std::abs(xLocalPoint.y) < arrowHeight
-                    && isTransformAllowed(selectedModelPose.transformRestriction, selectionMode, X_AXIS)) {
-                mouse.handled = true;
+                    && isTransformAllowed(selectedTransformRestriction, selectionMode, X_AXIS)) {
+                selection.handled = true;
                 selectedAxis = X_AXIS;
             } else if (yLocalPoint.x < arrowLength && yLocalPoint.x > 0
                     && std::abs(yLocalPoint.y) < arrowHeight
-                    && isTransformAllowed(selectedModelPose.transformRestriction, selectionMode, Y_AXIS)) {
-                mouse.handled = true;
+                    && isTransformAllowed(selectedTransformRestriction, selectionMode, Y_AXIS)) {
+                selection.handled = true;
                 selectedAxis = Y_AXIS;
             } else if (zLocalPoint.x < arrowLength && zLocalPoint.x > 0
                     && std::abs(zLocalPoint.y) < arrowHeight
-                    && isTransformAllowed(selectedModelPose.transformRestriction, selectionMode, Z_AXIS)) {
-                mouse.handled = true;
+                    && isTransformAllowed(selectedTransformRestriction, selectionMode, Z_AXIS)) {
+                selection.handled = true;
                 selectedAxis = Z_AXIS;
             } else {
                 selectedAxis = NONE;
@@ -206,16 +210,16 @@ void MarkerModule::updateModifiers(Camera& camera) {
             float zLength = glm::length(glm::vec2(zLocalPoint.x, zLocalPoint.y));
 
             if (innerRadius < xLength && xLength < outerRadius
-                    && isTransformAllowed(selectedModelPose.transformRestriction, selectionMode, X_AXIS)) {
-                mouse.handled = true;
+                    && isTransformAllowed(selectedTransformRestriction, selectionMode, X_AXIS)) {
+                selection.handled = true;
                 selectedAxis = X_AXIS;
             } else if (innerRadius < yLength && yLength < outerRadius
-                    && isTransformAllowed(selectedModelPose.transformRestriction, selectionMode, Y_AXIS)) {
-                mouse.handled = true;
+                    && isTransformAllowed(selectedTransformRestriction, selectionMode, Y_AXIS)) {
+                selection.handled = true;
                 selectedAxis = Y_AXIS;
             } else if (innerRadius < zLength && zLength < outerRadius
-                    && isTransformAllowed(selectedModelPose.transformRestriction, selectionMode, Z_AXIS)) {
-                mouse.handled = true;
+                    && isTransformAllowed(selectedTransformRestriction, selectionMode, Z_AXIS)) {
+                selection.handled = true;
                 selectedAxis = Z_AXIS;
             } else {
                 selectedAxis = NONE;
@@ -256,12 +260,12 @@ void MarkerModule::updateModifiers(Camera& camera) {
         switch(selectionMode) {
             case TRANSLATE: {
                 glm::vec3 translation = dragState - mod.prevDragState;
-                selectedModelPose.pose->position += translation;
+                selection.pose->position += translation;
                 break;
             }
             case SCALE: {
                 glm::vec3 scale = dragState - mod.prevDragState;
-                selectedModelPose.pose->scale += scale;
+                selection.pose->scale += scale;
                 break;
             }
             case ROTATE: {
@@ -288,12 +292,12 @@ void MarkerModule::updateModifiers(Camera& camera) {
                 }
 
                 glm::mat4 invModelMat = glm::inverse(
-                        glm::mat4_cast(selectedModelPose.pose->rotation));
+                        glm::mat4_cast(selection.pose->rotation));
                 axis = glm::normalize(glm::vec3(
                             invModelMat * glm::vec4(axis, 0)));
 
-                selectedModelPose.pose->rotation = glm::rotate(
-                        selectedModelPose.pose->rotation, angle, axis);
+                selection.pose->rotation = glm::rotate(
+                        selection.pose->rotation, angle, axis);
                 break;
             }
         }
@@ -302,7 +306,7 @@ void MarkerModule::updateModifiers(Camera& camera) {
     }
 }
 
-void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition) {
+void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition, Scene::Selection& selection) {
 
     GLuint billboardLocation =
         glGetUniformLocation(shaderProgramId, "billboard");
@@ -316,7 +320,7 @@ void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPositi
         markerMat = glm::translate(markerMat, pose.pose->position);
         markerMat = glm::scale(markerMat, glm::vec3(scale, scale, scale));
 
-        if (selectedModelPose.pose == pose.pose) {
+        if (selection.pose == pose.pose) {
             markerModel->material.Ka = objl::Vector3(1.0f, 1.0f, 0.0f);
             markerModel->material.Kd = objl::Vector3(1.0f, 1.0f, 0.0f);
             markerModel->material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
@@ -332,9 +336,9 @@ void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPositi
     glUniform1i(billboardLocation, false);
 }
 
-void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosition) {
+void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosition, Scene::Selection& selection) {
     
-    float scale = getScale(cameraPosition, selectedModelPose.pose->position);
+    float scale = getScale(cameraPosition, selection.pose->position);
     float offset = 1.0f;
     std::shared_ptr<Model> model = arrowModel;
 
@@ -353,12 +357,12 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
     }
 
     if (isTransformAllowed(
-                selectedModelPose.transformRestriction,
+                selectedTransformRestriction,
                 selectionMode,
                 Y_AXIS)) {
 
         glm::mat4 upMat = glm::mat4(1.0f);
-        upMat = glm::translate(upMat, selectedModelPose.pose->position);
+        upMat = glm::translate(upMat, selection.pose->position);
         upMat = glm::translate(upMat, glm::vec3(0.0f, offset * scale, 0.0f));
         upMat = glm::scale(upMat, glm::vec3(scale, scale, scale));
 
@@ -370,7 +374,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
     }
 
     if (isTransformAllowed(
-                selectedModelPose.transformRestriction,
+                selectedTransformRestriction,
                 selectionMode,
                 X_AXIS)) {
 
@@ -379,7 +383,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
         model->material.Ks = objl::Vector3(1.0f, 0.0f, 0.0f);
 
         glm::mat4 rightMat = glm::mat4(1.0f);
-        rightMat = glm::translate(rightMat, selectedModelPose.pose->position);
+        rightMat = glm::translate(rightMat, selection.pose->position);
         rightMat = glm::rotate(rightMat,
                 -(float)M_PI / 2.0f, glm::vec3(0.0f, 0.0f, 1.0f));
         rightMat = glm::translate(rightMat, glm::vec3(0.0f, offset * scale, 0.0f));
@@ -389,7 +393,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
     }
 
     if (isTransformAllowed(
-                selectedModelPose.transformRestriction,
+                selectedTransformRestriction,
                 selectionMode,
                 Z_AXIS)) {
 
@@ -398,7 +402,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
         model->material.Ks = objl::Vector3(0.0f, 0.0f, 1.0f);
 
         glm::mat4 forwardMat = glm::mat4(1.0f);
-        forwardMat = glm::translate(forwardMat, selectedModelPose.pose->position);
+        forwardMat = glm::translate(forwardMat, selection.pose->position);
         forwardMat = glm::rotate(forwardMat,
                 (float)M_PI / 2.0f, glm::vec3(1.0f, 0.0f, 0.0f));
         forwardMat = glm::translate(forwardMat, glm::vec3(0.0f, offset * scale, 0.0f));
@@ -419,32 +423,30 @@ void MarkerModule::add(Pose& pose, int transformRestriction) {
     modelPoses.push_back(RestrictedPose{&pose, transformRestriction});
 }
 
-Pose* MarkerModule::getSelection() {
-    
-    return selectedModelPose.pose;
-}
-
-void MarkerModule::update(GLFWwindow* window, Camera& camera) {
+void MarkerModule::update(
+        GLFWwindow* window,
+        Camera& camera,
+        Scene::Selection& selection) {
 
     updateMouseState(window, camera);
-    updateSelectionState(camera);
+    updateSelectionState(camera, selection);
 
-    if (hasSelection()) {
-        updateModifiers(camera);
+    if (hasSelection(selection)) {
+        updateModifiers(camera, selection);
     } else {
-        deselect();
+        deselect(selection);
     }
 
     for (KeyEvent& e : getKeyEvents()) {
         if (GLFW_KEY_ESCAPE == e.key && GLFW_PRESS == e.action) {
-            deselect();
+            deselect(selection);
         }
     }
 
-    if (!mouse.handled) {
-        deselect();
-    } else {
+    if (selection.handled) {
         clearMouseInput();
+    } else {
+        deselect(selection);
     }
 
     modelPoses.clear();
@@ -453,7 +455,8 @@ void MarkerModule::update(GLFWwindow* window, Camera& camera) {
 void MarkerModule::render(
         GLFWwindow* window,
         GLuint shaderProgramId,
-        Camera& camera) {
+        Camera& camera,
+        Scene::Selection& selection) {
 
     GLuint lightingLocation =
         glGetUniformLocation(shaderProgramId, "lighting");
@@ -461,11 +464,11 @@ void MarkerModule::render(
 
     glm::vec3 cameraPosition = camera.pose.position;
 
-    if (hasSelection()) {
-        renderModifiers(shaderProgramId, cameraPosition);
+    if (hasSelection(selection)) {
+        renderModifiers(shaderProgramId, cameraPosition, selection);
     } 
 
-    renderMarkers(shaderProgramId, cameraPosition);
+    renderMarkers(shaderProgramId, cameraPosition, selection);
 
     glUniform1i(lightingLocation, true);
 }

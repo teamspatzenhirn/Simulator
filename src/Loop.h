@@ -24,6 +24,8 @@ class Loop {
     GLuint windowWidth;
     GLuint windowHeight;
 
+    Settings settings;
+
     enum SelectedCamera {
         FPS_CAMERA,
         MAIN_CAMERA,
@@ -78,7 +80,7 @@ public:
 
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-    Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight, std::string scenePath);
+    Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight, Settings settings);
 
     void loop();
 };

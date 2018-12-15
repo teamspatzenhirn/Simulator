@@ -4,12 +4,14 @@ CommModule::CommModule() :
     txMainCamera(SimulatorSHM::SERVER, mainCameraMemId),
     txDepthCamera(SimulatorSHM::SERVER, depthCameraMemId),
     txCar(SimulatorSHM::SERVER, carMemId),
-    rxVesc(SimulatorSHM::CLIENT, vescMemId) { 
+    rxVesc(SimulatorSHM::CLIENT, vescMemId),
+    rxVisual(SimulatorSHM::CLIENT, visualMemId) { 
 
     initSharedMemory(txMainCamera);
     initSharedMemory(txDepthCamera);
-    initSharedMemory(rxVesc);
     initSharedMemory(txCar);
+    initSharedMemory(rxVesc);
+    initSharedMemory(rxVisual);
 }
 
 CommModule::~CommModule() {
@@ -129,4 +131,21 @@ void CommModule::receiveVesc(Scene::Car::Vesc& vesc) {
     } else {
         vescFailCounter++;
     }
+}
+
+void CommModule::receiveVisualization(Scene::Visualization& vis) {
+
+    Visualization* obj = rxVisual.lock(SimulatorSHM::READ_NEWEST);
+
+    if (obj != nullptr) {
+
+        vis.trajectoryPoints.clear();
+
+        for (int i = 0; i < 128; i++) {
+            glm::vec2 pos = obj->trajectoryPoints[i];
+            vis.trajectoryPoints.emplace_back(pos.y, pos.x);
+        }
+
+        rxVisual.unlock(obj);
+    } 
 }
