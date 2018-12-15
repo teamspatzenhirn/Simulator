@@ -35,7 +35,20 @@ void Loop::loop() {
 
         updateInput();
 
+        // TODO: make this less hacky, this is not right here
+
+        for (MouseButtonEvent& evt : getMouseButtonEvents()) {
+            if (evt.action == GLFW_PRESS && evt.button == GLFW_MOUSE_BUTTON_LEFT) {
+                scene.selection.handled = false;
+            }
+        }
+
         guiModule.begin();
+
+        guiModule.renderRootWindow(scene, settings);
+        guiModule.renderSceneWindow(scene);
+        guiModule.renderSettingsWindow(settings);
+        guiModule.renderHelpWindow();
 
         double deltaTime = 4.0f;
         double simDeltaTime = deltaTime * settings.simulationSpeed;
@@ -161,14 +174,6 @@ void Loop::loop() {
         commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
         commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
-        guiModule.renderRootWindow(scene, settings);
-
-        guiModule.renderCarPropertiesWindow(scene.car);
-        guiModule.renderRulePropertiesWindow(scene.rules);
-        guiModule.renderPoseWindow(markerModule.getSelection());
-        guiModule.renderSettingsWindow(settings);
-        guiModule.renderHelpWindow();
-
         guiModule.end();
 
         glfwSwapBuffers(window);
@@ -197,7 +202,7 @@ void Loop::updateCollisions() {
 
     for (auto& i : scene.items) {
         if (i->type == OBSTACLE) {
-            collisionModule.add(i->pose, itemsModule.obstacleModel);
+            collisionModule.add(i->pose, itemsModule.models[OBSTACLE]);
         }
     }
 
@@ -231,17 +236,17 @@ void Loop::renderMarkers(GLuint shaderProgramId) {
                 | MarkerModule::ROTATE_Y);
     }
 
-    markerModule.render(window, shaderProgramId, scene.fpsCamera);
+    markerModule.render(window, shaderProgramId, scene.fpsCamera, scene.selection);
 }
 
 void Loop::renderFpsView() {
 
     if (settings.showMarkers) {
-        markerModule.update(window, scene.fpsCamera);
+        markerModule.update(window, scene.fpsCamera, scene.selection);
         editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
     }
 
-    itemsModule.update(scene.items, markerModule.getSelection());
+    itemsModule.update(scene.items, scene.selection.pose);
 
     Scene preRenderScene = scene;
     update(timer.accumulator, timer.accumulator * settings.simulationSpeed);

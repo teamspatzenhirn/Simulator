@@ -423,7 +423,8 @@ void to_json(json& j, const std::vector<std::shared_ptr<Scene::Item>>& is) {
     for (const std::shared_ptr<Scene::Item>& i : is) {
         jsonItems.push_back({
                 {"pose", i->pose},
-                {"type", (int)i->type}
+                {"type", (int)i->type},
+                {"name", i->name}
             });
     }
 
@@ -436,6 +437,13 @@ void from_json(const json& j, std::vector<std::shared_ptr<Scene::Item>>& is) {
         std::shared_ptr<Scene::Item> i = std::make_shared<Scene::Item>(NONE);
         i->pose = jsonItem.at("pose").get<Pose>();
         i->type = (ItemType) jsonItem.at("type").get<int>();
+
+        try {
+            i->name = jsonItem.at("name").get<std::string>();
+        } catch (json::exception& e) {
+            i->name = "unnamed_item";
+        }
+
         is.push_back(i);
     }
 }

@@ -7,7 +7,7 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
     int separatorIndex = scenePath.find_last_of("\\/");
 
     if (separatorIndex > 0) { 
-        openedPath = scenePath.substr(0, separatorIndex);
+        openedPath = scenePath.substr(0, separatorIndex+1);
         openedFilename = scenePath.substr(
                 separatorIndex+1, scenePath.size());
     } else {
@@ -40,12 +40,20 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
     bool showSaveFileDialog = false;
     bool showSaveAsFileDialog = false;
 
+    ImGui::SetNextWindowBgAlpha(0.3f);
+
+    ImGui::SetNextWindowPos(
+            ImVec2(10.0f, ImGui::GetIO().DisplaySize.y - 10.0f),
+            ImGuiCond_Always,
+            ImVec2(0.0f, 1.0f));
+
     ImGui::Begin("", NULL, ImGuiWindowFlags_NoTitleBar
+            | ImGuiWindowFlags_NoMove
             | ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_AlwaysAutoResize
             | ImGuiWindowFlags_NoSavedSettings
             | ImGuiWindowFlags_NoFocusOnAppearing
-            | ImGuiWindowFlags_NoNav );
+            | ImGuiWindowFlags_NoNav);
 
     if (ImGui::BeginMainMenuBar()) {
 
@@ -74,8 +82,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
         if (ImGui::BeginMenu("Show")) {
 
-            ImGui::MenuItem("Car Properties", NULL, &showCarPropertiesWindow);
-            ImGui::MenuItem("Pose", NULL, &showPoseWindow);
+            ImGui::MenuItem("Scene", NULL, &showSceneWindow);
             ImGui::MenuItem("Settings", NULL, &showSettingsWindow);
             ImGui::MenuItem("Help", NULL, &showHelpWindow);
 
@@ -90,7 +97,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
     // rendering the status text
 
-    ImGui::Text("Carolo Simulator v1.0");
+    ImGui::Text("Version: 1.2");
 
     std::string msg = "Config: ";
     if (openedFilename.empty()) { 
@@ -140,115 +147,133 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 void GuiModule::renderCreateMenu(Scene& scene) {
 
     ItemType newType = NONE;
+    std::string newName = "none";
 
     if (ImGui::MenuItem("Obstacle 10x10cm")) {
         newType = OBSTACLE;
+        newName = "obstacle";
     }
     if (ImGui::MenuItem("Start line")) {
         newType = START_LINE;
+        newName = "start_line";
     }
     if (ImGui::MenuItem("Stop line")) {
         newType = STOP_LINE;
+        newName = "stop_line";
     }
     if (ImGui::MenuItem("Give-way line")) {
         newType = GIVE_WAY_LINE;
+        newName = "give_way_line";
     }
     if (ImGui::MenuItem("Crosswalk")) {
         newType = CROSSWALK;
+        newName = "crosswalk";
     }
     if (ImGui::MenuItem("Speed limit 10")) {
         newType = GROUND_10;
+        newName = "speed_limit_10";
     }
     if (ImGui::MenuItem("Speed limit 20")) {
         newType = GROUND_20;
+        newName = "speed_limit_20";
     }
     if (ImGui::MenuItem("Speed limit 30")) {
         newType = GROUND_30;
+        newName = "speed_limit_30";
     }
     if (ImGui::MenuItem("Speed limit 40")) {
         newType = GROUND_40;
+        newName = "speed_limit_40";
     }
     if (ImGui::MenuItem("Speed limit 50")) {
         newType = GROUND_50;
+        newName = "speed_limit_50";
     }
     if (ImGui::MenuItem("Speed limit 60")) {
         newType = GROUND_60;
+        newName = "speed_limit_60";
     }
     if (ImGui::MenuItem("Speed limit 70")) {
         newType = GROUND_70;
+        newName = "speed_limit_70";
     }
     if (ImGui::MenuItem("Speed limit 80")) {
         newType = GROUND_80;
+        newName = "speed_limit_80";
     }
     if (ImGui::MenuItem("Speed limit 90")) {
         newType = GROUND_90;
+        newName = "speed_limit_90";
     }
     if (ImGui::MenuItem("End speed limit 10")) {
         newType = GROUND_10_END;
+        newName = "end_speed_limit_10";
     }
     if (ImGui::MenuItem("End speed limit 20")) {
         newType = GROUND_20_END;
+        newName = "end_speed_limit_20";
     }
     if (ImGui::MenuItem("End speed limit 30")) {
         newType = GROUND_30_END;
+        newName = "end_speed_limit_30";
     }
     if (ImGui::MenuItem("End speed limit 40")) {
         newType = GROUND_40_END;
+        newName = "end_speed_limit_40";
     }
     if (ImGui::MenuItem("End speed limit 50")) {
         newType = GROUND_50_END;
+        newName = "end_speed_limit_50";
     }
     if (ImGui::MenuItem("End speed limit 60")) {
         newType = GROUND_60_END;
+        newName = "end_speed_limit_60";
     }
     if (ImGui::MenuItem("End speed limit 70")) {
         newType = GROUND_70_END;
+        newName = "end_speed_limit_70";
     }
     if (ImGui::MenuItem("End speed limit 80")) {
         newType = GROUND_80_END;
+        newName = "end_speed_limit_80";
     }
     if (ImGui::MenuItem("End speed limit 90")) {
         newType = GROUND_90_END;
+        newName = "end_speed_limit_90";
     }
     if (ImGui::MenuItem("Arrow left")) {
         newType = GROUND_ARROW_LEFT;
+        newName = "arrow_left";
     }
     if (ImGui::MenuItem("Arrow right")) {
         newType = GROUND_ARROW_RIGHT;
+        newName = "arrow_right";
     }
     if (ImGui::MenuItem("End")) {
         newType = END;
+        newName = "end";
     }
     if (ImGui::MenuItem("Calib mat")) {
         newType = CALIB_MAT;
+        newName = "calib_mat";
     }
 
     if (NONE != newType) {
-        scene.items.emplace_back(std::make_shared<Scene::Item>(newType));
+        scene.items.emplace_back(std::make_shared<Scene::Item>(newType, newName));
     }
 }
 
-void GuiModule::renderPoseWindow(Pose* selectedPose) {
+void GuiModule::renderPoseGui(Pose& pose) {
 
-    if (showPoseWindow) {
+    ImGui::InputFloat3("position",
+            glm::value_ptr(pose.position));
 
-        ImGui::Begin("Pose", &showPoseWindow);
+    ImGui::InputFloat3("scale", glm::value_ptr(pose.scale));
+    
+    glm::vec3 eulerAngles = pose.getEulerAngles();
 
-        if (nullptr != selectedPose) {
-
-            ImGui::InputFloat3("position",
-                    glm::value_ptr(selectedPose->position));
-
-            ImGui::InputFloat3("scale", glm::value_ptr(selectedPose->scale));
-            
-            glm::vec3 eulerAngles = selectedPose->getEulerAngles();
-
-            if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                selectedPose->setEulerAngles(eulerAngles);
-            }
-        }
-
-        ImGui::End();
+    if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+        pose.setEulerAngles(eulerAngles);
     }
 }
 
@@ -271,81 +296,139 @@ void GuiModule::renderErrorDialog(std::string& msg) {
     }
 }
 
-void GuiModule::renderCarPropertiesWindow(Scene::Car& car) {
+void GuiModule::renderSceneWindow(Scene& scene) {
         
-    if (showCarPropertiesWindow) {
+    if (showSceneWindow) {
 
-        ImGui::Begin("Car Properties", &showCarPropertiesWindow); 
+        ImGui::Begin("Scene", &showSceneWindow); 
 
-        if (ImGui::TreeNode("Pose")) { 
+        bool car_open = ImGui::TreeNode("Car");
 
-            ImGui::InputFloat3("position", (float*)&car.modelPose);
-
-            ImGui::TreePop();
+        if(ImGui::IsItemClicked()) {
+            scene.selection.pose = &scene.car.modelPose;
+            scene.selection.handled = true;
         }
 
-        if (ImGui::TreeNode("System Parameters")) {
+        if (car_open) {
 
-            ImGui::InputDouble("axesDistance", &car.systemParams.axesDistance);
-            ImGui::InputDouble("axesMomentRatio", &car.systemParams.axesMomentRatio);
-            ImGui::InputDouble("inertia", &car.systemParams.inertia);
-            ImGui::InputDouble("mass", &car.systemParams.mass);
-            ImGui::InputDouble("distCogToFrontAxle", &car.systemParams.distCogToFrontAxle);
-            ImGui::InputDouble("distCogToRearAxle", &car.systemParams.distCogToRearAxle);
-
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Limits")) {
-
-            ImGui::InputDouble("max F", &car.limits.max_F);
-            ImGui::InputDouble("max delta", &car.limits.max_delta);
-            ImGui::InputDouble("max d delta", &car.limits.max_d_delta);
-
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Vesc")) {
-
-            ImGui::InputDouble("velocity", &car.vesc.velocity);
-            ImGui::InputDouble("steeringAngle", &car.vesc.steeringAngle);
-
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Wheels")) {
-
-            ImGui::Checkbox("use pacejka model", &car.wheels.usePacejkaModel);
-
-            ImGui::InputDouble("B_front", &car.wheels.B_front);
-            ImGui::InputDouble("B_rear", &car.wheels.B_rear);
-            ImGui::InputDouble("C_front", &car.wheels.C_front);
-            ImGui::InputDouble("C_rear", &car.wheels.C_rear);
-            ImGui::InputDouble("D_front", &car.wheels.D_front);
-            ImGui::InputDouble("D_rear", &car.wheels.D_rear);
-            ImGui::InputDouble("k_front", &car.wheels.k_front);
-            ImGui::InputDouble("k_rear", &car.wheels.k_rear);
-
-            ImGui::TreePop();
-        }
-
-        if (ImGui::TreeNode("Main Camera")) {
-
-            ImGui::InputFloat3("position", (float*)&car.mainCamera.pose.position);
-
-            glm::vec3 eulerAngles = car.mainCamera.pose.getEulerAngles();
-
-            if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
-                car.mainCamera.pose.setEulerAngles(eulerAngles);
+            if (ImGui::TreeNode("Pose")) { 
+                renderPoseGui(scene.car.modelPose);
+                ImGui::TreePop();
             }
 
-            ImGui::InputInt("image width", (int*)&car.mainCamera.imageWidth);
-            ImGui::InputInt("image height", (int*)&car.mainCamera.imageHeight);
-            ImGui::InputFloat("fov", &car.mainCamera.fovy);
-            ImGui::InputFloat3("radial distortion",
-                    car.mainCamera.distortionCoefficients.radial);
-            ImGui::InputFloat3("tangential distortion",
-                    car.mainCamera.distortionCoefficients.radial);
+            if (ImGui::TreeNode("System Parameters")) {
+
+                ImGui::InputDouble("axesDistance", &scene.car.systemParams.axesDistance);
+                ImGui::InputDouble("axesMomentRatio", &scene.car.systemParams.axesMomentRatio);
+                ImGui::InputDouble("inertia", &scene.car.systemParams.inertia);
+                ImGui::InputDouble("mass", &scene.car.systemParams.mass);
+                ImGui::InputDouble("distCogToFrontAxle", &scene.car.systemParams.distCogToFrontAxle);
+                ImGui::InputDouble("distCogToRearAxle", &scene.car.systemParams.distCogToRearAxle);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Limits")) {
+
+                ImGui::InputDouble("max F", &scene.car.limits.max_F);
+                ImGui::InputDouble("max delta", &scene.car.limits.max_delta);
+                ImGui::InputDouble("max d delta", &scene.car.limits.max_d_delta);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Vesc")) {
+
+                ImGui::InputDouble("velocity", &scene.car.vesc.velocity);
+                ImGui::InputDouble("steeringAngle", &scene.car.vesc.steeringAngle);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Wheels")) {
+
+                ImGui::Checkbox("use pacejka model", &scene.car.wheels.usePacejkaModel);
+
+                ImGui::InputDouble("B_front", &scene.car.wheels.B_front);
+                ImGui::InputDouble("B_rear", &scene.car.wheels.B_rear);
+                ImGui::InputDouble("C_front", &scene.car.wheels.C_front);
+                ImGui::InputDouble("C_rear", &scene.car.wheels.C_rear);
+                ImGui::InputDouble("D_front", &scene.car.wheels.D_front);
+                ImGui::InputDouble("D_rear", &scene.car.wheels.D_rear);
+                ImGui::InputDouble("k_front", &scene.car.wheels.k_front);
+                ImGui::InputDouble("k_rear", &scene.car.wheels.k_rear);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Main Camera")) {
+
+                ImGui::InputFloat3("position", (float*)&scene.car.mainCamera.pose.position);
+
+                glm::vec3 eulerAngles = scene.car.mainCamera.pose.getEulerAngles();
+
+                if (ImGui::InputFloat3("rotation", glm::value_ptr(eulerAngles), "%.3f", ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    scene.car.mainCamera.pose.setEulerAngles(eulerAngles);
+                }
+
+                ImGui::InputInt("image width", (int*)&scene.car.mainCamera.imageWidth);
+                ImGui::InputInt("image height", (int*)&scene.car.mainCamera.imageHeight);
+                ImGui::InputFloat("fov", &scene.car.mainCamera.fovy);
+                ImGui::InputFloat3("radial distortion",
+                        scene.car.mainCamera.distortionCoefficients.radial);
+                ImGui::InputFloat3("tangential distortion",
+                        scene.car.mainCamera.distortionCoefficients.radial);
+
+                ImGui::TreePop();
+            }
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Rules")) {
+
+            ImGui::Checkbox("Exit on obstacle collision", &scene.rules.exitOnObstacleCollision);
+            ImGui::Checkbox("Exit if not on track", &scene.rules.exitIfNotOnTrack);
+            ImGui::Checkbox("Exit if speed limit exceeded", &scene.rules.exitIfSpeedLimitExceeded);
+            ImGui::Checkbox("Exit if left arrow ignored", &scene.rules.exitIfLeftArrowIgnored);
+            ImGui::Checkbox("Exit if right arrow ignored", &scene.rules.exitIfRightArrowIgnored);
+            ImGui::Checkbox("Exit if stop line ignored", &scene.rules.exitIfStopLineIgnored);
+            ImGui::Checkbox("Exit if give way line ignored", &scene.rules.exitIfGiveWayLineIgnored);
+            ImGui::Checkbox("Exit if on end item", &scene.rules.exitIfOnEndItem);
+
+            ImGui::TreePop();
+        }
+
+        if (ImGui::TreeNode("Items")) {
+
+            for (std::shared_ptr<Scene::Item> i : scene.items) {
+
+                ImGui::PushID(i.get());
+
+                int flags = 0;
+                if (&(i->pose) == scene.selection.pose) {
+                    flags = ImGuiTreeNodeFlags_Selected;
+                }
+                
+                bool open = ImGui::TreeNodeEx((void*)&i, flags, "%s", i->name.c_str());
+
+                if(ImGui::IsItemClicked()) {
+                    scene.selection.pose = &i->pose;
+                    scene.selection.handled = true;
+                }
+
+                if (open) {
+                    char nameInputBuf[256];
+                    strncpy(nameInputBuf, i->name.c_str(), sizeof(nameInputBuf));
+                    ImGui::InputText("name", nameInputBuf, IM_ARRAYSIZE(nameInputBuf));
+                    i->name = std::string(nameInputBuf);
+
+                    renderPoseGui(i->pose);
+
+                    ImGui::TreePop();
+                }
+                ImGui::PopID();
+            }
 
             ImGui::TreePop();
         }
@@ -384,7 +467,8 @@ void GuiModule::renderHelpWindow() {
 
     if (showHelpWindow) { 
 
-        ImGui::Begin("Help", &showHelpWindow);
+        ImGui::Begin("Help", &showHelpWindow,
+                ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::Text("Use w a s d to move the camera");
         ImGui::Text("Press shift to to move the camera down");
@@ -493,25 +577,6 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
         }
 
         ImGui::EndPopup();
-    }
-}
-
-void GuiModule::renderRulePropertiesWindow(Scene::Rules& rules) {
-    
-    if (showRulePropertiesWindow) {
-
-        ImGui::Begin("Rule Properties", &showRulePropertiesWindow);
-
-        ImGui::Checkbox("Exit on obstacle collision", &rules.exitOnObstacleCollision);
-        ImGui::Checkbox("Exit if not on track", &rules.exitIfNotOnTrack);
-        ImGui::Checkbox("Exit if speed limit exceeded", &rules.exitIfSpeedLimitExceeded);
-        ImGui::Checkbox("Exit if left arrow ignored", &rules.exitIfLeftArrowIgnored);
-        ImGui::Checkbox("Exit if right arrow ignored", &rules.exitIfRightArrowIgnored);
-        ImGui::Checkbox("Exit if stop line ignored", &rules.exitIfStopLineIgnored);
-        ImGui::Checkbox("Exit if give way line ignored", &rules.exitIfGiveWayLineIgnored);
-        ImGui::Checkbox("Exit if on end item", &rules.exitIfOnEndItem);
-
-        ImGui::End();
     }
 }
 

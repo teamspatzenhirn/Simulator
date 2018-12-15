@@ -20,9 +20,7 @@ class GuiModule {
     GLFWwindow* window;
 
     bool showCreateItemsWindow = true;
-    bool showPoseWindow = true;
-    bool showCarPropertiesWindow = false;
-    bool showRulePropertiesWindow = true;
+    bool showSceneWindow = true;
     bool showSettingsWindow = false;
     bool showHelpWindow = false;
 
@@ -39,6 +37,7 @@ class GuiModule {
     void renderDirectoryListing();
 
     void renderCreateMenu(Scene& scene);
+    void renderPoseGui(Pose& pose);
  
 public:
 
@@ -46,12 +45,9 @@ public:
     ~GuiModule();
 
     void renderRootWindow(Scene& scene, Settings& settings);
-    void renderPoseWindow(Pose* pose);
-    void renderCarPropertiesWindow(Scene::Car& car);
-    void renderRulePropertiesWindow(Scene::Rules& rules);
+    void renderSceneWindow(Scene& scene);
     void renderSettingsWindow(Settings& settings);
     void renderHelpWindow();
-    void renderCreateDialog();
 
     void begin();
     void end();
