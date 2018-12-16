@@ -87,6 +87,10 @@ enum ItemType {
     GROUND_ARROW_RIGHT = 25,
     END = 26,
     CALIB_MAT = 27,
+    TRAFFIC_ISLAND = 28,
+    BARRED_AREA_SMALL = 29,
+    BARRED_AREA_MEDIUM = 30,
+    BARRED_AREA_LARGE = 31,
 };
 
 /* 
