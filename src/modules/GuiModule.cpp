@@ -257,6 +257,22 @@ void GuiModule::renderCreateMenu(Scene& scene) {
         newType = CALIB_MAT;
         newName = "calib_mat";
     }
+    if (ImGui::MenuItem("Traffic island")) {
+        newType = TRAFFIC_ISLAND;
+        newName = "traffic_island";
+    }
+    if (ImGui::MenuItem("Barred area small")) {
+        newType = BARRED_AREA_SMALL;
+        newName = "barred_area_small";
+    }
+    if (ImGui::MenuItem("Barred area medium")) {
+        newType = BARRED_AREA_MEDIUM;
+        newName = "barred_area_medium";
+    }
+    if (ImGui::MenuItem("Barred area large")) {
+        newType = BARRED_AREA_LARGE;
+        newName = "barred_area_large";
+    }
 
     if (NONE != newType) {
         scene.items.emplace_back(std::make_shared<Scene::Item>(newType, newName));
