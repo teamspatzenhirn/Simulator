@@ -8,7 +8,7 @@ class ItemsModule {
 
 public:
 
-    Model models[28] = {
+    Model models[32] = {
         Model{},
         Model{"models/obstacle.obj"},
         Model{"models/start_line.obj"},
@@ -37,6 +37,10 @@ public:
         Model{"models/ground_arrow_right.obj"},
         Model{"models/end.obj"},
         Model{"models/calib.obj"},
+        Model{"models/island.obj"},
+        Model{"models/barred_area_small.obj"},
+        Model{"models/barred_area_medium.obj"},
+        Model{"models/barred_area_large.obj"},
     };
 
     ItemsModule();
