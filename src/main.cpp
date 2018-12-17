@@ -44,6 +44,7 @@ int main (int argc, char* argv[]) {
     
     if (argc > 1) {
         settings.configPath = std::string(argv[1]);
+        std::cout << settings.configPath << std::endl;
     }
 
     std::shared_ptr<Loop> loop = std::make_shared<Loop>(

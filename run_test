@@ -2,18 +2,24 @@
 
 SANDBOX_PATH="$HOME/sandboxes/CaroloSandbox"
 ADTF_PATH="$SANDBOX_PATH/2019"
-SIMULATOR_PATH="$SANDBOX_PATH/Simulator"
-
 ADTF_BIN="/opt/adtf/bin/adtf_devenv"
 
 FREEDRIVE_PROJECT_PATH="$ADTF_PATH/ADTF_Projekte/simulator_rundkurs/config/system.xml"
 OBSTACLE_PROJECT_PATH="$ADTF_PATH/ADTF_Projekte/simulator_hindernis/config/system.xml"
 
+if [ "$2" == "obstacle" ]
+then
+    PROJECT_PATH="$OBSTACLE_PROJECT_PATH"
+else
+    PROJECT_PATH="$FREEDRIVE_PROJECT_PATH"
+fi
+
 function on_exit {
 
     RC=$?
 
-    kill $(jobs -p)
+    echo $(jobs -p)
+    pkill -TERM -P $(jobs -p)
 
     echo ""
     echo "[STEP] Finished with status code $RC"
@@ -31,24 +37,17 @@ echo ""
 cd $ADTF_PATH
 make
 
-echo ""
-echo "[STEP] Building simulator:"
-echo ""
-
-cd $SIMULATOR_PATH/build
-make
-
 # limits virtual memory usage of ADTF to 8GBs at least
 # if this limit is set even lower ADTF won't run at all -.-
 ulimit -v 8192000 
 
 cd $SANDBOX_PATH
-./current_adtf_devenv \
-    -globals=current_sandbox.xml \
-    -config="$FREEDRIVE_PROJECT_PATH" \
-    -run &
+timeout -k 1m --preserve-status 1m \
+    ./current_adtf_devenv \
+        -globals=current_sandbox.xml \
+        -config="$PROJECT_PATH" \
+        -run &
 
-cd $SIMULATOR_PATH
-./build/CaroloSimulator &
+Simulator $1 &
 
 wait -n

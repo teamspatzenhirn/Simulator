@@ -307,10 +307,13 @@ void RuleModule::update(
 
     // TODO: calc correct max speed
 
-    if(car.vesc.velocity > rules.allowedMaxSpeed / 3.6 / 10) {
+    if(car.vesc.velocity - rules.allowedMaxSpeed / 3.6 / 10 > 0.05) {
 
-        std::cerr << "Exceeded speed limit: "
-                  << rules.allowedMaxSpeed
+        printViolation(simulationTime);
+        std::cerr << "Speed limit of "
+                  << rules.allowedMaxSpeed / 3.6 / 10
+                  << " but car speed is "
+                  << car.vesc.velocity
                   << std::endl;
 
         if (rules.exitIfSpeedLimitExceeded) {
