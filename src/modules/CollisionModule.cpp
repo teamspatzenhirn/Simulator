@@ -20,12 +20,8 @@ void CollisionModule::add(Pose& pose, Model& model) {
     std::vector<glm::vec4> points = {
         glm::vec4(h0.x, h0.y, h0.z, 1),
         glm::vec4(h0.x, h0.y, h1.z, 1),
-        glm::vec4(h0.x, h1.y, h0.z, 1),
-        glm::vec4(h0.x, h1.y, h1.z, 1),
         glm::vec4(h1.x, h0.y, h0.z, 1),
         glm::vec4(h1.x, h0.y, h1.z, 1),
-        glm::vec4(h1.x, h1.y, h0.z, 1),
-        glm::vec4(h1.x, h1.y, h1.z, 1)
     };
 
     glm::mat4 modelMat = pose.getMatrix();
@@ -34,29 +30,14 @@ void CollisionModule::add(Pose& pose, Model& model) {
         points[i] = modelMat * points[i];
     }
 
-    glm::vec2 pMax;
-    glm::vec2 pMin;
-
-    pMax.x = points[0].x;
-    pMax.y = points[0].z;
-    pMin.x = points[0].x;
-    pMin.y = points[0].z;
-
-    for (unsigned int i = 1; i < points.size(); ++i) {
-        pMax.x = std::max(points[i].x, pMax.x);
-        pMax.y = std::max(points[i].z, pMax.y);
-        pMin.x = std::min(points[i].x, pMin.x);
-        pMin.y = std::min(points[i].z, pMin.y);
-    }
-
     bodies.emplace_back();
     RigidBody& rb = bodies.back();
     
     rb.pose = &pose;
-    rb.p00 = {pMin.x, pMin.y};
-    rb.p01 = {pMin.x, pMax.y};
-    rb.p10 = {pMax.x, pMin.y};
-    rb.p11 = {pMax.x, pMax.y};
+    rb.p00 = {points[0].x, points[0].z};
+    rb.p01 = {points[1].x, points[1].z};
+    rb.p10 = {points[2].x, points[2].z};
+    rb.p11 = {points[3].x, points[3].z};
 }
 
 void CollisionModule::update() {
