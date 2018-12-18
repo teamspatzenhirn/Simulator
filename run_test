@@ -37,12 +37,8 @@ echo ""
 cd $ADTF_PATH
 make
 
-# limits virtual memory usage of ADTF to 8GBs at least
-# if this limit is set even lower ADTF won't run at all -.-
-ulimit -v 8192000 
-
 cd $SANDBOX_PATH
-timeout -k 1m --preserve-status 1m \
+timeout -k 2m -s "TERM" --preserve-status 2m \
     ./current_adtf_devenv \
         -globals=current_sandbox.xml \
         -config="$PROJECT_PATH" \

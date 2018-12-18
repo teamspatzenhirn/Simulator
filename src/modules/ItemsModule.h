@@ -8,48 +8,16 @@ class ItemsModule {
 
 public:
 
-    Model models[32] = {
-        Model{},
-        Model{"models/obstacle.obj"},
-        Model{"models/start_line.obj"},
-        Model{"models/stop_line.obj"},
-        Model{"models/give_way_line.obj"},
-        Model{"models/crosswalk.obj"},
-        Model{"models/ground_10.obj"},
-        Model{"models/ground_20.obj"},
-        Model{"models/ground_30.obj"},
-        Model{"models/ground_40.obj"},
-        Model{"models/ground_50.obj"},
-        Model{"models/ground_60.obj"},
-        Model{"models/ground_70.obj"},
-        Model{"models/ground_80.obj"},
-        Model{"models/ground_90.obj"},
-        Model{"models/ground_10_end.obj"},
-        Model{"models/ground_20_end.obj"},
-        Model{"models/ground_30_end.obj"},
-        Model{"models/ground_40_end.obj"},
-        Model{"models/ground_50_end.obj"},
-        Model{"models/ground_60_end.obj"},
-        Model{"models/ground_70_end.obj"},
-        Model{"models/ground_80_end.obj"},
-        Model{"models/ground_90_end.obj"},
-        Model{"models/ground_arrow_left.obj"},
-        Model{"models/ground_arrow_right.obj"},
-        Model{"models/end.obj"},
-        Model{"models/calib.obj"},
-        Model{"models/island.obj"},
-        Model{"models/barred_area_small.obj"},
-        Model{"models/barred_area_medium.obj"},
-        Model{"models/barred_area_large.obj"},
-    };
-
     ItemsModule();
     ~ItemsModule();
 
-    void update(std::vector<std::shared_ptr<Scene::Item>>& items,
+    void update(
+            std::vector<std::shared_ptr<Scene::Item>>& items,
             Pose* selection);
 
-    void render(GLuint shaderProgramId,
+    void render(
+            GLuint shaderProgramId,
+            ModelStore& modelStore,
             std::vector<std::shared_ptr<Scene::Item>>& items);
 };
 

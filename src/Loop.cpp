@@ -194,6 +194,7 @@ void Loop::update(double deltaTime, double simDeltaTime) {
 
     car.updateMainCamera(scene.car.mainCamera, scene.car.modelPose);
     car.updateDepthCamera(scene.car.depthCamera, scene.car.modelPose);
+    car.updateLaserSensors(scene.car, modelStore, scene.items);
 }
 
 void Loop::updateCollisions() {
@@ -202,7 +203,7 @@ void Loop::updateCollisions() {
 
     for (auto& i : scene.items) {
         if (i->type == OBSTACLE) {
-            collisionModule.add(i->pose, itemsModule.models[OBSTACLE]);
+            collisionModule.add(i->pose, modelStore.itemModels[OBSTACLE]);
         }
     }
 
@@ -215,7 +216,7 @@ void Loop::renderScene(GLuint shaderProgramId) {
 
     car.render(shaderProgramId, scene.car);
 
-    itemsModule.render(shaderProgramId, scene.items);
+    itemsModule.render(shaderProgramId, modelStore, scene.items);
 
     editor.renderScene(shaderProgramId, scene.tracks);
 }

@@ -155,11 +155,71 @@ void CarModule::updateDepthCamera(
     }
 }
 
-void CarModule::updateLaserSensors(std::vector<std::shared_ptr<Scene::Item>>& items) {
+void CarModule::updateLaserSensors(
+        Scene::Car& car,
+        ModelStore& modelStore,
+        std::vector<std::shared_ptr<Scene::Item>>& items) {
+    
+    float minDist = 1000.0f;
 
-    for (std::shared_ptr<Scene::Item> i : items) {
-        // TODO: implement! Haha ...
+    glm::vec3 binaryLightSensorWorldPos = car.modelPose.getMatrix() * 
+        glm::vec4(car.binaryLightSensor.pose.position, 1);
+
+    std::cout << binaryLightSensorWorldPos << std::endl;
+
+    for (std::shared_ptr<Scene::Item>& it : items) {
+
+        if (glm::length(binaryLightSensorWorldPos - it->pose.position) > 1.0) {
+            continue;
+        }
+
+        glm::vec4 dir{1, 0, 0, 1};
+        dir = car.modelPose.getMatrix() * dir;
+
+        Model& itemModel = modelStore.itemModels[it->type];
+        glm::mat4 modelMat = it->pose.getMatrix();
+
+        for (unsigned int i = 2 ; i < itemModel.vertices.size() ; i += 3) {
+
+            glm::vec3 vec0 = {
+                itemModel.vertices[i-2].Position.X,
+                itemModel.vertices[i-2].Position.Y,
+                itemModel.vertices[i-2].Position.Z };
+            glm::vec3 vec1 = {
+                itemModel.vertices[i-1].Position.X,
+                itemModel.vertices[i-1].Position.Y,
+                itemModel.vertices[i-1].Position.Z };
+            glm::vec3 vec2 = {
+                itemModel.vertices[i].Position.X,
+                itemModel.vertices[i].Position.Y,
+                itemModel.vertices[i].Position.Z };
+
+            vec0 = modelMat * glm::vec4(vec0, 1);
+            vec1 = modelMat * glm::vec4(vec1, 1);
+            vec2 = modelMat * glm::vec4(vec2, 1);
+
+            glm::vec3 intersectionPos;
+
+            if(glm::intersectLineTriangle(
+                        binaryLightSensorWorldPos,
+                        glm::vec3(dir),
+                        vec0,
+                        vec1,
+                        vec2,
+                        intersectionPos)) {
+
+                std::cout << intersectionPos << std::endl;
+
+                if (intersectionPos.x < 0) {
+                    minDist = std::min(
+                            minDist,
+                            glm::length(-intersectionPos.x));
+                }
+            }
+        }
     }
+    
+    std::cout << "Laser sensor distance: " << minDist << std::endl;
 }
 
 void CarModule::render(GLuint shaderProgramId, Scene::Car& car) {

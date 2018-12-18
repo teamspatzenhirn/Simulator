@@ -93,6 +93,49 @@ enum ItemType {
     BARRED_AREA_LARGE = 31,
 };
 
+/*
+ * Simple object, which holds and loads all used models
+ * in the simulator. Should be used to avoid loading the
+ * same model multiple times.
+ */
+struct ModelStore {
+
+    Model itemModels[32] = {
+        Model{},
+        Model{"models/obstacle.obj"},
+        Model{"models/start_line.obj"},
+        Model{"models/stop_line.obj"},
+        Model{"models/give_way_line.obj"},
+        Model{"models/crosswalk.obj"},
+        Model{"models/ground_10.obj"},
+        Model{"models/ground_20.obj"},
+        Model{"models/ground_30.obj"},
+        Model{"models/ground_40.obj"},
+        Model{"models/ground_50.obj"},
+        Model{"models/ground_60.obj"},
+        Model{"models/ground_70.obj"},
+        Model{"models/ground_80.obj"},
+        Model{"models/ground_90.obj"},
+        Model{"models/ground_10_end.obj"},
+        Model{"models/ground_20_end.obj"},
+        Model{"models/ground_30_end.obj"},
+        Model{"models/ground_40_end.obj"},
+        Model{"models/ground_50_end.obj"},
+        Model{"models/ground_60_end.obj"},
+        Model{"models/ground_70_end.obj"},
+        Model{"models/ground_80_end.obj"},
+        Model{"models/ground_90_end.obj"},
+        Model{"models/ground_arrow_left.obj"},
+        Model{"models/ground_arrow_right.obj"},
+        Model{"models/end.obj"},
+        Model{"models/calib.obj"},
+        Model{"models/island.obj"},
+        Model{"models/barred_area_small.obj"},
+        Model{"models/barred_area_medium.obj"},
+        Model{"models/barred_area_large.obj"},
+    };
+};
+
 /* 
  * This contains settings that are not stored per config
  * but globally as a ~/.config-file.
@@ -167,7 +210,7 @@ struct Settings {
 };
 
 /*
- * In order to make simulation state propagration and retention
+ * In order to make simulation state propagation and retention
  * as simple as possible the complete simulation state should be
  * encapsulated in this Scene object.
  *
@@ -372,6 +415,26 @@ struct Scene {
             }
 
         } depthCamera;
+
+        struct BinaryLightSensor {
+
+            /*
+             * The position of the sensor in car coordinate.
+             */
+            Pose pose{-0.1, 0.1, 0.0};
+
+            /*
+             * Whether the sensor is triggered or not.
+             * Updated in SensorModule.
+             */
+            bool triggered = false;
+
+            /*
+             * The minimum trigger distance to an obstacle in meters.
+             */
+            float triggerDistance = 0.3;
+
+        } binaryLightSensor;
 
     } car;
 

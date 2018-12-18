@@ -38,11 +38,13 @@ void ItemsModule::update(
             items.end());
 }
 
-void ItemsModule::render(GLuint shaderProgramId,
+void ItemsModule::render(
+        GLuint shaderProgramId,
+        ModelStore& modelStore, 
         std::vector<std::shared_ptr<Scene::Item>>& items) {
     
     for (std::shared_ptr<Scene::Item>& i : items) {
         glm::mat4 modelMat = i->pose.getMatrix();
-        models[i->type].render(shaderProgramId, modelMat);
+        modelStore.itemModels[i->type].render(shaderProgramId, modelMat);
     }
 }

@@ -1,7 +1,12 @@
 #ifndef INC_2019_CARMODULE_H
 #define INC_2019_CARMODULE_H
 
+#define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/io.hpp>
+#include <glm/gtx/intersect.hpp>
 
 #include "Scene.h"
 #include "imgui/imgui.h"
@@ -35,7 +40,10 @@ public:
             Scene::Car::DepthCamera& carDepthCamera,
             Pose& carModelPose);
 
-    void updateLaserSensors(std::vector<std::shared_ptr<Scene::Item>>& items);
+    void updateLaserSensors(
+            Scene::Car& car,
+            ModelStore& modelStore,
+            std::vector<std::shared_ptr<Scene::Item>>& items);
 
     void render(GLuint shaderProgramId, Scene::Car& car);
 };
