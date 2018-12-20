@@ -382,7 +382,8 @@ void to_json(json& j, const Scene::Tracks& t) {
     json jsonTracks;
 
     const std::vector<std::shared_ptr<ControlPoint>>& tracks = t.getTracks();
-    std::map<unsigned int, unsigned int> controlPointConnections;
+
+    std::set<std::shared_ptr<TrackBase>> ts;
 
     for (auto& controlPoint : tracks) {
 
@@ -390,46 +391,70 @@ void to_json(json& j, const Scene::Tracks& t) {
 
         for (auto& track : controlPoint->tracks) {
 
-            unsigned int start;
-            unsigned int end;
+            ts.insert(track);
+        }
+    }
 
-            for (unsigned int i = 0; i < tracks.size(); i++) {
-                if (track->start.lock().get() == tracks.at(i).get()) {
-                    start = i;
-                    break;
-                }
-            }
-            for (unsigned int i = 0; i < tracks.size(); i++) {
-                if (track->end.lock().get() == tracks.at(i).get()) {
-                    end = i;
-                    break;
-                }
-            }
+    for (const std::shared_ptr<TrackBase>& track : ts) {
 
-            if (controlPointConnections.end()
-                    != controlPointConnections.find(start)
-                    && controlPointConnections.at(start) == end) {
-                continue;
-            } else {
-                controlPointConnections[start] = end;
-            }
-
+        if (const std::shared_ptr<TrackIntersection>& intersection = std::dynamic_pointer_cast<TrackIntersection>(track)) {
             json jsonTrack;
 
-            jsonTrack["start"] = start;
-            jsonTrack["end"] = end;
+            jsonTrack["type"] = "intersection";
 
-            if (TrackArc* arc = dynamic_cast<TrackArc*>(track.get())) {
-                jsonTrack["type"] = "arc";
-                jsonTrack["center"] = arc->center;
-                jsonTrack["radius"] = arc->radius;
-                jsonTrack["rightArc"] = arc->rightArc;
-            } else {
-                jsonTrack["type"] = "line";
-            }
+            jsonTrack["center"] = std::find(tracks.begin(), tracks.end(), intersection->center.lock()) - tracks.begin();
+            jsonTrack["link1"] = std::find(tracks.begin(), tracks.end(), intersection->link1.lock()) - tracks.begin();
+            jsonTrack["link2"] = std::find(tracks.begin(), tracks.end(), intersection->link2.lock()) - tracks.begin();
+            jsonTrack["link3"] = std::find(tracks.begin(), tracks.end(), intersection->link3.lock()) - tracks.begin();
+            jsonTrack["link4"] = std::find(tracks.begin(), tracks.end(), intersection->link4.lock()) - tracks.begin();
 
             jsonTracks.push_back(jsonTrack);
+
+            continue;
         }
+
+        std::weak_ptr<ControlPoint> trackStart;
+        std::weak_ptr<ControlPoint> trackEnd;
+        if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track)) {
+            trackStart = line->start;
+            trackEnd = line->end;
+        } else {
+            std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track);
+            trackStart = arc->start;
+            trackEnd = arc->end;
+        }
+
+        unsigned int start;
+        unsigned int end;
+
+        for (unsigned int i = 0; i < tracks.size(); i++) {
+            if (trackStart.lock().get() == tracks.at(i).get()) {
+                start = i;
+                break;
+            }
+        }
+        for (unsigned int i = 0; i < tracks.size(); i++) {
+            if (trackEnd.lock().get() == tracks.at(i).get()) {
+                end = i;
+                break;
+            }
+        }
+
+        json jsonTrack;
+
+        jsonTrack["start"] = start;
+        jsonTrack["end"] = end;
+
+        if (TrackArc* arc = dynamic_cast<TrackArc*>(track.get())) {
+            jsonTrack["type"] = "arc";
+            jsonTrack["center"] = arc->center;
+            jsonTrack["radius"] = arc->radius;
+            jsonTrack["rightArc"] = arc->rightArc;
+        } else {
+            jsonTrack["type"] = "line";
+        }
+
+        jsonTracks.push_back(jsonTrack);
     }
 
     j = json({
@@ -459,12 +484,24 @@ void from_json(const json& j, Scene::Tracks& t) {
 
     for (const json& jsonTrack : j["tracks"]) {
 
+        std::string type = jsonTrack.at("type").get<std::string>();
+
+        if ("intersection" == type) {
+            std::shared_ptr<ControlPoint>& center = controlPoints.at(jsonTrack.at("center").get<int>());
+            std::shared_ptr<ControlPoint>& link1 = controlPoints.at(jsonTrack.at("link1").get<int>());
+            std::shared_ptr<ControlPoint>& link2 = controlPoints.at(jsonTrack.at("link2").get<int>());
+            std::shared_ptr<ControlPoint>& link3 = controlPoints.at(jsonTrack.at("link3").get<int>());
+            std::shared_ptr<ControlPoint>& link4 = controlPoints.at(jsonTrack.at("link4").get<int>());
+
+            t.addTrackIntersection(center, link1, link2, link3, link4);
+
+            continue;
+        }
+
         std::shared_ptr<ControlPoint> start =
             controlPoints.at(jsonTrack.at("start").get<int>());
         std::shared_ptr<ControlPoint> end =
             controlPoints.at(jsonTrack.at("end").get<int>());
-
-        std::string type = jsonTrack.at("type").get<std::string>();
 
         if ("arc" == type) {
             glm::vec2 center = jsonTrack.at("center").get<glm::vec2>();
@@ -620,15 +657,11 @@ bool Settings::load() {
  * Now that's the actual Scene implementation, fellas!
  */
 
-TrackBase::TrackBase(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end)
-    : start(start), end(end) {
-}
-
 TrackBase::~TrackBase() {
 }
 
 TrackLine::TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end)
-    : TrackBase(start, end) {
+    : start(start), end(end) {
 }
 
 glm::vec2 TrackLine::getDirection(const ControlPoint& controlPoint) {
@@ -645,7 +678,7 @@ glm::vec2 TrackLine::getDirection(const ControlPoint& controlPoint) {
 
 TrackArc::TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
         const glm::vec2& center, const float radius, const bool rightArc)
-    : TrackBase(start, end), center(center), radius(radius), rightArc(rightArc) {
+    : start(start), end(end), center(center), radius(radius), rightArc(rightArc) {
 }
 
 glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
@@ -671,6 +704,34 @@ glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
     dir = glm::vec2(-dir.y, dir.x);
 
     return dir;
+}
+
+TrackIntersection::TrackIntersection(const std::shared_ptr<ControlPoint>& center,
+        const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
+        const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4)
+    : center(center), link1(link1), link2(link2), link3(link3), link4(link4) {
+}
+
+glm::vec2 TrackIntersection::getDirection(const ControlPoint& controlPoint) {
+
+    const std::shared_ptr<ControlPoint>& l1 = this->link1.lock();
+    const std::shared_ptr<ControlPoint>& l2 = this->link2.lock();
+    const std::shared_ptr<ControlPoint>& l3 = this->link3.lock();
+    const std::shared_ptr<ControlPoint>& l4 = this->link4.lock();
+    const glm::vec2& centerCoords = this->center.lock()->coords;
+
+    if (l1.get() == &controlPoint) {
+        return l1->coords - centerCoords;
+    } else if (l2.get() == &controlPoint) {
+        return l2->coords - centerCoords;
+    } else if (l3.get() == &controlPoint) {
+        return l3->coords - centerCoords;
+    } else if (l4.get() == &controlPoint) {
+        return l4->coords - centerCoords;
+    } else {
+        // center
+        return glm::vec2();
+    }
 }
 
 const std::vector<std::shared_ptr<ControlPoint>>& Scene::Tracks::getTracks() const {
@@ -718,6 +779,43 @@ std::shared_ptr<TrackArc> Scene::Tracks::addTrackArc(const std::shared_ptr<Contr
     return track;
 }
 
+std::shared_ptr<TrackIntersection> Scene::Tracks::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
+        const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
+        const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4) {
+
+    // add control points
+    if (!controlPointExists(center)) {
+        tracks.push_back(center);
+    }
+
+    if (!controlPointExists(link1)) {
+        tracks.push_back(link1);
+    }
+
+    if (!controlPointExists(link2)) {
+        tracks.push_back(link2);
+    }
+
+    if (!controlPointExists(link3)) {
+        tracks.push_back(link3);
+    }
+
+    if (!controlPointExists(link4)) {
+        tracks.push_back(link4);
+    }
+
+    // create track
+    std::shared_ptr<TrackIntersection> track = std::make_shared<TrackIntersection>(center, link1, link2, link3, link4);
+
+    center->tracks.push_back(track);
+    link1->tracks.push_back(track);
+    link2->tracks.push_back(track);
+    link3->tracks.push_back(track);
+    link4->tracks.push_back(track);
+
+    return track;
+}
+
 bool Scene::Tracks::controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const {
 
     for (std::shared_ptr<ControlPoint> const& cp : tracks) {
@@ -737,8 +835,7 @@ void Scene::Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoi
                     other->tracks.begin(),
                     other->tracks.end(),
                     [&](const std::shared_ptr<TrackBase>& b){
-                        return b->start.lock() == controlPoint
-                            || b->end.lock() == controlPoint;
+                        return isConnected(controlPoint, b);
                     }),
                 other->tracks.end());
     }
@@ -751,6 +848,22 @@ void Scene::Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoi
                     return c == controlPoint || c->tracks.empty();
                 }),
             tracks.end());
+}
+
+bool Scene::Tracks::isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const std::shared_ptr<TrackBase>& track) {
+
+    if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track)) {
+        return controlPoint == line->start.lock() || controlPoint == line->end.lock();
+    } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track)) {
+        return controlPoint == arc->start.lock() || controlPoint == arc->end.lock();
+    } else {
+        std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
+        return controlPoint == intersection->center.lock()
+                || controlPoint == intersection->link1.lock()
+                || controlPoint == intersection->link2.lock()
+                || controlPoint == intersection->link3.lock()
+                || controlPoint == intersection->link4.lock();
+    }
 }
 
 Scene::Scene() : version{VERSION} {

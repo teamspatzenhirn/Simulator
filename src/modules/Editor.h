@@ -17,7 +17,8 @@ public:
 
     enum class TrackMode {
         Line,
-        Arc
+        Arc,
+        Intersection
     };
 
 private:
@@ -31,6 +32,8 @@ private:
     bool autoAlign{false};
 
 // models
+
+    static constexpr float intersectionTrackLength{0.75f};
 
     // materials
     static objl::Material markerDefaultMaterial;
@@ -53,13 +56,15 @@ private:
 
     glm::mat4 markerModelMatEnd;
 
-    Model markerTrackLine;
-    glm::mat4 markerModelMatTrackLine;
+    std::shared_ptr<Model> trackMarker;
+    glm::mat4 trackMarkerMat;
 
-    Model markerTrackArc;
-    glm::mat4 markerModelMatTrackArc;
+    std::shared_ptr<Model> markerTrackLine = std::make_shared<Model>();
+    std::shared_ptr<Model> markerTrackIntersection = std::make_shared<Model>();
 
     // tracks
+    std::shared_ptr<Model> intersectionModel;
+
     std::map<std::shared_ptr<TrackBase>, std::shared_ptr<Model>> trackModels;
     std::map<std::shared_ptr<TrackBase>, glm::mat4> trackModelMats;
 
@@ -75,6 +80,8 @@ private:
 
         std::shared_ptr<ControlPoint> connectedPoint;
 
+        std::map<std::shared_ptr<ControlPoint>, glm::vec2> coords;
+
         std::map<std::shared_ptr<TrackBase>, std::shared_ptr<Model>> trackModels;
         std::map<std::shared_ptr<TrackBase>, glm::mat4> trackModelMats;
     } dragState;
@@ -83,7 +90,7 @@ private:
 
 public:
 
-    Editor(float groundSize);
+    Editor(const Scene::Tracks& tracks, float groundSize);
 
     void updateInput(Camera& camera, Scene::Tracks& tracks, float groundSize);
     void onKey(int key, int action, const Scene::Tracks& tracks);
@@ -106,14 +113,22 @@ private:
 
     void startTrack(const glm::vec2& position, const Scene::Tracks& tracks, float groundSize);
     void endTrack(const glm::vec2& position, Scene::Tracks& tracks, float groundSize);
+    void createIntersection(const glm::vec2& position, Scene::Tracks& tracks, const float groundSize);
     void addTrackLine(const std::shared_ptr<ControlPoint>& start,
             const std::shared_ptr<ControlPoint>& end, Scene::Tracks& tracks);
     void addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc, Scene::Tracks& tracks);
+    void addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
+            const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
+            const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4,
+            Scene::Tracks& tracks);
 
-    void dragControlPoint(ControlPoint& controlPoint, const Scene::Tracks& tracks);
+    void dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint, const Scene::Tracks& tracks);
     void moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Scene::Tracks& tracks, float groundSize);
-    void moveTracksAtControlPoint(ControlPoint& controlPoint,
-            const glm::vec2& position, bool applyMovement, const Scene::Tracks& tracks);
+    void moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlPoint>>& controlPoints,
+            bool applyMovement, const Scene::Tracks& tracks);
+    std::shared_ptr<TrackIntersection> findIntersection(const ControlPoint& cp) const;
+    glm::vec2 getDraggedPosition(const std::shared_ptr<ControlPoint>& cp) const;
+    bool isDragged(const std::shared_ptr<ControlPoint>& cp) const;
 
     std::shared_ptr<ControlPoint> selectControlPoint(const glm::vec2& position, const Scene::Tracks& tracks) const;
     std::shared_ptr<ControlPoint> selectControlPoint(const glm::vec2& position,
@@ -122,10 +137,11 @@ private:
     bool toGroundCoordinates(const double cursorX, const double cursorY, const int windowWidth, const int windowHeight,
             Camera& camera, glm::vec2& groundCoords);
 
-    void updateMarkers(const ControlPoint& startPoint, const Scene::Tracks& tracks);
+    void updateMarkers(const Scene::Tracks& tracks);
     void updateTrackLineMarker(const glm::vec2& start, const glm::vec2& end, const Scene::Tracks& tracks);
     void updateTrackArcMarker(const ControlPoint& startPoint,
             const glm::vec2& end, const Scene::Tracks& tracks);
+    void updateTrackIntersectionMarker(const glm::vec2& center);
 
     bool getArc(const ControlPoint& start, const glm::vec2& end,
             glm::vec2& center, float& radius, bool& rightArc);
@@ -142,9 +158,9 @@ private:
     TrackMode getEffectiveTrackMode();
 
     bool isStartConnected();
-    bool isConnected(const ControlPoint& controlPoint, const std::shared_ptr<TrackBase>& track);
 
     void deselect();
+    bool maybeDragging(const Scene::Tracks& tracks);
 
 // model creation
 
@@ -152,6 +168,7 @@ private:
             const Scene::Tracks& tracks);
     static std::shared_ptr<Model> genTrackArcModel(const glm::vec2& start, const glm::vec2& end,
             const glm::vec2& center, const float radius, const bool rightArc, const Scene::Tracks& tracks);
+    static std::shared_ptr<Model> genTrackIntersectionModel(const Scene::Tracks& tracks);
 
     static void genDefaultMarkerMaterial(Model& model);
     static void genActiveMarkerMaterial(Model& model);
@@ -160,14 +177,17 @@ private:
     static void genPointVertices(Model& model);
     static void genTrackLineVertices(const glm::vec2& start, const glm::vec2& end, const Scene::Tracks& tracks, Model& model);
     static void genTrackArcVertices(const glm::vec2& start, const glm::vec2& end, const glm::vec2& center, const float radius, const bool rightArc, const Scene::Tracks& tracks, Model& model);
+    static void genTrackIntersectionVertices(const Scene::Tracks& tracks, Model& model);
     static void genTrackLineMarkerVertices(Model& model);
     static void genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& end,
             const glm::vec2& center, const float radius, const bool rightArc,
             const Scene::Tracks& tracks, Model& model);
+    static void genTrackIntersectionMarkerVertices(const Scene::Tracks& tracks, Model& model);
 
     static glm::mat4 genPointMatrix(const glm::vec2& point, const float y);
     static glm::mat4 genTrackLineMatrix(const glm::vec2& start, const glm::vec2& end, const float y);
     static glm::mat4 genTrackArcMatrix(const glm::vec2& center, const float y);
+    static glm::mat4 genTrackIntersectionMatrix(const glm::vec2& center, const float angle, const float y);
     static glm::mat4 genTrackLineMarkerMatrix(const glm::vec2& start,
             const glm::vec2& end, const float y, const Scene::Tracks& tracks);
 

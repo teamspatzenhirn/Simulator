@@ -63,7 +63,7 @@ class Loop {
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
-    Editor editor{scene.groundSize};
+    Editor editor{scene.tracks, scene.groundSize};
 
     CarModule car;
 

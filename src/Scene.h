@@ -4,6 +4,7 @@
 #include <deque>
 #include <string>
 #include <vector>
+#include <set>
 #include <fstream>
 #include <memory>
 #include <cstdlib>
@@ -25,16 +26,15 @@ struct ControlPoint {
 
 struct TrackBase {
 
-    std::weak_ptr<ControlPoint> start;
-    std::weak_ptr<ControlPoint> end;
-
-    TrackBase(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
     virtual ~TrackBase() = 0;
 
     virtual glm::vec2 getDirection(const ControlPoint& controlPoint) = 0;
 };
 
 struct TrackLine : TrackBase {
+
+    std::weak_ptr<ControlPoint> start;
+    std::weak_ptr<ControlPoint> end;
 
     TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
 
@@ -43,12 +43,30 @@ struct TrackLine : TrackBase {
 
 struct TrackArc : TrackBase {
 
+    std::weak_ptr<ControlPoint> start;
+    std::weak_ptr<ControlPoint> end;
+
     glm::vec2 center;
     float radius{0};
     bool rightArc{false};
 
     TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
             const glm::vec2& center, const float radius, const bool rightArc);
+
+    glm::vec2 getDirection(const ControlPoint& controlPoint) override;
+};
+
+struct TrackIntersection : TrackBase {
+
+    std::weak_ptr<ControlPoint> center;
+    std::weak_ptr<ControlPoint> link1;
+    std::weak_ptr<ControlPoint> link2;
+    std::weak_ptr<ControlPoint> link3;
+    std::weak_ptr<ControlPoint> link4;
+
+    TrackIntersection(const std::shared_ptr<ControlPoint>& center,
+            const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
+            const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4);
 
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
 };
@@ -479,6 +497,8 @@ struct Scene {
         float centerLineLength = 0.2f;
         float centerLineInterrupt = 0.2f;
 
+        float stopLineWidth = 0.038f;
+
     private:
 
         std::vector<std::shared_ptr<ControlPoint>> tracks;
@@ -489,10 +509,15 @@ struct Scene {
 
         std::shared_ptr<TrackLine> addTrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
         std::shared_ptr<TrackArc> addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc);
+        std::shared_ptr<TrackIntersection> addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
+                const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
+                const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4);
 
         bool controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const;
 
         void removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint);
+
+        static bool isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const std::shared_ptr<TrackBase>& track);
 
     } tracks;
 
