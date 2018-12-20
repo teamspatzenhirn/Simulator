@@ -99,6 +99,8 @@ void CommModule::transmitCar(Scene::Car& car, bool paused, uint64_t time) {
         obj->alphaFront = car.alphaFront;
         obj->alphaRear = car.alphaRear;
         obj->time = time;
+        obj->laserSensorValue = car.laserSensor.value;
+        obj->binaryLightSensorTriggered = car.binaryLightSensor.triggered;
 
         /*
          * TODO: sucks

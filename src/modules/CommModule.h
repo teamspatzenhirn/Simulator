@@ -61,6 +61,10 @@ class CommModule {
         uint64_t time;
 
         bool paused;
+
+        float laserSensorValue;
+
+        bool binaryLightSensorTriggered;
     };
 
     struct Vesc {

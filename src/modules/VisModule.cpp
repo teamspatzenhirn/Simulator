@@ -33,7 +33,7 @@ void VisModule::drawCircle(GLuint shaderProgramId, glm::vec3 position, float sca
 
 void VisModule::drawLine(GLuint shaderProgramId, glm::vec2 start, glm::vec2 end, float width, glm::vec3 color) {
 
-    drawLine(shaderProgramId, glm::vec3(start, 0.005), glm::vec3(end, 0.005), width, color);
+    drawLine(shaderProgramId, glm::vec3(start.x, 0.005f, start.y), glm::vec3(end.x, 0.005f, end.y), width, color);
 }
 
 void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float width, glm::vec3 color) {
