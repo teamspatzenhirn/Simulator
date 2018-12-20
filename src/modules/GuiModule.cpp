@@ -398,6 +398,25 @@ void GuiModule::renderSceneWindow(Scene& scene) {
                 ImGui::TreePop();
             }
 
+            if (ImGui::TreeNode("Laser Sensor")) {
+
+                renderPoseGui(scene.car.laserSensor.pose);
+                ImGui::InputFloat("value", &scene.car.laserSensor.value);
+
+                ImGui::TreePop();
+            }
+
+            if (ImGui::TreeNode("Binary Light Sensor")) {
+
+                renderPoseGui(scene.car.binaryLightSensor.pose);
+                ImGui::InputFloat("trigger distance",
+                        &scene.car.binaryLightSensor.triggerDistance);
+                ImGui::Checkbox("triggered",
+                        &scene.car.binaryLightSensor.triggered);
+
+                ImGui::TreePop();
+            }
+
             ImGui::TreePop();
         }
 
@@ -470,6 +489,8 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
         changed |= ImGui::Checkbox("Show vehicle path", &settings.showVehiclePath);
         changed |= ImGui::Checkbox("Fancy vehicle path", &settings.fancyVehiclePath);
         changed |= ImGui::Checkbox("Show vehicle trajectory", &settings.showVehicleTrajectory);
+        changed |= ImGui::Checkbox("Show laser sensor", &settings.showLaserSensor);
+        changed |= ImGui::Checkbox("Show binary light sensor", &settings.showBinaryLightSensor);
 
         ImGui::End();
 

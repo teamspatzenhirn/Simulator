@@ -6,6 +6,29 @@
 
 using json = nlohmann::json;
 
+/*
+ * Wrapper function, which tries to get a property from a json file
+ * and writes it to the given variable. If the property is not
+ * found, false is returned and the value of variable remains unchanged.
+ */
+template <typename T>
+bool tryGet(const json& j, std::string name, T& variable) {
+
+    try {
+        variable = j.at(name).get<T>();
+    } catch(std::exception& e) {
+        json err(variable);
+        std::cout << "Property \""
+            << name
+            << "\" not found. Using default: "
+            << err.dump(4)
+            << std::endl;
+        return false;
+    }
+    
+    return true;
+}
+
 namespace glm {
 
     /*
@@ -134,18 +157,22 @@ void to_json(json& j, const Settings& s) {
             {"showMarkers", s.showMarkers},
             {"showVehiclePath", s.showVehiclePath},
             {"fancyVehiclePath", s.fancyVehiclePath},
-            {"showVehicleTrajectory", s.showVehicleTrajectory}
+            {"showVehicleTrajectory", s.showVehicleTrajectory},
+            {"showLaserSensor", s.showLaserSensor},
+            {"showBinaryLightSensor", s.showBinaryLightSensor}
         });
 }
 
 void from_json(const json& j, Settings& s) {
 
-    s.simulationSpeed = j.at("simulationSpeed").get<float>();
-    s.configPath = j.at("configPath").get<std::string>();
-    s.showMarkers = j.at("showMarkers").get<bool>();
-    s.showVehiclePath = j.at("showVehiclePath").get<bool>();
-    s.fancyVehiclePath = j.at("fancyVehiclePath").get<bool>();
-    s.showVehicleTrajectory = j.at("showVehicleTrajectory").get<bool>();
+    tryGet(j, "simulationSpeed", s.simulationSpeed);
+    tryGet(j, "configPath", s.configPath);
+    tryGet(j, "showMarkers", s.showMarkers);
+    tryGet(j, "showVehiclePath", s.showVehiclePath);
+    tryGet(j, "fancyVehiclePath", s.fancyVehiclePath);
+    tryGet(j, "showVehicleTrajectory", s.showVehicleTrajectory);
+    tryGet(j, "showLaserSensor", s.showLaserSensor);
+    tryGet(j, "showBinaryLightSensor", s.showBinaryLightSensor);
 }
 
 /*
@@ -282,6 +309,40 @@ void from_json(const json& j, Scene::Car::MainCamera& o) {
 }
 
 /*
+ * Scene::Car::LaserSensor
+ */
+
+void to_json(json& j, const Scene::Car::LaserSensor& o) {
+
+    j = json({
+            {"pose", o.pose},
+        });
+}
+
+void from_json(const json& j, Scene::Car::LaserSensor& o) {
+
+    tryGet(j, "pose", o.pose);
+}
+
+/*
+ * Scene::Car::BinaryLightSensor
+ */
+
+void to_json(json& j, const Scene::Car::BinaryLightSensor& o) {
+
+    j = json({
+            {"pose", o.pose},
+            {"triggerDistance", o.triggerDistance},
+        });
+}
+
+void from_json(const json& j, Scene::Car::BinaryLightSensor& o) {
+
+    tryGet(j, "pose", o.pose);
+    tryGet(j, "triggerDistance", o.triggerDistance);
+}
+
+/*
  * Car
  */
 
@@ -293,18 +354,22 @@ void to_json(json& j, const Scene::Car& o) {
             {"systemParams", o.systemParams},
             {"limits", o.limits},
             {"wheels", o.wheels},
-            {"mainCamera", o.mainCamera}
+            {"mainCamera", o.mainCamera},
+            {"laserSensor", o.laserSensor},
+            {"binaryLightSensor", o.binaryLightSensor}
         });
 }
 
 void from_json(const json& j, Scene::Car& o) {
 
-    o.modelPose = j.at("modelPose").get<Pose>();
-    o.simulatorState = j.at("simulatorState").get<Scene::Car::SimulatorState>();
-    o.systemParams = j.at("systemParams").get<Scene::Car::SystemParams>();
-    o.limits = j.at("limits").get<Scene::Car::Limits>();
-    o.wheels = j.at("wheels").get<Scene::Car::Wheels>();
-    o.mainCamera = j.at("mainCamera").get<Scene::Car::MainCamera>();
+    tryGet(j, "modelPose", o.modelPose);
+    tryGet(j, "simulatorState", o.simulatorState);
+    tryGet(j, "systemParams", o.systemParams);
+    tryGet(j, "limits", o.limits);
+    tryGet(j, "wheels", o.wheels);
+    tryGet(j, "mainCamera", o.mainCamera);
+    tryGet(j, "laserSensor", o.laserSensor);
+    tryGet(j, "binaryLightSensor", o.binaryLightSensor);
 }
 
 /*

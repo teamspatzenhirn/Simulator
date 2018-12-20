@@ -199,6 +199,16 @@ struct Settings {
     bool showVehicleTrajectory = true;
 
     /*
+     * If set the ray sent out by the front laser sensor will be draw.
+     */
+    bool showLaserSensor = true;
+
+    /*
+     * If set the ray sent out by the back binary light sensor will be draw.
+     */
+    bool showBinaryLightSensor = true;
+
+    /*
      * This saves the settings to ~/.carolosim
      */
     bool save();
@@ -421,7 +431,12 @@ struct Scene {
             /*
              * The position of the sensor in car coordinate.
              */
-            Pose pose{-0.1, 0.1, 0.0};
+            Pose pose{-0.05, 0.1, -0.025};
+
+            /*
+             * The distance detected by this light sensors
+             */
+            float value = 100.0f;
 
             /*
              * Whether the sensor is triggered or not.
@@ -435,6 +450,20 @@ struct Scene {
             float triggerDistance = 0.3;
 
         } binaryLightSensor;
+
+        struct LaserSensor {
+
+            /*
+             * The position of the sensor in car coordinate.
+             */
+            Pose pose{-0.05, 0.1, 0.21};
+
+            /*
+             * The distance detected by this light sensors
+             */
+            float value = 1000.0f;
+
+        } laserSensor;
 
     } car;
 

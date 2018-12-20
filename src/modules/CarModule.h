@@ -17,6 +17,12 @@
 
 class CarModule {
 
+    float calcLaserSensorValue(
+            glm::vec3 position,
+            glm::vec3 direction,
+            ModelStore& modelStore,
+            std::vector<std::shared_ptr<Scene::Item>>& items);
+
 public:
 
     Model carModel{"models/spatz.obj"};

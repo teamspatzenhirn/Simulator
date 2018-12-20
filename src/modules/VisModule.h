@@ -32,6 +32,7 @@ class VisModule {
 
     void drawRing(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color);
     void drawCircle(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color);
+    void drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float width, glm::vec3 color);
     void drawLine(GLuint shaderProgramId, glm::vec2 start, glm::vec2 end, float width, glm::vec3 color);
 
 public:
@@ -39,6 +40,8 @@ public:
     VisModule();
 
     void addPositionTrace(glm::vec3 position, uint64_t simulationTime);
+
+    void renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings& settings);
 
     void renderPositionTrace(
             GLuint shaderProgramId,

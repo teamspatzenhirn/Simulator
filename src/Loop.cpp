@@ -283,6 +283,11 @@ void Loop::renderFpsView() {
                 settings.fancyVehiclePath);
     }
 
+    visModule.renderSensors(
+            shaderProgram.id,
+            scene.car,
+            settings);
+
     visModule.renderVisualization(
             shaderProgram.id,
             scene.visualization, settings);

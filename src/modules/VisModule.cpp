@@ -33,17 +33,24 @@ void VisModule::drawCircle(GLuint shaderProgramId, glm::vec3 position, float sca
 
 void VisModule::drawLine(GLuint shaderProgramId, glm::vec2 start, glm::vec2 end, float width, glm::vec3 color) {
 
+    drawLine(shaderProgramId, glm::vec3(start, 0.005), glm::vec3(end, 0.005), width, color);
+}
+
+void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float width, glm::vec3 color) {
+
     lineModel->material.Ka = objl::Vector3(color.r, color.g, color.b);
     lineModel->material.Kd = objl::Vector3(color.r, color.g, color.b);
     lineModel->material.Ks = objl::Vector3(color.r, color.g, color.b);
 
-    glm::vec2 distVec = end - start;
-    glm::vec2 middelVec = start + distVec * 0.5f;
-    float angle = atan2(distVec.y, distVec.x);
+    glm::vec3 distVec = end - start;
+    glm::vec3 middelVec = start + distVec * 0.5f;
+    float angleY = atan2(distVec.x, distVec.z);
+    float angleX = atan2(distVec.y, distVec.z);
 
     glm::mat4 modelMat = glm::mat4(1.0f);
-    modelMat = glm::translate(modelMat, glm::vec3(middelVec.x, 0.005, middelVec.y));
-    modelMat = glm::rotate(modelMat, angle, glm::vec3(0, 1, 0));
+    modelMat = glm::translate(modelMat, middelVec);
+    modelMat = glm::rotate(modelMat, angleY, glm::vec3(0, 1, 0));
+    modelMat = glm::rotate(modelMat, angleX, glm::vec3(1, 0, 0));
     modelMat = glm::scale(modelMat, glm::vec3(width, 1.0, glm::length(distVec) * 0.5));
     lineModel->render(shaderProgramId, modelMat);
 }
@@ -91,6 +98,73 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, uint64_t simulationT
 
     glUniform1i(lightingLocation, true);
     glUniform1i(billboardLocation, false);
+}
+
+void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings& settings) {
+
+    GLuint lightingLocation = 
+        glGetUniformLocation(shaderProgramId, "lighting");
+    glUniform1i(lightingLocation, false);
+
+    GLuint billboardLocation = 
+        glGetUniformLocation(shaderProgramId, "billboard");
+    glUniform1i(billboardLocation, true);
+
+    glm::vec3 binaryLightSensorWorldPos = car.modelPose.getMatrix() * 
+        glm::vec4(car.binaryLightSensor.pose.position, 1);
+
+    glm::vec3 laserSensorWorldPos = car.modelPose.getMatrix() * 
+        glm::vec4(car.laserSensor.pose.position, 1);
+
+    if (settings.showBinaryLightSensor) {
+        drawCircle(
+                shaderProgramId,
+                binaryLightSensorWorldPos,
+                0.05,
+                glm::vec3(1, 1, 0));
+    }
+
+    if (settings.showLaserSensor) {
+        drawCircle(
+                shaderProgramId,
+                laserSensorWorldPos,
+                0.05,
+                glm::vec3(1, 1, 0));
+    }
+
+    glm::vec4 dir{-1, 0, 0, 0};
+    dir = car.modelPose.getMatrix() * dir;
+
+    glUniform1i(billboardLocation, false);
+
+    float lineLength = std::min(2.0f, car.binaryLightSensor.value);
+
+    if (settings.showBinaryLightSensor) {
+
+        glm::vec3 color =
+            car.binaryLightSensor.triggered
+                ? glm::vec3(0, 1, 0): glm::vec3(1, 0, 0);
+
+        drawLine(
+                shaderProgramId,
+                binaryLightSensorWorldPos,
+                binaryLightSensorWorldPos + glm::vec3(glm::normalize(dir)) * lineLength,
+                0.005,
+                color);
+    }
+
+    lineLength = std::min(2.0f, car.laserSensor.value);
+
+    if (settings.showLaserSensor) {
+        drawLine(
+                shaderProgramId,
+                laserSensorWorldPos,
+                laserSensorWorldPos + glm::vec3(glm::normalize(dir)) * lineLength,
+                0.005,
+                glm::vec3(1, 0, 0));
+    }
+
+    glUniform1i(lightingLocation, true);
 }
 
 void VisModule::renderVisualization(

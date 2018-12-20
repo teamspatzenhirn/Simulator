@@ -2,10 +2,81 @@
 
 CarModule::CarModule() {
 
-    carModel.upload();
+}
+
+float CarModule::calcLaserSensorValue(
+        glm::vec3 position,
+        glm::vec3 direction,
+        ModelStore& modelStore,
+        std::vector<std::shared_ptr<Scene::Item>>& items) {
+
+    float minDist = 1000.0f;
+
+    for (std::shared_ptr<Scene::Item>& it : items) {
+
+        float maxItemSize = std::max(
+            modelStore.itemModels[it->type].boundingBox.size.x * it->pose.scale.x,
+            modelStore.itemModels[it->type].boundingBox.size.z * it->pose.scale.z);
+
+        if (glm::length(position - it->pose.position) > 2.0 + maxItemSize / 2) {
+            continue;
+        }
+
+        Model& itemModel = modelStore.itemModels[it->type];
+        glm::mat4 modelMat = it->pose.getMatrix();
+
+        for (unsigned int i = 2 ; i < itemModel.vertices.size() ; i += 3) {
+
+            glm::vec3 vec0 = {
+                itemModel.vertices[i-2].Position.X,
+                itemModel.vertices[i-2].Position.Y,
+                itemModel.vertices[i-2].Position.Z };
+            glm::vec3 vec1 = {
+                itemModel.vertices[i-1].Position.X,
+                itemModel.vertices[i-1].Position.Y,
+                itemModel.vertices[i-1].Position.Z };
+            glm::vec3 vec2 = {
+                itemModel.vertices[i].Position.X,
+                itemModel.vertices[i].Position.Y,
+                itemModel.vertices[i].Position.Z };
+
+            vec0 = modelMat * glm::vec4(vec0, 1);
+            vec1 = modelMat * glm::vec4(vec1, 1);
+            vec2 = modelMat * glm::vec4(vec2, 1);
+            
+            // The exact meaning of intersectionPos is not documented in glm.
+            // It seems to be something like the intersection point in some
+            // local coordinate system. Anyway, itersectionPos.x corresponds to
+            // the distance between the triangle and the starting point of the
+            // line, which should be intersected with the triangle.
+
+            glm::vec3 intersectionPos;
+
+            if(glm::intersectLineTriangle(
+                        position,
+                        direction,
+                        vec0,
+                        vec1,
+                        vec2,
+                        intersectionPos)) {
+
+                if (intersectionPos.x > 0) {
+                    minDist = std::min(
+                            minDist,
+                            glm::length(intersectionPos.x));
+                }
+            }
+        }
+    }
+
+    return minDist;
 }
 
 void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
+
+    // The procedure implements a pacejka wheel model.
+    // Original implementation by Max Mertens.
+    // Adapted to used glm datatypes for this simulator.
 
     float dt = deltaTime / 1000; // in seconds, input is milliseconds
 
@@ -159,67 +230,30 @@ void CarModule::updateLaserSensors(
         Scene::Car& car,
         ModelStore& modelStore,
         std::vector<std::shared_ptr<Scene::Item>>& items) {
-    
-    float minDist = 1000.0f;
+
+    glm::vec4 laserDirection{-1, 0, 0, 0};
+    laserDirection = car.modelPose.getMatrix() * laserDirection;
 
     glm::vec3 binaryLightSensorWorldPos = car.modelPose.getMatrix() * 
         glm::vec4(car.binaryLightSensor.pose.position, 1);
 
-    std::cout << binaryLightSensorWorldPos << std::endl;
+    glm::vec3 laserSensorWorldPos = car.modelPose.getMatrix() * 
+        glm::vec4(car.laserSensor.pose.position, 1);
 
-    for (std::shared_ptr<Scene::Item>& it : items) {
+    car.binaryLightSensor.value = calcLaserSensorValue(
+            binaryLightSensorWorldPos,
+            laserDirection,
+            modelStore,
+            items);
 
-        if (glm::length(binaryLightSensorWorldPos - it->pose.position) > 1.0) {
-            continue;
-        }
+    car.binaryLightSensor.triggered =
+        car.binaryLightSensor.value <= car.binaryLightSensor.triggerDistance;
 
-        glm::vec4 dir{1, 0, 0, 1};
-        dir = car.modelPose.getMatrix() * dir;
-
-        Model& itemModel = modelStore.itemModels[it->type];
-        glm::mat4 modelMat = it->pose.getMatrix();
-
-        for (unsigned int i = 2 ; i < itemModel.vertices.size() ; i += 3) {
-
-            glm::vec3 vec0 = {
-                itemModel.vertices[i-2].Position.X,
-                itemModel.vertices[i-2].Position.Y,
-                itemModel.vertices[i-2].Position.Z };
-            glm::vec3 vec1 = {
-                itemModel.vertices[i-1].Position.X,
-                itemModel.vertices[i-1].Position.Y,
-                itemModel.vertices[i-1].Position.Z };
-            glm::vec3 vec2 = {
-                itemModel.vertices[i].Position.X,
-                itemModel.vertices[i].Position.Y,
-                itemModel.vertices[i].Position.Z };
-
-            vec0 = modelMat * glm::vec4(vec0, 1);
-            vec1 = modelMat * glm::vec4(vec1, 1);
-            vec2 = modelMat * glm::vec4(vec2, 1);
-
-            glm::vec3 intersectionPos;
-
-            if(glm::intersectLineTriangle(
-                        binaryLightSensorWorldPos,
-                        glm::vec3(dir),
-                        vec0,
-                        vec1,
-                        vec2,
-                        intersectionPos)) {
-
-                std::cout << intersectionPos << std::endl;
-
-                if (intersectionPos.x < 0) {
-                    minDist = std::min(
-                            minDist,
-                            glm::length(-intersectionPos.x));
-                }
-            }
-        }
-    }
-    
-    std::cout << "Laser sensor distance: " << minDist << std::endl;
+    car.laserSensor.value = calcLaserSensorValue(
+            laserSensorWorldPos,
+            laserDirection,
+            modelStore,
+            items);
 }
 
 void CarModule::render(GLuint shaderProgramId, Scene::Car& car) {
