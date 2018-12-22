@@ -1325,17 +1325,6 @@ void Editor::genTrackIntersectionVertices(const Scene::Tracks& tracks, Model& mo
 
         x += tracks.centerLineLength + tracks.centerLineInterrupt;
     }
-
-    // stop lines
-    for (int i = -1; i <= 1; i += 2) {
-        using namespace objl::algorithm;
-
-        objl::Vector3 vec0(-d4, 0.0f, d3);
-        objl::Vector3 vec1(-d4, 0.0f, d3 + tracks.stopLineWidth);
-        objl::Vector3 vec2(d3, 0.0f, d3 + tracks.stopLineWidth);
-        objl::Vector3 vec3(d3, 0.0f, d3);
-        appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
-    }
 }
 
 void Editor::genTrackLineMarkerVertices(Model& model) {
