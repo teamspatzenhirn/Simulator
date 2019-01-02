@@ -277,6 +277,14 @@ void GuiModule::renderCreateMenu(Scene& scene) {
         newType = BARRED_AREA_LARGE;
         newName = "barred_area_large";
     }
+    if (ImGui::MenuItem("Pedestrian")) {
+        newType = PEDESTRIAN;
+        newName = "pedestrian";
+    }
+    if (ImGui::MenuItem("Dynamic Pedestrian")) {
+        newType = DYNAMIC_PEDESTRIAN;
+        newName = "dynamic_pedestrian";
+    }
 
     if (NONE != newType) {
         scene.items.emplace_back(std::make_shared<Scene::Item>(newType, newName));

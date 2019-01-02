@@ -208,6 +208,10 @@ void Loop::updateCollisions() {
             collisionModule.add(i->pose, modelStore.itemModels[OBSTACLE]);
         } else if (i->type == DYNAMIC_OBSTACLE) {
             collisionModule.add(i->pose, modelStore.itemModels[DYNAMIC_OBSTACLE]);
+        } else if (i->type == PEDESTRIAN) {
+            collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
+        } else if (i->type == DYNAMIC_PEDESTRIAN) {
+            collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
         }
     }
 
