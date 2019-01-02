@@ -47,18 +47,16 @@ void RuleModule::update(
     rules.onTrack = false;
 
     auto onLineSegment = [&carPosition](
-            std::weak_ptr<ControlPoint>& p1,
-            std::weak_ptr<ControlPoint>& p2){
-
-        glm::vec2 start = p1.lock()->coords;
-        glm::vec2 end = p2.lock()->coords;
+            glm::vec2 start,
+            glm::vec2 end,
+            float width){
 
         glm::vec2 middleVec = glm::normalize(end - start);
         glm::vec2 normal(-middleVec.y, middleVec.x);
 
-        glm::vec2 a = start + normal * 0.4f;
-        glm::vec2 b = start - normal * 0.4f;
-        glm::vec2 d = end - normal * 0.4f;
+        glm::vec2 a = start + normal * width;
+        glm::vec2 b = start - normal * width;
+        glm::vec2 d = end - normal * width;
 
         glm::vec2 ab = b - a;
         glm::vec2 ad = d - a;
@@ -79,7 +77,10 @@ void RuleModule::update(
 
             TrackLine& tl = *((TrackLine*)s.get());
 
-            if (onLineSegment(tl.start, tl.end)) {
+            glm::vec2 start = tl.start.lock()->coords;
+            glm::vec2 end = tl.end.lock()->coords;
+
+            if (onLineSegment(start, end, 0.4f)) {
                 rules.onTrack = true;
                 break;
             }
@@ -89,8 +90,13 @@ void RuleModule::update(
 
             TrackIntersection& ti = *((TrackIntersection*)s.get());
 
-            if (onLineSegment(ti.link1, ti.link3)
-                    || onLineSegment(ti.link2, ti.link4)) {
+            glm::vec2 start1 = ti.link1.lock()->coords;
+            glm::vec2 end1 = ti.link3.lock()->coords;
+
+            glm::vec2 start2 = ti.link2.lock()->coords;
+            glm::vec2 end2 = ti.link4.lock()->coords;
+
+            if (onLineSegment(start1, end1, 0.4f) || onLineSegment(start2, end2, 0.4f)) {
                 rules.onTrack = true;
                 break;
             }
@@ -130,6 +136,46 @@ void RuleModule::update(
                     rules.onTrack = true;
                     break;
                 }
+            }
+        }
+    }
+
+    for (std::shared_ptr<Scene::Item>& i : items) {
+
+        if (TRAFFIC_ISLAND == i->type) {
+
+            // base part of traffic island
+            
+            glm::vec4 startInModelCoords(0, 0, 1.9, 1);
+            glm::vec4 endInModelCoords(0, 0, -1.9, 1);
+
+            glm::mat4 modelMat = i->pose.getMatrix();
+
+            glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
+            glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
+
+            glm::vec2 start(startInWorldCoords.x, startInWorldCoords.z);
+            glm::vec2 end(endInWorldCoords.x, endInWorldCoords.z);
+
+            if (onLineSegment(start, end, 0.4f)) {
+                rules.onTrack = true;
+                break;
+            }
+
+            // wider part of traffic island
+
+            startInModelCoords = glm::vec4(0, 0, 0.4, 1);
+            endInModelCoords = glm::vec4(0, 0, -0.4, 1);
+
+            startInWorldCoords = modelMat * startInModelCoords;
+            endInWorldCoords = modelMat * endInModelCoords;
+
+            start = glm::vec2(startInWorldCoords.x, startInWorldCoords.z);
+            end = glm::vec2(endInWorldCoords.x, endInWorldCoords.z);
+
+            if (onLineSegment(start, end, 0.5f)) {
+                rules.onTrack = true;
+                break;
             }
         }
     }
