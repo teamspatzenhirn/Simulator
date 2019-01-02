@@ -46,33 +46,51 @@ void RuleModule::update(
 
     rules.onTrack = false;
 
+    auto onLineSegment = [&carPosition](
+            std::weak_ptr<ControlPoint>& p1,
+            std::weak_ptr<ControlPoint>& p2){
+
+        glm::vec2 start = p1.lock()->coords;
+        glm::vec2 end = p2.lock()->coords;
+
+        glm::vec2 middleVec = glm::normalize(end - start);
+        glm::vec2 normal(-middleVec.y, middleVec.x);
+
+        glm::vec2 a = start + normal * 0.4f;
+        glm::vec2 b = start - normal * 0.4f;
+        glm::vec2 d = end - normal * 0.4f;
+
+        glm::vec2 ab = b - a;
+        glm::vec2 ad = d - a;
+        glm::vec2 am = carPosition - a;
+
+        float abDot = glm::dot(am, ab);
+        float adDot = glm::dot(am, ad);
+
+        return 0 <= abDot
+                && abDot < glm::dot(ab, ab)
+                && 0 < adDot
+                && adDot < glm::dot(ad, ad);
+    };
+
     for (std::shared_ptr<TrackBase>& s : trackSegments) {
 
         if (nullptr != dynamic_cast<TrackLine*>(s.get())) {
 
             TrackLine& tl = *((TrackLine*)s.get());
 
-            glm::vec2 start = tl.start.lock()->coords;
-            glm::vec2 end = tl.end.lock()->coords;
+            if (onLineSegment(tl.start, tl.end)) {
+                rules.onTrack = true;
+                break;
+            }
+        }
 
-            glm::vec2 middleVec = glm::normalize(end - start);
-            glm::vec2 normal(-middleVec.y, middleVec.x);
+        if (nullptr != dynamic_cast<TrackIntersection*>(s.get())) {
 
-            glm::vec2 a = start + normal * 0.4f;
-            glm::vec2 b = start - normal * 0.4f;
-            glm::vec2 d = end - normal * 0.4f;
+            TrackIntersection& ti = *((TrackIntersection*)s.get());
 
-            glm::vec2 ab = b - a;
-            glm::vec2 ad = d - a;
-            glm::vec2 am = carPosition - a;
-
-            float abDot = glm::dot(am, ab);
-            float adDot = glm::dot(am, ad);
-
-            if (0 <= abDot
-                    && abDot < glm::dot(ab, ab)
-                    && 0 < adDot
-                    && adDot < glm::dot(ad, ad)) {
+            if (onLineSegment(ti.link1, ti.link3)
+                    || onLineSegment(ti.link2, ti.link4)) {
                 rules.onTrack = true;
                 break;
             }
