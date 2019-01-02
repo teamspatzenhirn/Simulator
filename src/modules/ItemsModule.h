@@ -6,10 +6,22 @@
 
 class ItemsModule {
 
+    struct DynamicObstacleState {
+        Pose startPose;
+        bool active;
+    };
+
+    std::map<Scene::Item*, DynamicObstacleState> obstStates;
+
 public:
 
     ItemsModule();
     ~ItemsModule();
+
+    void updateDynamicObstacles(
+            float dt,
+            Scene::Car& car, 
+            std::vector<std::shared_ptr<Scene::Item>>& items);
 
     void update(
             std::vector<std::shared_ptr<Scene::Item>>& items,

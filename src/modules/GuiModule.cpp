@@ -153,6 +153,10 @@ void GuiModule::renderCreateMenu(Scene& scene) {
         newType = OBSTACLE;
         newName = "obstacle";
     }
+    if (ImGui::MenuItem("Dynamic Obstacle")) {
+        newType = DYNAMIC_OBSTACLE;
+        newName = "dynamic_obstacle";
+    }
     if (ImGui::MenuItem("Start line")) {
         newType = START_LINE;
         newName = "start_line";

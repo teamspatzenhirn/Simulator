@@ -190,6 +190,8 @@ void Loop::update(double deltaTime, double simDeltaTime) {
         car.updatePosition(scene.car, simDeltaTime);
     }
 
+    itemsModule.updateDynamicObstacles(simDeltaTime, scene.car, scene.items);
+
     visModule.addPositionTrace(scene.car.modelPose.position, scene.simulationTime);
 
     car.updateMainCamera(scene.car.mainCamera, scene.car.modelPose);
@@ -204,6 +206,8 @@ void Loop::updateCollisions() {
     for (auto& i : scene.items) {
         if (i->type == OBSTACLE) {
             collisionModule.add(i->pose, modelStore.itemModels[OBSTACLE]);
+        } else if (i->type == DYNAMIC_OBSTACLE) {
+            collisionModule.add(i->pose, modelStore.itemModels[DYNAMIC_OBSTACLE]);
         }
     }
 

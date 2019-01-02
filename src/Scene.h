@@ -109,6 +109,7 @@ enum ItemType {
     BARRED_AREA_SMALL = 29,
     BARRED_AREA_MEDIUM = 30,
     BARRED_AREA_LARGE = 31,
+    DYNAMIC_OBSTACLE = 32,
 };
 
 /*
@@ -118,7 +119,7 @@ enum ItemType {
  */
 struct ModelStore {
 
-    Model itemModels[32] = {
+    Model itemModels[33] = {
         Model{},
         Model{"models/obstacle.obj"},
         Model{"models/start_line.obj"},
@@ -151,6 +152,7 @@ struct ModelStore {
         Model{"models/barred_area_small.obj"},
         Model{"models/barred_area_medium.obj"},
         Model{"models/barred_area_large.obj"},
+        Model{"models/dynamic_obstacle.obj"},
     };
 };
 
