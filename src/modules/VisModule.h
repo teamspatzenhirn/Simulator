@@ -26,6 +26,7 @@ class VisModule {
     std::shared_ptr<Model> ringModel;
     std::shared_ptr<Model> circleModel;
     std::shared_ptr<Model> lineModel;
+    std::shared_ptr<Model> arrowModel;
 
     uint64_t lastTraceTime;
     std::deque<StampedPosition> tracedPositions;
@@ -34,6 +35,7 @@ class VisModule {
     void drawCircle(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color);
     void drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float width, glm::vec3 color);
     void drawLine(GLuint shaderProgramId, glm::vec2 start, glm::vec2 end, float width, glm::vec3 color);
+    void drawArrow(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float scale, glm::vec3 color);
 
 public:
 
@@ -47,6 +49,11 @@ public:
             GLuint shaderProgramId,
             uint64_t simulationTime,
             bool fancy);
+
+    void renderDynamicItems(
+            GLuint shaderProgramId,
+            double simulationTime, 
+            std::vector<std::shared_ptr<Scene::Item>>& items);
 
     void renderVisualization(
             GLuint shaderProgramId,

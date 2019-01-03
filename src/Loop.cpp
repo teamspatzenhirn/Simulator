@@ -190,7 +190,7 @@ void Loop::update(double deltaTime, double simDeltaTime) {
         car.updatePosition(scene.car, simDeltaTime);
     }
 
-    itemsModule.updateDynamicObstacles(simDeltaTime, scene.car, scene.items);
+    itemsModule.updateDynamicItems(simDeltaTime, scene.car, scene.items);
 
     visModule.addPositionTrace(scene.car.modelPose.position, scene.simulationTime);
 
@@ -210,7 +210,9 @@ void Loop::updateCollisions() {
             collisionModule.add(i->pose, modelStore.itemModels[DYNAMIC_OBSTACLE]);
         } else if (i->type == PEDESTRIAN) {
             collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
-        } else if (i->type == DYNAMIC_PEDESTRIAN) {
+        } else if (i->type == DYNAMIC_PEDESTRIAN_RIGHT) {
+            collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
+        } else if (i->type == DYNAMIC_PEDESTRIAN_LEFT) {
             collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
         }
     }
@@ -295,6 +297,11 @@ void Loop::renderFpsView() {
             shaderProgram.id,
             scene.car,
             settings);
+
+    visModule.renderDynamicItems(
+            shaderProgram.id,
+            scene.simulationTime,
+            scene.items);
 
     visModule.renderVisualization(
             shaderProgram.id,

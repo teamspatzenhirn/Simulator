@@ -5,6 +5,7 @@ VisModule::VisModule() {
     ringModel = std::make_shared<Model>("models/ring.obj");
     circleModel = std::make_shared<Model>("models/marker.obj");
     lineModel = std::make_shared<Model>("models/ground.obj");
+    arrowModel = std::make_shared<Model>("models/arrow.obj");
 }
 
 void VisModule::drawRing(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color) {
@@ -55,6 +56,26 @@ void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end,
     lineModel->render(shaderProgramId, modelMat);
 }
 
+void VisModule::drawArrow(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float scale, glm::vec3 color) {
+
+    arrowModel->material.Ka = objl::Vector3(color.r, color.g, color.b);
+    arrowModel->material.Kd = objl::Vector3(color.r, color.g, color.b);
+    arrowModel->material.Ks = objl::Vector3(color.r, color.g, color.b);
+
+    glm::vec3 distVec = end - start;
+    glm::lookAt(start, distVec, glm::vec3(0, 1, 0));
+    float angleZ = -atan2(distVec.x, distVec.z);
+
+    // TODO: rotation incomplete!
+
+    glm::mat4 modelMat = glm::mat4(1.0f);
+    modelMat = glm::translate(modelMat, start);
+    modelMat = glm::rotate(modelMat, (float) M_PI/2, glm::vec3(1, 0, 0));
+    modelMat = glm::rotate(modelMat, angleZ, glm::vec3(0, 0, 1));
+    modelMat = glm::scale(modelMat, glm::vec3(scale, glm::length(end - start) * 0.5, scale));
+    arrowModel->render(shaderProgramId, modelMat);
+}
+
 void VisModule::addPositionTrace(glm::vec3 position, uint64_t simulationTime) {
 
     if (simulationTime - lastTraceTime > 50) {
@@ -98,6 +119,55 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, uint64_t simulationT
 
     glUniform1i(lightingLocation, true);
     glUniform1i(billboardLocation, false);
+}
+
+
+void VisModule::renderDynamicItems(
+        GLuint shaderProgramId,
+        double simulationTime, 
+        std::vector<std::shared_ptr<Scene::Item>>& items) {
+
+    float offset = std::sin(simulationTime * 0.01) * 0.01;
+
+    for (std::shared_ptr<Scene::Item>& item : items) {
+
+        if (item->type == DYNAMIC_OBSTACLE) {
+
+            glm::vec4 start(0, 0.05, 0.17 + offset, 1); 
+            glm::vec4 end(0, 0.05, 0.23 + offset, 1);
+            glm::mat4 mat = item->pose.getMatrix();
+
+            glm::vec3 startWorld(mat * start);
+            glm::vec3 endWorld(mat * end);
+
+            drawArrow(shaderProgramId, startWorld, endWorld, 0.05, glm::vec3(1, 1, 0));
+        } 
+
+        if (item->type == DYNAMIC_PEDESTRIAN_RIGHT) {
+
+            glm::vec4 start(0.075 - offset, 0.075, 0.0, 1); 
+            glm::vec4 end(0.12 - offset, 0.075, 0.0, 1);
+            glm::mat4 mat = item->pose.getMatrix();
+
+            glm::vec3 startWorld(mat * start);
+            glm::vec3 endWorld(mat * end);
+
+            drawArrow(shaderProgramId, startWorld, endWorld, 0.05, glm::vec3(1, 1, 0));
+        } 
+
+        if (item->type == DYNAMIC_PEDESTRIAN_LEFT) {
+
+            glm::vec4 start(-0.075 + offset, 0.075, 0.0, 1); 
+            glm::vec4 end(-0.12 + offset, 0.075, 0.0, 1);
+            glm::mat4 mat = item->pose.getMatrix();
+
+            glm::vec3 startWorld(mat * start);
+            glm::vec3 endWorld(mat * end);
+
+            drawArrow(shaderProgramId, startWorld, endWorld, 0.05, glm::vec3(1, 1, 0));
+        } 
+    }
+
 }
 
 void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings& settings) {

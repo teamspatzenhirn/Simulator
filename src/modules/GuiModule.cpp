@@ -281,9 +281,13 @@ void GuiModule::renderCreateMenu(Scene& scene) {
         newType = PEDESTRIAN;
         newName = "pedestrian";
     }
-    if (ImGui::MenuItem("Dynamic Pedestrian")) {
-        newType = DYNAMIC_PEDESTRIAN;
-        newName = "dynamic_pedestrian";
+    if (ImGui::MenuItem("Dynamic Pedestrian (walking right)")) {
+        newType = DYNAMIC_PEDESTRIAN_RIGHT;
+        newName = "dynamic_pedestrian_right";
+    }
+    if (ImGui::MenuItem("Dynamic Pedestrian (walking left)")) {
+        newType = DYNAMIC_PEDESTRIAN_LEFT;
+        newName = "dynamic_pedestrian_left";
     }
 
     if (NONE != newType) {

@@ -8,22 +8,23 @@ ItemsModule::~ItemsModule() {
 
 }
 
-void ItemsModule::updateDynamicObstacles(
+void ItemsModule::updateDynamicItems(
         float dt,
         Scene::Car& car, 
         std::vector<std::shared_ptr<Scene::Item>>& items) {
     
     for (std::shared_ptr<Scene::Item>& i : items) {
+
+        float dist = glm::length(
+                car.modelPose.position - i->pose.position);
+
+        if (itemState.find(i.get()) == itemState.end()) {
+            itemState[i.get()] = { i->pose, false };
+        }
+
+        DynamicItemState& state = itemState[i.get()];
+
         if (DYNAMIC_OBSTACLE == i->type) {
-
-            if (obstStates.find(i.get()) == obstStates.end()) {
-                obstStates[i.get()] = { i->pose, false };
-            }
-
-            DynamicObstacleState& state = obstStates[i.get()];
-
-            float dist = glm::length(
-                    car.modelPose.position - i->pose.position);
 
             if (dist <= 2 && car.vesc.velocity > 0.01f && !state.active) {
                 state.active = true;
@@ -32,8 +33,48 @@ void ItemsModule::updateDynamicObstacles(
 
             if (state.active == true) {
                 i->pose.position = glm::vec3(
-                        i->pose.getMatrix() * glm::vec4(0, 0, 0.0006 * dt, 1));
+                        i->pose.getMatrix() * glm::vec4(0, 0, 0.00015 * dt, 1));
                 if (dist > 2) {
+                    state.active = false;
+                    i->pose = state.startPose;
+                }
+            }
+        }
+
+        if (DYNAMIC_PEDESTRIAN_RIGHT == i->type) {
+
+            if (dist <= 1 
+                    && car.vesc.velocity < 0.01f
+                    && car.acceleration.z < 0
+                    && !state.active) {
+                state.active = true;
+                state.startPose = i->pose;
+            } 
+
+            if (state.active == true) {
+                i->pose.position = glm::vec3(
+                        i->pose.getMatrix() * glm::vec4(0.00015 * dt, 0, 0, 1));
+                if (dist > 1) {
+                    state.active = false;
+                    i->pose = state.startPose;
+                }
+            }
+        }
+
+        if (DYNAMIC_PEDESTRIAN_LEFT == i->type) {
+
+            if (dist <= 1 
+                    && car.vesc.velocity < 0.01f
+                    && car.acceleration.z < 0
+                    && !state.active) {
+                state.active = true;
+                state.startPose = i->pose;
+            } 
+
+            if (state.active == true) {
+                i->pose.position = glm::vec3(
+                        i->pose.getMatrix() * glm::vec4(-0.00015 * dt, 0, 0, 1));
+                if (dist > 1) {
                     state.active = false;
                     i->pose = state.startPose;
                 }
