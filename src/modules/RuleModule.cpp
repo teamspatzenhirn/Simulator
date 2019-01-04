@@ -178,6 +178,63 @@ void RuleModule::update(
                 break;
             }
         }
+
+        if (PARK_SECTION == i->type) {
+
+            glm::vec4 startInModelCoords(0, 0, 1.85, 1);
+            glm::vec4 endInModelCoords(0, 0, -1.85, 1);
+
+            glm::mat4 modelMat = i->pose.getMatrix();
+
+            glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
+            glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
+
+            glm::vec2 start(startInWorldCoords.x, startInWorldCoords.z);
+            glm::vec2 end(endInWorldCoords.x, endInWorldCoords.z);
+
+            if (onLineSegment(start, end, 0.15f)) {
+                rules.onTrack = true;
+                break;
+            }
+        }
+
+        if (PARK_SLOTS == i->type) {
+
+            glm::vec4 startInModelCoords(0, 0, 1.5, 1);
+            glm::vec4 endInModelCoords(0, 0, -1.5, 1);
+
+            glm::mat4 modelMat = i->pose.getMatrix();
+
+            glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
+            glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
+
+            glm::vec2 start(startInWorldCoords.x, startInWorldCoords.z);
+            glm::vec2 end(endInWorldCoords.x, endInWorldCoords.z);
+
+            if (onLineSegment(start, end, 0.25f)) {
+                rules.onTrack = true;
+                break;
+            }
+        }
+
+        if (START_BOX == i->type) {
+
+            glm::vec4 startInModelCoords(0, 0, 0.85, 1);
+            glm::vec4 endInModelCoords(0, 0, -0.85, 1);
+
+            glm::mat4 modelMat = i->pose.getMatrix();
+
+            glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
+            glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
+
+            glm::vec2 start(startInWorldCoords.x, startInWorldCoords.z);
+            glm::vec2 end(endInWorldCoords.x, endInWorldCoords.z);
+
+            if (onLineSegment(start, end, 0.19f)) {
+                rules.onTrack = true;
+                break;
+            }
+        }
     }
 
     if (!rules.onTrack) {
@@ -217,6 +274,7 @@ void RuleModule::update(
 
             case CROSSWALK:
                 isReallyClose = d < 0.3;
+            case CROSSWALK_SMALL:
             case STOP_LINE:
             case GIVE_WAY_LINE:
                 if (!rules.line) {
@@ -238,7 +296,7 @@ void RuleModule::update(
                             deltaLimit = 1000;
                             typeString = "give-way line";
                         }
-                        if (i->type == CROSSWALK) {
+                        if (i->type == CROSSWALK || i->type == CROSSWALK_SMALL) {
                             bool pedestrianNearby = false;
                             for (std::shared_ptr<Scene::Item>& j : items) {
                                 if((j->type == DYNAMIC_PEDESTRIAN_LEFT
@@ -329,6 +387,18 @@ void RuleModule::update(
                 break;
             case GROUND_ARROW_LEFT:
                 if (isReallyClose) rules.leftArrow = i;
+                break;
+
+            case NO_PARKING:
+                if (isReallyClose) {
+
+                    printViolation(simulationTime);
+                    std::cerr << "Ignored no parking!" << std::endl;
+
+                    if (rules.exitIfNoParkingIgnored) {
+                        std::exit(-1);
+                    }
+                }
                 break;
 
             case END:

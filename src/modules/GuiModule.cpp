@@ -97,7 +97,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
     // rendering the status text
 
-    ImGui::Text("Version: 1.2");
+    ImGui::Text("Version: 1.3");
 
     std::string msg = "Config: ";
     if (openedFilename.empty()) { 
@@ -149,145 +149,198 @@ void GuiModule::renderCreateMenu(Scene& scene) {
     ItemType newType = NONE;
     std::string newName = "none";
 
-    if (ImGui::MenuItem("Obstacle 10x10cm")) {
-        newType = OBSTACLE;
-        newName = "obstacle";
+    if (ImGui::BeginMenu("Obstacles")) {
+
+        if (ImGui::MenuItem("Obstacle 10x10cm")) {
+            newType = OBSTACLE;
+            newName = "obstacle";
+        }
+        if (ImGui::MenuItem("Dynamic Obstacle")) {
+            newType = DYNAMIC_OBSTACLE;
+            newName = "dynamic_obstacle";
+        }
+        if (ImGui::MenuItem("Pedestrian")) {
+            newType = PEDESTRIAN;
+            newName = "pedestrian";
+        }
+        if (ImGui::MenuItem("Dynamic Pedestrian (walking right)")) {
+            newType = DYNAMIC_PEDESTRIAN_RIGHT;
+            newName = "dynamic_pedestrian_right";
+        }
+        if (ImGui::MenuItem("Dynamic Pedestrian (walking left)")) {
+            newType = DYNAMIC_PEDESTRIAN_LEFT;
+            newName = "dynamic_pedestrian_left";
+        }
+
+        ImGui::EndMenu();
     }
-    if (ImGui::MenuItem("Dynamic Obstacle")) {
-        newType = DYNAMIC_OBSTACLE;
-        newName = "dynamic_obstacle";
+
+    if (ImGui::BeginMenu("Ground markings")) {
+
+        if (ImGui::MenuItem("Start line")) {
+            newType = START_LINE;
+            newName = "start_line";
+        }
+        if (ImGui::MenuItem("Stop line")) {
+            newType = STOP_LINE;
+            newName = "stop_line";
+        }
+        if (ImGui::MenuItem("Give-way line")) {
+            newType = GIVE_WAY_LINE;
+            newName = "give_way_line";
+        }
+        if (ImGui::MenuItem("Crosswalk")) {
+            newType = CROSSWALK;
+            newName = "crosswalk";
+        }
+        if (ImGui::MenuItem("Crosswalk small")) {
+            newType = CROSSWALK_SMALL;
+            newName = "crosswalk_small";
+        }
+        if (ImGui::MenuItem("Arrow left")) {
+            newType = GROUND_ARROW_LEFT;
+            newName = "arrow_left";
+        }
+        if (ImGui::MenuItem("Arrow right")) {
+            newType = GROUND_ARROW_RIGHT;
+            newName = "arrow_right";
+        }
+        if (ImGui::MenuItem("Barred area small")) {
+            newType = BARRED_AREA_SMALL;
+            newName = "barred_area_small";
+        }
+        if (ImGui::MenuItem("Barred area medium")) {
+            newType = BARRED_AREA_MEDIUM;
+            newName = "barred_area_medium";
+        }
+        if (ImGui::MenuItem("Barred area large")) {
+            newType = BARRED_AREA_LARGE;
+            newName = "barred_area_large";
+        }
+        if (ImGui::MenuItem("Turn Lane")) {
+            newType = TURN_LANE;
+            newName = "turn_lane";
+        }
+
+        ImGui::EndMenu();
     }
-    if (ImGui::MenuItem("Start line")) {
-        newType = START_LINE;
-        newName = "start_line";
+
+    if (ImGui::BeginMenu("Speed limits")) {
+
+        if (ImGui::MenuItem("Speed limit 10")) {
+            newType = GROUND_10;
+            newName = "speed_limit_10";
+        }
+        if (ImGui::MenuItem("Speed limit 20")) {
+            newType = GROUND_20;
+            newName = "speed_limit_20";
+        }
+        if (ImGui::MenuItem("Speed limit 30")) {
+            newType = GROUND_30;
+            newName = "speed_limit_30";
+        }
+        if (ImGui::MenuItem("Speed limit 40")) {
+            newType = GROUND_40;
+            newName = "speed_limit_40";
+        }
+        if (ImGui::MenuItem("Speed limit 50")) {
+            newType = GROUND_50;
+            newName = "speed_limit_50";
+        }
+        if (ImGui::MenuItem("Speed limit 60")) {
+            newType = GROUND_60;
+            newName = "speed_limit_60";
+        }
+        if (ImGui::MenuItem("Speed limit 70")) {
+            newType = GROUND_70;
+            newName = "speed_limit_70";
+        }
+        if (ImGui::MenuItem("Speed limit 80")) {
+            newType = GROUND_80;
+            newName = "speed_limit_80";
+        }
+        if (ImGui::MenuItem("Speed limit 90")) {
+            newType = GROUND_90;
+            newName = "speed_limit_90";
+        }
+
+        ImGui::EndMenu();
     }
-    if (ImGui::MenuItem("Stop line")) {
-        newType = STOP_LINE;
-        newName = "stop_line";
+
+    if (ImGui::BeginMenu("End speed limits")) {
+
+        if (ImGui::MenuItem("End speed limit 10")) {
+            newType = GROUND_10_END;
+            newName = "end_speed_limit_10";
+        }
+        if (ImGui::MenuItem("End speed limit 20")) {
+            newType = GROUND_20_END;
+            newName = "end_speed_limit_20";
+        }
+        if (ImGui::MenuItem("End speed limit 30")) {
+            newType = GROUND_30_END;
+            newName = "end_speed_limit_30";
+        }
+        if (ImGui::MenuItem("End speed limit 40")) {
+            newType = GROUND_40_END;
+            newName = "end_speed_limit_40";
+        }
+        if (ImGui::MenuItem("End speed limit 50")) {
+            newType = GROUND_50_END;
+            newName = "end_speed_limit_50";
+        }
+        if (ImGui::MenuItem("End speed limit 60")) {
+            newType = GROUND_60_END;
+            newName = "end_speed_limit_60";
+        }
+        if (ImGui::MenuItem("End speed limit 70")) {
+            newType = GROUND_70_END;
+            newName = "end_speed_limit_70";
+        }
+        if (ImGui::MenuItem("End speed limit 80")) {
+            newType = GROUND_80_END;
+            newName = "end_speed_limit_80";
+        }
+        if (ImGui::MenuItem("End speed limit 90")) {
+            newType = GROUND_90_END;
+            newName = "end_speed_limit_90";
+        }
+
+        ImGui::EndMenu();
     }
-    if (ImGui::MenuItem("Give-way line")) {
-        newType = GIVE_WAY_LINE;
-        newName = "give_way_line";
-    }
-    if (ImGui::MenuItem("Crosswalk")) {
-        newType = CROSSWALK;
-        newName = "crosswalk";
-    }
-    if (ImGui::MenuItem("Speed limit 10")) {
-        newType = GROUND_10;
-        newName = "speed_limit_10";
-    }
-    if (ImGui::MenuItem("Speed limit 20")) {
-        newType = GROUND_20;
-        newName = "speed_limit_20";
-    }
-    if (ImGui::MenuItem("Speed limit 30")) {
-        newType = GROUND_30;
-        newName = "speed_limit_30";
-    }
-    if (ImGui::MenuItem("Speed limit 40")) {
-        newType = GROUND_40;
-        newName = "speed_limit_40";
-    }
-    if (ImGui::MenuItem("Speed limit 50")) {
-        newType = GROUND_50;
-        newName = "speed_limit_50";
-    }
-    if (ImGui::MenuItem("Speed limit 60")) {
-        newType = GROUND_60;
-        newName = "speed_limit_60";
-    }
-    if (ImGui::MenuItem("Speed limit 70")) {
-        newType = GROUND_70;
-        newName = "speed_limit_70";
-    }
-    if (ImGui::MenuItem("Speed limit 80")) {
-        newType = GROUND_80;
-        newName = "speed_limit_80";
-    }
-    if (ImGui::MenuItem("Speed limit 90")) {
-        newType = GROUND_90;
-        newName = "speed_limit_90";
-    }
-    if (ImGui::MenuItem("End speed limit 10")) {
-        newType = GROUND_10_END;
-        newName = "end_speed_limit_10";
-    }
-    if (ImGui::MenuItem("End speed limit 20")) {
-        newType = GROUND_20_END;
-        newName = "end_speed_limit_20";
-    }
-    if (ImGui::MenuItem("End speed limit 30")) {
-        newType = GROUND_30_END;
-        newName = "end_speed_limit_30";
-    }
-    if (ImGui::MenuItem("End speed limit 40")) {
-        newType = GROUND_40_END;
-        newName = "end_speed_limit_40";
-    }
-    if (ImGui::MenuItem("End speed limit 50")) {
-        newType = GROUND_50_END;
-        newName = "end_speed_limit_50";
-    }
-    if (ImGui::MenuItem("End speed limit 60")) {
-        newType = GROUND_60_END;
-        newName = "end_speed_limit_60";
-    }
-    if (ImGui::MenuItem("End speed limit 70")) {
-        newType = GROUND_70_END;
-        newName = "end_speed_limit_70";
-    }
-    if (ImGui::MenuItem("End speed limit 80")) {
-        newType = GROUND_80_END;
-        newName = "end_speed_limit_80";
-    }
-    if (ImGui::MenuItem("End speed limit 90")) {
-        newType = GROUND_90_END;
-        newName = "end_speed_limit_90";
-    }
-    if (ImGui::MenuItem("Arrow left")) {
-        newType = GROUND_ARROW_LEFT;
-        newName = "arrow_left";
-    }
-    if (ImGui::MenuItem("Arrow right")) {
-        newType = GROUND_ARROW_RIGHT;
-        newName = "arrow_right";
-    }
-    if (ImGui::MenuItem("End")) {
-        newType = END;
-        newName = "end";
-    }
-    if (ImGui::MenuItem("Calib mat")) {
-        newType = CALIB_MAT;
-        newName = "calib_mat";
-    }
-    if (ImGui::MenuItem("Traffic island")) {
-        newType = TRAFFIC_ISLAND;
-        newName = "traffic_island";
-    }
-    if (ImGui::MenuItem("Barred area small")) {
-        newType = BARRED_AREA_SMALL;
-        newName = "barred_area_small";
-    }
-    if (ImGui::MenuItem("Barred area medium")) {
-        newType = BARRED_AREA_MEDIUM;
-        newName = "barred_area_medium";
-    }
-    if (ImGui::MenuItem("Barred area large")) {
-        newType = BARRED_AREA_LARGE;
-        newName = "barred_area_large";
-    }
-    if (ImGui::MenuItem("Pedestrian")) {
-        newType = PEDESTRIAN;
-        newName = "pedestrian";
-    }
-    if (ImGui::MenuItem("Dynamic Pedestrian (walking right)")) {
-        newType = DYNAMIC_PEDESTRIAN_RIGHT;
-        newName = "dynamic_pedestrian_right";
-    }
-    if (ImGui::MenuItem("Dynamic Pedestrian (walking left)")) {
-        newType = DYNAMIC_PEDESTRIAN_LEFT;
-        newName = "dynamic_pedestrian_left";
+
+    if (ImGui::BeginMenu("Special")) {
+
+        if (ImGui::MenuItem("Start box")) {
+            newType = START_BOX;
+            newName = "start_box";
+        }
+        if (ImGui::MenuItem("Traffic island")) {
+            newType = TRAFFIC_ISLAND;
+            newName = "traffic_island";
+        }
+        if (ImGui::MenuItem("Park section")) {
+            newType = PARK_SECTION;
+            newName = "park_section";
+        }
+        if (ImGui::MenuItem("Park slots")) {
+            newType = PARK_SLOTS;
+            newName = "park_slots";
+        }
+        if (ImGui::MenuItem("No parking")) {
+            newType = NO_PARKING;
+            newName = "no_parking";
+        }
+        if (ImGui::MenuItem("Calib mat")) {
+            newType = CALIB_MAT;
+            newName = "calib_mat";
+        }
+        if (ImGui::MenuItem("End test")) {
+            newType = END;
+            newName = "end_test";
+        }
+
+        ImGui::EndMenu();
     }
 
     if (NONE != newType) {
@@ -446,6 +499,7 @@ void GuiModule::renderSceneWindow(Scene& scene) {
             ImGui::Checkbox("Exit if stop line ignored", &scene.rules.exitIfStopLineIgnored);
             ImGui::Checkbox("Exit if give way line ignored", &scene.rules.exitIfGiveWayLineIgnored);
             ImGui::Checkbox("Exit if crosswalk ignored", &scene.rules.exitIfCrosswalkIgnored);
+            ImGui::Checkbox("Exit if no parking ignored", &scene.rules.exitIfNoParkingIgnored);
             ImGui::Checkbox("Exit if on end item", &scene.rules.exitIfOnEndItem);
 
             ImGui::TreePop();

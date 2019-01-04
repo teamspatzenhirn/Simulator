@@ -113,6 +113,12 @@ enum ItemType {
     PEDESTRIAN = 33,
     DYNAMIC_PEDESTRIAN_RIGHT = 34,
     DYNAMIC_PEDESTRIAN_LEFT = 35,
+    TURN_LANE = 36,
+    CROSSWALK_SMALL = 37,
+    PARK_SECTION = 38,
+    PARK_SLOTS = 39,
+    NO_PARKING = 40,
+    START_BOX = 41,
 };
 
 /*
@@ -122,7 +128,7 @@ enum ItemType {
  */
 struct ModelStore {
 
-    Model itemModels[36] = {
+    Model itemModels[42] = {
         Model{},
         Model{"models/obstacle.obj"},
         Model{"models/start_line.obj"},
@@ -159,6 +165,12 @@ struct ModelStore {
         Model{"models/pedestrian.obj"},
         Model{"models/pedestrian.obj"},
         Model{"models/pedestrian.obj"},
+        Model{"models/turn_lane.obj"},
+        Model{"models/crosswalk_small.obj"},
+        Model{"models/park_section.obj"},
+        Model{"models/park_slots.obj"},
+        Model{"models/no_parking.obj"},
+        Model{"models/start_box.obj"},
     };
 };
 
@@ -577,6 +589,7 @@ struct Scene {
         bool exitIfStopLineIgnored = false;
         bool exitIfGiveWayLineIgnored = false;
         bool exitIfCrosswalkIgnored = false;
+        bool exitIfNoParkingIgnored = false;
         bool exitIfOnEndItem = false;
 
     } rules;

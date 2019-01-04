@@ -579,6 +579,7 @@ void from_json(const json& j, Scene::Rules& r) {
     tryGet(j, "exitIfStopLineIgnored", r.exitIfStopLineIgnored);
     tryGet(j, "exitIfGiveWayLineIgnored", r.exitIfGiveWayLineIgnored);
     tryGet(j, "exitIfCrosswalkIgnored", r.exitIfCrosswalkIgnored);
+    tryGet(j, "exitIfNoParkingIgnored", r.exitIfNoParkingIgnored);
     tryGet(j, "exitIfOnEndItem", r.exitIfOnEndItem);
 }
 
