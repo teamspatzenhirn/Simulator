@@ -215,6 +215,8 @@ void RuleModule::update(
 
         switch (i->type) {
 
+            case CROSSWALK:
+                isReallyClose = d < 0.3;
             case STOP_LINE:
             case GIVE_WAY_LINE:
                 if (!rules.line) {
@@ -236,6 +238,23 @@ void RuleModule::update(
                             deltaLimit = 1000;
                             typeString = "give-way line";
                         }
+                        if (i->type == CROSSWALK) {
+                            bool pedestrianNearby = false;
+                            for (std::shared_ptr<Scene::Item>& j : items) {
+                                if((j->type == DYNAMIC_PEDESTRIAN_LEFT
+                                        || j->type == DYNAMIC_PEDESTRIAN_RIGHT)
+                                        && glm::length(j->pose.position - i->pose.position) < 1) {
+                                   pedestrianNearby = true; 
+                                   break;
+                                }
+                            }
+                            if (pedestrianNearby) {
+                                deltaLimit = 1000;
+                            } else {
+                                deltaLimit = 0;
+                            }
+                            typeString = "crosswalk";
+                        }
                         if (delta < deltaLimit) {
                             printViolation(simulationTime);
                             std::cerr << "Passed "
@@ -249,6 +268,9 @@ void RuleModule::update(
                                 std::exit(-1);
                             }
                             if (i->type == STOP_LINE && rules.exitIfStopLineIgnored) {
+                                std::exit(-1);
+                            }
+                            if (i->type == CROSSWALK && rules.exitIfCrosswalkIgnored) {
                                 std::exit(-1);
                             }
                         }
@@ -361,8 +383,6 @@ void RuleModule::update(
                 std::exit(-1);
             }
         }
-
-        std::cout << carArrowCoords << std::endl;
 
         if (carArrowCoords.x < -0.9 || glm::length(carArrowCoords) > 3) {
             rules.leftArrow = nullptr;

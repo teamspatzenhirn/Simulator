@@ -445,6 +445,7 @@ void GuiModule::renderSceneWindow(Scene& scene) {
             ImGui::Checkbox("Exit if right arrow ignored", &scene.rules.exitIfRightArrowIgnored);
             ImGui::Checkbox("Exit if stop line ignored", &scene.rules.exitIfStopLineIgnored);
             ImGui::Checkbox("Exit if give way line ignored", &scene.rules.exitIfGiveWayLineIgnored);
+            ImGui::Checkbox("Exit if crosswalk ignored", &scene.rules.exitIfCrosswalkIgnored);
             ImGui::Checkbox("Exit if on end item", &scene.rules.exitIfOnEndItem);
 
             ImGui::TreePop();

@@ -576,6 +576,7 @@ struct Scene {
         bool exitIfRightArrowIgnored = false;
         bool exitIfStopLineIgnored = false;
         bool exitIfGiveWayLineIgnored = false;
+        bool exitIfCrosswalkIgnored = false;
         bool exitIfOnEndItem = false;
 
     } rules;

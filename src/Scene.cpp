@@ -564,20 +564,22 @@ void to_json(json& j, const Scene::Rules& r) {
             {"exitIfRightArrowIgnored", r.exitIfRightArrowIgnored},
             {"exitIfStopLineIgnored", r.exitIfStopLineIgnored},
             {"exitIfGiveWayLineIgnored", r.exitIfGiveWayLineIgnored},
+            {"exitIfCrosswalkIgnored", r.exitIfCrosswalkIgnored},
             {"exitIfOnEndItem", r.exitIfOnEndItem}
         });
 }
 
 void from_json(const json& j, Scene::Rules& r) {
 
-    r.exitOnObstacleCollision = j.at("exitOnObstacleCollision").get<bool>();
-    r.exitIfNotOnTrack = j.at("exitIfNotOnTrack").get<bool>();
-    r.exitIfSpeedLimitExceeded = j.at("exitIfSpeedLimitExceeded").get<bool>();
-    r.exitIfLeftArrowIgnored = j.at("exitIfLeftArrowIgnored").get<bool>();
-    r.exitIfRightArrowIgnored = j.at("exitIfRightArrowIgnored").get<bool>();
-    r.exitIfStopLineIgnored = j.at("exitIfStopLineIgnored").get<bool>();
-    r.exitIfGiveWayLineIgnored = j.at("exitIfGiveWayLineIgnored").get<bool>();
-    r.exitIfOnEndItem = j.at("exitIfOnEndItem").get<bool>();
+    tryGet(j, "exitOnObstacleCollision", r.exitOnObstacleCollision);
+    tryGet(j, "exitIfNotOnTrack", r.exitIfNotOnTrack);
+    tryGet(j, "exitIfSpeedLimitExceeded", r.exitIfSpeedLimitExceeded);
+    tryGet(j, "exitIfLeftArrowIgnored", r.exitIfLeftArrowIgnored);
+    tryGet(j, "exitIfRightArrowIgnored", r.exitIfRightArrowIgnored);
+    tryGet(j, "exitIfStopLineIgnored", r.exitIfStopLineIgnored);
+    tryGet(j, "exitIfGiveWayLineIgnored", r.exitIfGiveWayLineIgnored);
+    tryGet(j, "exitIfCrosswalkIgnored", r.exitIfCrosswalkIgnored);
+    tryGet(j, "exitIfOnEndItem", r.exitIfOnEndItem);
 }
 
 /*
