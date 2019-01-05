@@ -255,6 +255,7 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfCrosswalkIgnored": true,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
         "exitIfNotOnTrack": true,
@@ -270,6 +271,12 @@
         "controlPoints": [
             {
                 "coords": [
+                    0.10021375119686127,
+                    -0.0810198187828064
+                ]
+            },
+            {
+                "coords": [
                     0.1002136617898941,
                     1.9094994068145752
                 ]
@@ -278,12 +285,6 @@
                 "coords": [
                     0.10021358728408813,
                     3.6238999366760254
-                ]
-            },
-            {
-                "coords": [
-                    0.10021375119686127,
-                    -0.0810198187828064
                 ]
             }
         ],
@@ -296,8 +297,8 @@
                 "type": "line"
             },
             {
-                "end": 0,
-                "start": 2,
+                "end": 2,
+                "start": 1,
                 "type": "line"
             }
         ]

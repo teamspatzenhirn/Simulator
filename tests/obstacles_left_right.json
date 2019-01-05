@@ -233,6 +233,7 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
         "exitIfNotOnTrack": true,
@@ -254,14 +255,14 @@
             },
             {
                 "coords": [
-                    0.0008638501167297363,
-                    5.400056838989258
+                    0.06959085911512375,
+                    -2.9899380207061768
                 ]
             },
             {
                 "coords": [
-                    0.06959085911512375,
-                    -2.9899380207061768
+                    0.0008638501167297363,
+                    5.400056838989258
                 ]
             }
         ],
