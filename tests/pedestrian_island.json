@@ -120,7 +120,7 @@
     "fpsCamera": {
         "aspectRatio": 1.908341884613037,
         "fov": 0.942477822303772,
-        "pitch": 0.9283192753791809,
+        "pitch": 0.9370709657669067,
         "pose": {
             "position": [
                 -0.9963942766189575,
@@ -128,10 +128,10 @@
                 2.2564399242401123
             ],
             "rotation": [
-                0.23478001356124878,
-                -0.11754031479358673,
-                -0.8628259301185608,
-                -0.43196535110473633
+                0.14755074679851532,
+                -0.07467910647392273,
+                -0.8799455165863037,
+                -0.44536229968070984
             ],
             "scale": [
                 1.0,
@@ -139,7 +139,7 @@
                 1.0
             ]
         },
-        "yaw": 2.6102454662323
+        "yaw": 2.8093204498291016
     },
     "items": [
         {
@@ -251,15 +251,38 @@
                 ]
             },
             "type": 33
+        },
+        {
+            "name": "checkpoint",
+            "pose": {
+                "position": [
+                    -0.02171456813812256,
+                    0.0,
+                    4.776556015014648
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": 26
         }
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
         "exitIfCrosswalkIgnored": true,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": true,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -271,12 +294,6 @@
         "controlPoints": [
             {
                 "coords": [
-                    0.30136212706565857,
-                    2.893868923187256
-                ]
-            },
-            {
-                "coords": [
                     0.30136218667030334,
                     1.6503016948699951
                 ]
@@ -286,19 +303,25 @@
                     0.30136242508888245,
                     -3.2637417316436768
                 ]
+            },
+            {
+                "coords": [
+                    0.30136212706565857,
+                    2.893868923187256
+                ]
             }
         ],
         "markingWidth": 0.019999999552965164,
         "trackWidth": 0.800000011920929,
         "tracks": [
             {
-                "end": 1,
-                "start": 0,
+                "end": 0,
+                "start": 2,
                 "type": "line"
             },
             {
-                "end": 2,
-                "start": 1,
+                "end": 1,
+                "start": 0,
                 "type": "line"
             }
         ]

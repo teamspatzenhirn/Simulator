@@ -265,6 +265,9 @@ void RuleModule::update(
      * Validating items
      */
 
+    bool allCheckpointsPassed = true;
+    int checkpointCounter = 0;
+
     for (std::shared_ptr<Scene::Item>& i : items) {
 
         float d = glm::length(i->pose.position - car.modelPose.position);
@@ -401,14 +404,28 @@ void RuleModule::update(
                 }
                 break;
 
-            case END:
-                if (d < 0.25) {
-                    if (rules.exitIfOnEndItem) {
-                        std::exit(0);
+            case CHECKPOINT:
+                if (std::find(
+                            rules.passedCheckpoints.begin(),
+                            rules.passedCheckpoints.end(),
+                            i.get()) == rules.passedCheckpoints.end()) {
+                    allCheckpointsPassed = false;
+                    if (isReallyClose) {
+                        rules.passedCheckpoints.push_back(i.get());
                     }
                 }
+                checkpointCounter += 1;
+                break;
+
+            default:
                 break;
         }
+    }
+
+    if (allCheckpointsPassed
+            && checkpointCounter != 0
+            && rules.exitIfAllCheckpointsPassed) { 
+        std::exit(0);
     }
 
     if (rules.rightArrow) {

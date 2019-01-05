@@ -1,5 +1,46 @@
 {
     "car": {
+        "binaryLightSensor": {
+            "pose": {
+                "position": [
+                    -0.05000000074505806,
+                    0.10000000149011612,
+                    -0.02500000037252903
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "triggerDistance": 0.30000001192092896
+        },
+        "laserSensor": {
+            "pose": {
+                "position": [
+                    -0.05000000074505806,
+                    0.10000000149011612,
+                    0.20999999344348907
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
         "limits": {
             "maxDDelta": 4.0,
             "maxDelta": 0.35,
@@ -126,10 +167,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -141,20 +184,8 @@
         "controlPoints": [
             {
                 "coords": [
-                    0.17838934063911438,
-                    -0.0030714869499206543
-                ]
-            },
-            {
-                "coords": [
                     0.2056085467338562,
                     1.8388404846191406
-                ]
-            },
-            {
-                "coords": [
-                    0.1594894975423813,
-                    -1.2820155620574951
                 ]
             },
             {
@@ -165,8 +196,20 @@
             },
             {
                 "coords": [
+                    0.17838934063911438,
+                    -0.0030714869499206543
+                ]
+            },
+            {
+                "coords": [
                     -1.5431337356567383,
                     5.739216327667236
+                ]
+            },
+            {
+                "coords": [
+                    0.1594894975423813,
+                    -1.2820155620574951
                 ]
             },
             {
@@ -180,66 +223,55 @@
         "trackWidth": 0.800000011920929,
         "tracks": [
             {
-                "end": 1,
-                "start": 0,
-                "type": "line"
-            },
-            {
-                "end": 2,
-                "start": 0,
-                "type": "line"
-            },
-            {
-                "end": 1,
-                "start": 0,
-                "type": "line"
-            },
-            {
-                "end": 2,
-                "start": 0,
-                "type": "line"
-            },
-            {
-                "end": 1,
-                "start": 0,
-                "type": "line"
-            },
-            {
-                "end": 2,
-                "start": 0,
-                "type": "line"
-            },
-            {
-                "end": 1,
-                "start": 0,
-                "type": "line"
-            },
-            {
                 "center": [
                     -1.2787246704101563,
                     1.8607754707336426
                 ],
-                "end": 3,
+                "end": 1,
                 "radius": 1.4844952821731567,
                 "rightArc": true,
-                "start": 1,
+                "start": 0,
                 "type": "arc"
             },
             {
-                "end": 2,
-                "start": 0,
+                "end": 4,
+                "start": 2,
                 "type": "line"
             },
             {
-                "center": [
-                    -1.0065423250198364,
-                    4.595286846160889
-                ],
+                "end": 0,
+                "start": 2,
+                "type": "line"
+            },
+            {
                 "end": 4,
-                "radius": 1.26352858543396,
-                "rightArc": false,
-                "start": 3,
-                "type": "arc"
+                "start": 2,
+                "type": "line"
+            },
+            {
+                "end": 0,
+                "start": 2,
+                "type": "line"
+            },
+            {
+                "end": 4,
+                "start": 2,
+                "type": "line"
+            },
+            {
+                "end": 0,
+                "start": 2,
+                "type": "line"
+            },
+            {
+                "end": 0,
+                "start": 2,
+                "type": "line"
+            },
+            {
+                "end": 4,
+                "start": 2,
+                "type": "line"
             },
             {
                 "center": [
@@ -249,7 +281,18 @@
                 "end": 5,
                 "radius": 2.4637703895568848,
                 "rightArc": false,
-                "start": 4,
+                "start": 3,
+                "type": "arc"
+            },
+            {
+                "center": [
+                    -1.0065423250198364,
+                    4.595286846160889
+                ],
+                "end": 3,
+                "radius": 1.26352858543396,
+                "rightArc": false,
+                "start": 1,
                 "type": "arc"
             }
         ]

@@ -120,18 +120,18 @@
     "fpsCamera": {
         "aspectRatio": 1.7158176898956299,
         "fov": 0.942477822303772,
-        "pitch": 1.1599591970443726,
+        "pitch": 1.039952039718628,
         "pose": {
             "position": [
-                -0.23070567846298218,
-                2.8180127143859863,
-                -0.11113044619560242
+                -1.4562702178955078,
+                3.7900195121765137,
+                0.14595627784729004
             ],
             "rotation": [
-                0.00382423703558743,
-                -0.0025054081343114376,
-                -0.8364651203155518,
-                -0.5480011701583862
+                0.17145510017871857,
+                -0.0981631875038147,
+                -0.8507255911827087,
+                -0.4870659112930298
             ],
             "scale": [
                 1.0,
@@ -139,7 +139,7 @@
                 1.0
             ]
         },
-        "yaw": 3.13244891166687
+        "yaw": 2.7438411712646484
     },
     "items": [
         {
@@ -211,10 +211,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": true,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -283,21 +285,13 @@
         "trackWidth": 0.800000011920929,
         "tracks": [
             {
-                "center": 0,
-                "link1": 1,
-                "link2": 2,
-                "link3": 3,
-                "link4": 4,
-                "type": "intersection"
+                "end": 7,
+                "start": 4,
+                "type": "line"
             },
             {
                 "end": 6,
                 "start": 2,
-                "type": "line"
-            },
-            {
-                "end": 7,
-                "start": 4,
                 "type": "line"
             },
             {
@@ -309,6 +303,14 @@
                 "end": 5,
                 "start": 1,
                 "type": "line"
+            },
+            {
+                "center": 0,
+                "link1": 1,
+                "link2": 2,
+                "link3": 3,
+                "link4": 4,
+                "type": "intersection"
             }
         ]
     },

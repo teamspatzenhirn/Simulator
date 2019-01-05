@@ -103,7 +103,7 @@ enum ItemType {
     GROUND_90_END = 23,
     GROUND_ARROW_LEFT = 24,
     GROUND_ARROW_RIGHT = 25,
-    END = 26,
+    CHECKPOINT = 26,
     CALIB_MAT = 27,
     TRAFFIC_ISLAND = 28,
     BARRED_AREA_SMALL = 29,
@@ -155,7 +155,7 @@ struct ModelStore {
         Model{"models/ground_90_end.obj"},
         Model{"models/ground_arrow_left.obj"},
         Model{"models/ground_arrow_right.obj"},
-        Model{"models/end.obj"},
+        Model{},
         Model{"models/calib.obj"},
         Model{"models/island.obj"},
         Model{"models/barred_area_small.obj"},
@@ -576,6 +576,8 @@ struct Scene {
         std::shared_ptr<Item> rightArrow;
         std::shared_ptr<Item> leftArrow;
 
+        std::vector<Item*> passedCheckpoints;
+
         float allowedMaxSpeed = 1000;
 
         bool onTrack = false;
@@ -590,7 +592,7 @@ struct Scene {
         bool exitIfGiveWayLineIgnored = false;
         bool exitIfCrosswalkIgnored = false;
         bool exitIfNoParkingIgnored = false;
-        bool exitIfOnEndItem = false;
+        bool exitIfAllCheckpointsPassed = false;
 
     } rules;
     

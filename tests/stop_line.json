@@ -120,18 +120,18 @@
     "fpsCamera": {
         "aspectRatio": 1.7158176898956299,
         "fov": 0.942477822303772,
-        "pitch": 1.3569259643554688,
+        "pitch": 1.2197586297988892,
         "pose": {
             "position": [
-                -0.26615241169929504,
-                4.1860222816467285,
-                2.382568597793579
+                -1.4439043998718262,
+                4.714025974273682,
+                1.5208027362823486
             ],
             "rotation": [
-                0.00400641979649663,
-                -0.0032296646386384964,
-                -0.7785279750823975,
-                -0.6275888681411743
+                0.27740952372550964,
+                -0.19383689761161804,
+                -0.7713496088981628,
+                -0.5389721989631653
             ],
             "scale": [
                 1.0,
@@ -139,7 +139,7 @@
                 1.0
             ]
         },
-        "yaw": 3.131300449371338
+        "yaw": 2.451115846633911
     },
     "items": [
         {
@@ -189,10 +189,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": true,
@@ -205,18 +207,6 @@
             {
                 "coords": [
                     0.03348886966705322,
-                    4.643049716949463
-                ]
-            },
-            {
-                "coords": [
-                    0.03348886966705322,
-                    6.069835662841797
-                ]
-            },
-            {
-                "coords": [
-                    0.03348886966705322,
                     2.3430495262145996
                 ]
             },
@@ -224,6 +214,18 @@
                 "coords": [
                     0.03348886966705322,
                     -0.19437646865844727
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    4.643049716949463
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    6.069835662841797
                 ]
             },
             {
@@ -249,12 +251,9 @@
         "trackWidth": 0.800000011920929,
         "tracks": [
             {
-                "center": 4,
-                "link1": 5,
-                "link2": 0,
-                "link3": 6,
-                "link4": 2,
-                "type": "intersection"
+                "end": 3,
+                "start": 2,
+                "type": "line"
             },
             {
                 "end": 1,
@@ -262,9 +261,12 @@
                 "type": "line"
             },
             {
-                "end": 3,
-                "start": 2,
-                "type": "line"
+                "center": 4,
+                "link1": 5,
+                "link2": 2,
+                "link3": 6,
+                "link4": 0,
+                "type": "intersection"
             }
         ]
     },

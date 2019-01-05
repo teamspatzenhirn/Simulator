@@ -335,9 +335,9 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = CALIB_MAT;
             newName = "calib_mat";
         }
-        if (ImGui::MenuItem("End test")) {
-            newType = END;
-            newName = "end_test";
+        if (ImGui::MenuItem("Checkpoint")) {
+            newType = CHECKPOINT;
+            newName = "checkpoint";
         }
 
         ImGui::EndMenu();
@@ -500,7 +500,7 @@ void GuiModule::renderSceneWindow(Scene& scene) {
             ImGui::Checkbox("Exit if give way line ignored", &scene.rules.exitIfGiveWayLineIgnored);
             ImGui::Checkbox("Exit if crosswalk ignored", &scene.rules.exitIfCrosswalkIgnored);
             ImGui::Checkbox("Exit if no parking ignored", &scene.rules.exitIfNoParkingIgnored);
-            ImGui::Checkbox("Exit if on end item", &scene.rules.exitIfOnEndItem);
+            ImGui::Checkbox("Exit if all checkpoints passed", &scene.rules.exitIfAllCheckpointsPassed);
 
             ImGui::TreePop();
         }

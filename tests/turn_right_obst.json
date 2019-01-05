@@ -211,10 +211,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": true,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -256,14 +258,14 @@
             },
             {
                 "coords": [
-                    0.036898717284202576,
-                    5.0425262451171875
+                    2.172759532928467,
+                    2.2037930488586426
                 ]
             },
             {
                 "coords": [
-                    2.172759532928467,
-                    2.2037930488586426
+                    0.036898717284202576,
+                    5.0425262451171875
                 ]
             },
             {
@@ -292,6 +294,11 @@
             },
             {
                 "end": 5,
+                "start": 1,
+                "type": "line"
+            },
+            {
+                "end": 6,
                 "start": 2,
                 "type": "line"
             },
@@ -303,11 +310,6 @@
             {
                 "end": 8,
                 "start": 3,
-                "type": "line"
-            },
-            {
-                "end": 6,
-                "start": 1,
                 "type": "line"
             }
         ]

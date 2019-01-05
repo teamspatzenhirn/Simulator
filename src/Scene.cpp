@@ -565,7 +565,8 @@ void to_json(json& j, const Scene::Rules& r) {
             {"exitIfStopLineIgnored", r.exitIfStopLineIgnored},
             {"exitIfGiveWayLineIgnored", r.exitIfGiveWayLineIgnored},
             {"exitIfCrosswalkIgnored", r.exitIfCrosswalkIgnored},
-            {"exitIfOnEndItem", r.exitIfOnEndItem}
+            {"exitIfNoParkingIgnored", r.exitIfCrosswalkIgnored},
+            {"exitIfAllCheckpointsPassed", r.exitIfAllCheckpointsPassed}
         });
 }
 
@@ -580,7 +581,7 @@ void from_json(const json& j, Scene::Rules& r) {
     tryGet(j, "exitIfGiveWayLineIgnored", r.exitIfGiveWayLineIgnored);
     tryGet(j, "exitIfCrosswalkIgnored", r.exitIfCrosswalkIgnored);
     tryGet(j, "exitIfNoParkingIgnored", r.exitIfNoParkingIgnored);
-    tryGet(j, "exitIfOnEndItem", r.exitIfOnEndItem);
+    tryGet(j, "exitIfAllCheckpointsPassed", r.exitIfAllCheckpointsPassed);
 }
 
 /*

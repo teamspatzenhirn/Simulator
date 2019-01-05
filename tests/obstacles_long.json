@@ -120,18 +120,18 @@
     "fpsCamera": {
         "aspectRatio": 1.2923833131790161,
         "fov": 0.942477822303772,
-        "pitch": 0.8630715012550354,
+        "pitch": 0.8116359710693359,
         "pose": {
             "position": [
-                -1.243033528327942,
-                2.19998836517334,
-                -0.381446897983551
+                -1.1507771015167236,
+                3.2319955825805664,
+                -0.8217487931251526
             ],
             "rotation": [
-                0.3206353485584259,
-                -0.14764653146266937,
-                -0.8498507738113403,
-                -0.3913402259349823
+                0.17546449601650238,
+                -0.07539151608943939,
+                -0.9018694758415222,
+                -0.38750460743904114
             ],
             "scale": [
                 1.0,
@@ -139,7 +139,7 @@
                 1.0
             ]
         },
-        "yaw": 2.420048952102661
+        "yaw": 2.7572808265686035
     },
     "items": [
         {
@@ -233,10 +233,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,

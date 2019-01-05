@@ -89,7 +89,7 @@
         },
         "simulatorState": {
             "dPsi": 0.0,
-            "delta": 0.35,
+            "delta": 0.0,
             "psi": 0.0,
             "v": 0.0,
             "vLat": 0.0,
@@ -255,10 +255,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -276,14 +278,14 @@
             },
             {
                 "coords": [
-                    0.04728424549102783,
-                    -2.0915050506591797
+                    0.044108010828495026,
+                    4.076427936553955
                 ]
             },
             {
                 "coords": [
-                    0.044108010828495026,
-                    4.076427936553955
+                    0.04728424549102783,
+                    -2.0915050506591797
                 ]
             }
         ],

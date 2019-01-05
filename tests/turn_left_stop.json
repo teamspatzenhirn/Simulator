@@ -211,10 +211,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": true,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": true,
@@ -256,12 +258,6 @@
             },
             {
                 "coords": [
-                    0.041293710470199585,
-                    -0.8704267740249634
-                ]
-            },
-            {
-                "coords": [
                     2.172759532928467,
                     2.2037930488586426
                 ]
@@ -277,11 +273,37 @@
                     0.036898717284202576,
                     5.0425262451171875
                 ]
+            },
+            {
+                "coords": [
+                    0.041293710470199585,
+                    -0.8704267740249634
+                ]
             }
         ],
         "markingWidth": 0.019999999552965164,
         "trackWidth": 0.800000011920929,
         "tracks": [
+            {
+                "end": 7,
+                "start": 2,
+                "type": "line"
+            },
+            {
+                "end": 8,
+                "start": 4,
+                "type": "line"
+            },
+            {
+                "end": 5,
+                "start": 1,
+                "type": "line"
+            },
+            {
+                "end": 6,
+                "start": 3,
+                "type": "line"
+            },
             {
                 "center": 0,
                 "link1": 1,
@@ -289,26 +311,6 @@
                 "link3": 3,
                 "link4": 4,
                 "type": "intersection"
-            },
-            {
-                "end": 5,
-                "start": 4,
-                "type": "line"
-            },
-            {
-                "end": 6,
-                "start": 1,
-                "type": "line"
-            },
-            {
-                "end": 7,
-                "start": 3,
-                "type": "line"
-            },
-            {
-                "end": 8,
-                "start": 2,
-                "type": "line"
             }
         ]
     },

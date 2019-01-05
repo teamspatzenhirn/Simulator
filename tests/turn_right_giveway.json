@@ -211,10 +211,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": true,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": true,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -224,18 +226,6 @@
         "centerLineInterrupt": 0.20000000298023224,
         "centerLineLength": 0.20000000298023224,
         "controlPoints": [
-            {
-                "coords": [
-                    0.04307200014591217,
-                    1.0504982471466064
-                ]
-            },
-            {
-                "coords": [
-                    0.041293710470199585,
-                    -0.8704267740249634
-                ]
-            },
             {
                 "coords": [
                     0.03951532021164894,
@@ -250,20 +240,26 @@
             },
             {
                 "coords": [
+                    0.041293710470199585,
+                    2.2004969120025635
+                ]
+            },
+            {
+                "coords": [
                     1.191292405128479,
                     2.202275276184082
                 ]
             },
             {
                 "coords": [
-                    2.172759532928467,
-                    2.2037930488586426
+                    -1.108704924583435,
+                    2.1987180709838867
                 ]
             },
             {
                 "coords": [
-                    -1.108704924583435,
-                    2.1987180709838867
+                    0.04307200014591217,
+                    1.0504982471466064
                 ]
             },
             {
@@ -275,7 +271,13 @@
             {
                 "coords": [
                     0.041293710470199585,
-                    2.2004969120025635
+                    -0.8704267740249634
+                ]
+            },
+            {
+                "coords": [
+                    2.172759532928467,
+                    2.2037930488586426
                 ]
             }
         ],
@@ -283,31 +285,31 @@
         "trackWidth": 0.800000011920929,
         "tracks": [
             {
-                "end": 7,
-                "start": 6,
-                "type": "line"
-            },
-            {
-                "center": 8,
-                "link1": 4,
-                "link2": 2,
-                "link3": 6,
-                "link4": 0,
-                "type": "intersection"
-            },
-            {
                 "end": 1,
                 "start": 0,
                 "type": "line"
             },
             {
-                "end": 3,
-                "start": 2,
+                "end": 7,
+                "start": 5,
                 "type": "line"
             },
             {
-                "end": 5,
+                "center": 2,
+                "link1": 3,
+                "link2": 0,
+                "link3": 4,
+                "link4": 5,
+                "type": "intersection"
+            },
+            {
+                "end": 6,
                 "start": 4,
+                "type": "line"
+            },
+            {
+                "end": 8,
+                "start": 3,
                 "type": "line"
             }
         ]

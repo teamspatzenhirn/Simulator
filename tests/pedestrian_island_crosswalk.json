@@ -120,18 +120,18 @@
     "fpsCamera": {
         "aspectRatio": 1.3333333730697632,
         "fov": 0.942477822303772,
-        "pitch": 1.2587931156158447,
+        "pitch": 1.287366509437561,
         "pose": {
             "position": [
-                0.2644678056240082,
-                3.604018211364746,
-                2.82525634765625
+                -1.5153930187225342,
+                5.254029750823975,
+                3.324758529663086
             ],
             "rotation": [
-                0.004065275192260742,
-                -0.002960296580567956,
-                0.8083726763725281,
-                0.5886496305465698
+                -0.26113051176071167,
+                0.19592221081256866,
+                0.7560661435127258,
+                0.5672647953033447
             ],
             "scale": [
                 1.0,
@@ -139,7 +139,7 @@
                 1.0
             ]
         },
-        "yaw": -3.1315348148345947
+        "yaw": -3.806699752807617
     },
     "items": [
         {
@@ -295,15 +295,38 @@
                 ]
             },
             "type": 37
+        },
+        {
+            "name": "checkpoint",
+            "pose": {
+                "position": [
+                    -0.004131197929382324,
+                    0.0,
+                    5.146924018859863
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": 26
         }
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
         "exitIfCrosswalkIgnored": true,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": true,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,

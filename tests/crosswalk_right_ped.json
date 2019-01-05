@@ -211,11 +211,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
         "exitIfCrosswalkIgnored": true,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": true,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -227,18 +228,6 @@
         "controlPoints": [
             {
                 "coords": [
-                    0.1002136617898941,
-                    1.9094994068145752
-                ]
-            },
-            {
-                "coords": [
-                    0.10021358728408813,
-                    3.6238999366760254
-                ]
-            },
-            {
-                "coords": [
                     0.10021375119686127,
                     -0.0810198187828064
                 ]
@@ -248,24 +237,36 @@
                     0.10021385550498962,
                     -2.344710350036621
                 ]
+            },
+            {
+                "coords": [
+                    0.1002136617898941,
+                    1.9094994068145752
+                ]
+            },
+            {
+                "coords": [
+                    0.10021358728408813,
+                    3.6238999366760254
+                ]
             }
         ],
         "markingWidth": 0.019999999552965164,
         "trackWidth": 0.800000011920929,
         "tracks": [
             {
-                "end": 1,
-                "start": 0,
-                "type": "line"
-            },
-            {
                 "end": 3,
                 "start": 2,
                 "type": "line"
             },
             {
-                "end": 0,
-                "start": 2,
+                "end": 1,
+                "start": 0,
+                "type": "line"
+            },
+            {
+                "end": 2,
+                "start": 0,
                 "type": "line"
             }
         ]

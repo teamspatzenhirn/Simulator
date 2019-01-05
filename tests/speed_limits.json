@@ -123,9 +123,9 @@
         "pitch": 1.1942529678344727,
         "pose": {
             "position": [
-                -0.5713050365447998,
-                6.544038772583008,
-                -0.19606363773345947
+                -2.2131614685058594,
+                5.344030380249023,
+                -0.24412012100219727
             ],
             "rotation": [
                 -0.10394103080034256,
@@ -255,10 +255,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": false,
         "exitIfLeftArrowIgnored": false,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": true,
         "exitIfStopLineIgnored": false,
@@ -268,24 +270,6 @@
         "centerLineInterrupt": 0.20000000298023224,
         "centerLineLength": 0.20000000298023224,
         "controlPoints": [
-            {
-                "coords": [
-                    0.10574372112751007,
-                    -0.35635906457901
-                ]
-            },
-            {
-                "coords": [
-                    0.1057436540722847,
-                    1.2595391273498535
-                ]
-            },
-            {
-                "coords": [
-                    0.10574357956647873,
-                    3.045954465866089
-                ]
-            },
             {
                 "coords": [
                     -1.6298788785934448,
@@ -303,6 +287,24 @@
                     -1.2687995433807373,
                     -0.3717266321182251
                 ]
+            },
+            {
+                "coords": [
+                    0.10574357956647873,
+                    3.045954465866089
+                ]
+            },
+            {
+                "coords": [
+                    0.1057436540722847,
+                    1.2595391273498535
+                ]
+            },
+            {
+                "coords": [
+                    0.10574372112751007,
+                    -0.35635906457901
+                ]
             }
         ],
         "markingWidth": 0.019999999552965164,
@@ -310,46 +312,46 @@
         "tracks": [
             {
                 "center": [
-                    -6.153228282928467,
-                    -0.48072075843811035
+                    -0.6055530309677124,
+                    2.6977338790893555
                 ],
-                "end": 5,
-                "radius": 4.885644912719727,
-                "rightArc": false,
-                "start": 4,
+                "end": 1,
+                "radius": 1.5080455541610718,
+                "rightArc": true,
+                "start": 0,
                 "type": "arc"
             },
             {
+                "center": [
+                    -6.153228282928467,
+                    -0.48072075843811035
+                ],
                 "end": 2,
+                "radius": 4.885644912719727,
+                "rightArc": false,
                 "start": 1,
-                "type": "line"
+                "type": "arc"
             },
             {
                 "center": [
                     -0.9278321862220764,
                     3.045954465866089
                 ],
-                "end": 3,
+                "end": 0,
                 "radius": 1.0335757732391357,
-                "rightArc": true,
-                "start": 2,
-                "type": "arc"
-            },
-            {
-                "end": 1,
-                "start": 0,
-                "type": "line"
-            },
-            {
-                "center": [
-                    -0.6055530309677124,
-                    2.6977338790893555
-                ],
-                "end": 4,
-                "radius": 1.5080455541610718,
                 "rightArc": true,
                 "start": 3,
                 "type": "arc"
+            },
+            {
+                "end": 4,
+                "start": 5,
+                "type": "line"
+            },
+            {
+                "end": 3,
+                "start": 4,
+                "type": "line"
             }
         ]
     },

@@ -211,10 +211,12 @@
     ],
     "paused": false,
     "rules": {
+        "exitIfAllCheckpointsPassed": true,
+        "exitIfCrosswalkIgnored": false,
         "exitIfGiveWayLineIgnored": true,
         "exitIfLeftArrowIgnored": true,
+        "exitIfNoParkingIgnored": false,
         "exitIfNotOnTrack": true,
-        "exitIfOnEndItem": true,
         "exitIfRightArrowIgnored": false,
         "exitIfSpeedLimitExceeded": false,
         "exitIfStopLineIgnored": false,
@@ -224,18 +226,6 @@
         "centerLineInterrupt": 0.20000000298023224,
         "centerLineLength": 0.20000000298023224,
         "controlPoints": [
-            {
-                "coords": [
-                    0.04307200014591217,
-                    1.0504982471466064
-                ]
-            },
-            {
-                "coords": [
-                    0.041293710470199585,
-                    -0.8704267740249634
-                ]
-            },
             {
                 "coords": [
                     0.041293710470199585,
@@ -262,8 +252,14 @@
             },
             {
                 "coords": [
-                    2.172759532928467,
-                    2.2037930488586426
+                    0.04307200014591217,
+                    1.0504982471466064
+                ]
+            },
+            {
+                "coords": [
+                    0.036898717284202576,
+                    5.0425262451171875
                 ]
             },
             {
@@ -274,8 +270,14 @@
             },
             {
                 "coords": [
-                    0.036898717284202576,
-                    5.0425262451171875
+                    2.172759532928467,
+                    2.2037930488586426
+                ]
+            },
+            {
+                "coords": [
+                    0.041293710470199585,
+                    -0.8704267740249634
                 ]
             }
         ],
@@ -288,26 +290,26 @@
                 "type": "line"
             },
             {
-                "center": 2,
-                "link1": 3,
-                "link2": 4,
-                "link3": 5,
-                "link4": 0,
-                "type": "intersection"
+                "end": 7,
+                "start": 1,
+                "type": "line"
             },
             {
-                "end": 7,
-                "start": 5,
+                "end": 5,
+                "start": 2,
                 "type": "line"
+            },
+            {
+                "center": 0,
+                "link1": 1,
+                "link2": 2,
+                "link3": 3,
+                "link4": 4,
+                "type": "intersection"
             },
             {
                 "end": 6,
                 "start": 3,
-                "type": "line"
-            },
-            {
-                "end": 1,
-                "start": 0,
                 "type": "line"
             }
         ]

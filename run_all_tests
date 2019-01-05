@@ -26,6 +26,8 @@ function step () {
 }
 
 step freedrive ./tests/lane_following.json 
+step freedrive ./tests/parking.json 
+step freedrive ./tests/parking_perpendicular.json 
 step obstacle  ./tests/speed_limits.json 
 step obstacle  ./tests/stop_line.json
 step obstacle  ./tests/stop_line_obst.json
