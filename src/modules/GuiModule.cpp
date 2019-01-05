@@ -699,6 +699,7 @@ void GuiModule::renderDirectoryListing() {
 
     std::vector<dirent> entries;
 
+
     if (dir) {
        dirent* e;
        while (NULL != (e = readdir(dir))) {
@@ -708,12 +709,14 @@ void GuiModule::renderDirectoryListing() {
 
     closedir(dir);
 
-    if (ImGui::Selectable("[dir] ..", false)) {
+    if (ImGui::Selectable("./..", false)) {
         // Sigh ... this is not a pretty solution but was easy to implement and
         // works quite well. Unless someone decides to rape the ".." button like
         // a fuckin lunatic the currentDirectory string should be fine.
         currentDirectory += "../";
     }
+
+    std::vector<std::tuple<std::string, std::string>> entryNames;
 
     for (dirent& e : entries) {
 
@@ -728,17 +731,31 @@ void GuiModule::renderDirectoryListing() {
             entryName += filename;
         }
         if (e.d_type == DT_DIR) {
-            entryName = "[dir] ";
+            entryName = "./";
             entryName += filename;
         }
         if (entryName.empty()) {
             continue;
         }
 
+        entryNames.push_back(std::make_tuple(filename, entryName));
+    }
+
+    std::sort(entryNames.begin(), entryNames.end(),
+            [](const std::tuple<std::string, std::string>& a,
+               const std::tuple<std::string, std::string>& b){
+                return std::get<1>(a) < std::get<1>(b);
+            });
+
+    for (std::tuple<std::string, std::string> e : entryNames) {
+
+        std::string filename = std::get<0>(e);
+        std::string entryName = std::get<1>(e);
+
         if (ImGui::Selectable(
                     entryName.c_str(),
                     selectedFilename == filename)) {
-            if (e.d_type == DT_DIR) {
+            if (entryName[0] == '.') {
                 currentDirectory += filename + "/";
             } else {
                 selectedFilename = filename;
