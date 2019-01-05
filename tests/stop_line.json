@@ -1,0 +1,272 @@
+{
+    "car": {
+        "binaryLightSensor": {
+            "pose": {
+                "position": [
+                    -0.05000000074505806,
+                    0.10000000149011612,
+                    -0.02500000037252903
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "triggerDistance": 0.30000001192092896
+        },
+        "laserSensor": {
+            "pose": {
+                "position": [
+                    -0.05000000074505806,
+                    0.10000000149011612,
+                    0.20999999344348907
+                ],
+                "rotation": [
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        "limits": {
+            "maxDDelta": 4.0,
+            "maxDelta": 0.35,
+            "maxF": 5.0
+        },
+        "mainCamera": {
+            "fov": 1.5707963705062866,
+            "imageHeight": 1544,
+            "imageWidth": 2064,
+            "pose": {
+                "position": [
+                    0.0,
+                    0.25999999046325684,
+                    0.10999999940395355
+                ],
+                "rotation": [
+                    -4.3471935384786775e-08,
+                    4.569084666172785e-09,
+                    0.9945219159126282,
+                    0.10452846437692642
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        "modelPose": {
+            "position": [
+                -0.16140252351760864,
+                0.0,
+                0.5461466312408447
+            ],
+            "rotation": [
+                1.0,
+                0.0,
+                0.0,
+                0.0
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "simulatorState": {
+            "dPsi": 0.0,
+            "delta": 0.0,
+            "psi": 0.0,
+            "v": 0.0,
+            "vLat": 0.0,
+            "vLon": 0.0,
+            "x1": 0.5461466312408447,
+            "x2": -0.16140252351760864
+        },
+        "systemParams": {
+            "axesDistance": 0.225,
+            "axesMomentRatio": 0.5,
+            "distCogToFrontAxle": 0.1125,
+            "distCogToRearAxle": 0.1125,
+            "inertia": 0.042,
+            "mass": 3.875
+        },
+        "wheels": {
+            "bFront": 1.0,
+            "bRear": 1.0,
+            "cFront": 1.9,
+            "cRear": 1.9,
+            "dFront": 12.0,
+            "dRear": 12.0,
+            "kFront": 10.0,
+            "kRear": 10.0,
+            "usePacejkaModel": true
+        }
+    },
+    "fpsCamera": {
+        "aspectRatio": 1.7158176898956299,
+        "fov": 0.942477822303772,
+        "pitch": 1.3569259643554688,
+        "pose": {
+            "position": [
+                -0.26615241169929504,
+                4.1860222816467285,
+                2.382568597793579
+            ],
+            "rotation": [
+                0.00400641979649663,
+                -0.0032296646386384964,
+                -0.7785279750823975,
+                -0.6275888681411743
+            ],
+            "scale": [
+                1.0,
+                1.0,
+                1.0
+            ]
+        },
+        "yaw": 3.131300449371338
+    },
+    "items": [
+        {
+            "name": "stop_line",
+            "pose": {
+                "position": [
+                    -0.15617704391479492,
+                    0.0,
+                    3.0953845977783203
+                ],
+                "rotation": [
+                    -0.7089980244636536,
+                    0.0,
+                    0.7052096128463745,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": 3
+        },
+        {
+            "name": "end",
+            "pose": {
+                "position": [
+                    -0.20259714126586914,
+                    0.0,
+                    4.65286111831665
+                ],
+                "rotation": [
+                    0.9341689348220825,
+                    0.0,
+                    0.356830894947052,
+                    0.0
+                ],
+                "scale": [
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "type": 26
+        }
+    ],
+    "paused": false,
+    "rules": {
+        "exitIfGiveWayLineIgnored": false,
+        "exitIfLeftArrowIgnored": false,
+        "exitIfNotOnTrack": true,
+        "exitIfOnEndItem": true,
+        "exitIfRightArrowIgnored": false,
+        "exitIfSpeedLimitExceeded": false,
+        "exitIfStopLineIgnored": true,
+        "exitOnObstacleCollision": false
+    },
+    "tracks": {
+        "centerLineInterrupt": 0.20000000298023224,
+        "centerLineLength": 0.20000000298023224,
+        "controlPoints": [
+            {
+                "coords": [
+                    0.03348886966705322,
+                    4.643049716949463
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    6.069835662841797
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    2.3430495262145996
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    -0.19437646865844727
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    3.4930496215820313
+                ]
+            },
+            {
+                "coords": [
+                    1.1834888458251953,
+                    3.4930496215820313
+                ]
+            },
+            {
+                "coords": [
+                    -1.1165111064910889,
+                    3.4930496215820313
+                ]
+            }
+        ],
+        "markingWidth": 0.019999999552965164,
+        "trackWidth": 0.800000011920929,
+        "tracks": [
+            {
+                "center": 4,
+                "link1": 5,
+                "link2": 0,
+                "link3": 6,
+                "link4": 2,
+                "type": "intersection"
+            },
+            {
+                "end": 1,
+                "start": 0,
+                "type": "line"
+            },
+            {
+                "end": 3,
+                "start": 2,
+                "type": "line"
+            }
+        ]
+    },
+    "version": 3
+}

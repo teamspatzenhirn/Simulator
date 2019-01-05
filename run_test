@@ -44,7 +44,6 @@ timeout -k 2m -s "TERM" --preserve-status 2m \
         -config="$PROJECT_PATH" \
         -run &
 
-cd /home/jonaruof/sandboxes/CaroloSandbox/Simulator/
-./build/CaroloSimulator $1 &
+Simulator $1 &
 
 wait -n

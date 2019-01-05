@@ -1,0 +1,63 @@
+#!/bin/bash
+
+EXIT_CODE=0
+
+RED='\e[1;31m'
+GREEN='\e[1;32m'
+END='\e[0m'
+
+function step () {
+
+    TEST_PATH=$(readlink -f "$2")
+
+    echo "[STEP] $TEST_PATH"
+
+    RET=$(./run_test "$TEST_PATH" $1 &>/dev/null)
+
+    if [ "$?" == "0" ]
+    then
+        printf "${GREEN}[OK] Exit code: $?${END}\n"
+    else
+        printf "${RED}[ERROR] Exit code: $?${END}\n"
+        EXIT_CODE=255
+    fi
+
+    sleep 2
+}
+
+step freedrive ./tests/lane_following.json 
+step obstacle  ./tests/speed_limits.json 
+step obstacle  ./tests/stop_line.json
+step obstacle  ./tests/stop_line_obst.json
+step obstacle  ./tests/give_way_line.json
+step obstacle  ./tests/give_way_line_obst.json
+step obstacle  ./tests/barred_area.json
+step obstacle  ./tests/barred_area_dynamic_obst.json
+step obstacle  ./tests/barred_area_gap.json
+step obstacle  ./tests/obstacles.json
+step obstacle  ./tests/obstacles_long.json
+step obstacle  ./tests/obstacles_left_right.json
+step obstacle  ./tests/obstacle_dynamic.json
+step obstacle  ./tests/crosswalk_left_ped.json
+step obstacle  ./tests/crosswalk_right_ped.json
+step obstacle  ./tests/crosswalk_multiple_ped.json
+step obstacle  ./tests/turn_right.json
+step obstacle  ./tests/turn_right_giveway.json
+step obstacle  ./tests/turn_right_stop.json
+step obstacle  ./tests/turn_right_obst.json
+step obstacle  ./tests/turn_left.json
+step obstacle  ./tests/turn_left_giveway.json
+step obstacle  ./tests/turn_left_stop.json
+step obstacle  ./tests/turn_left_obst.json
+step obstacle  ./tests/pedestrian_island.json
+step obstacle  ./tests/pedestrian_island_crosswalk.json
+
+echo ""
+if [ "$EXIT_CODE" == "0" ]
+then
+    echo "[SUCCESS] Tests finished"
+else
+    echo "[FAILURE] Tests failed"
+fi
+
+exit $EXIT_CODE
