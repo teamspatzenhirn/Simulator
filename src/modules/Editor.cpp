@@ -171,6 +171,10 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
             if (action == GLFW_PRESS) {
+                if (dragState.dragging) {
+                    return;
+                }
+
                 // calculate clicked location
                 glm::vec2 groundCoords;
                 bool positionValid = toGroundCoordinates(cursorX, cursorY, windowWidth, windowHeight, camera, groundCoords);
