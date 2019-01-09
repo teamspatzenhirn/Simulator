@@ -200,7 +200,9 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
                         if (getEffectiveTrackMode() == TrackMode::Intersection) {
                             createIntersection(groundCoords, tracks, groundSize);
                         } else {
-                            endTrack(groundCoords, tracks, groundSize);
+                            if (canCreateTrack(tracks)) {
+                                endTrack(groundCoords, tracks, groundSize);
+                            }
                         }
                     }
                 }
@@ -360,7 +362,7 @@ void Editor::renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks, 
     }
 
     // render new track markers
-    if (!maybeDragging(tracks)) {
+    if (canCreateTrack(tracks)) {
         if (getEffectiveTrackMode() == TrackMode::Intersection) {
             trackMarker->render(shaderProgramId, trackMarkerMat);
         } else {
@@ -429,7 +431,7 @@ void Editor::endTrack(const glm::vec2& position, Scene::Tracks& tracks, float gr
     }
 
     // find or create end point
-    std::shared_ptr<ControlPoint> trackEnd = selectControlPoint(position, tracks);
+    std::shared_ptr<ControlPoint> trackEnd = selectControlPoint(position, tracks, true, false);
 
     if (autoAlign || !trackEnd || trackEnd == activeControlPoint) {
         trackEnd = std::make_shared<ControlPoint>();
@@ -577,7 +579,7 @@ void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint,
     } else {
         // dragging control point not connected to any intersection
 
-        std::shared_ptr<ControlPoint> selectedPoint = selectControlPoint(cursorPos, tracks, false);
+        std::shared_ptr<ControlPoint> selectedPoint = selectControlPoint(cursorPos, tracks, false, false);
 
         dragState.coords[controlPoint] = (selectedPoint ? selectedPoint->coords : cursorPos);
         dragState.connectedPoint = selectedPoint;
@@ -793,11 +795,11 @@ bool Editor::isDragged(const std::shared_ptr<ControlPoint>& cp) const {
 
 std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& position, const Scene::Tracks& tracks) const {
 
-    return selectControlPoint(position, tracks, true);
+    return selectControlPoint(position, tracks, true, true);
 }
 
 std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& position,
-        const Scene::Tracks& tracks, const bool includeActiveControlPoint) const {
+        const Scene::Tracks& tracks, const bool includeActiveControlPoint, const bool includeCompleteControlPoints) const {
 
     std::shared_ptr<ControlPoint> controlPoint;
     float closest{controlPointClickRadius};
@@ -805,6 +807,10 @@ std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& positi
     // check scene control points
     for (std::shared_ptr<ControlPoint> const& cp : tracks.getTracks()) {
         if (cp == activeControlPoint && !includeActiveControlPoint) {
+            continue;
+        }
+
+        if (isComplete(*cp) && !includeCompleteControlPoints) {
             continue;
         }
 
@@ -818,9 +824,11 @@ std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& positi
 
     // check active control point (can also be a scene control point)
     if (activeControlPoint && includeActiveControlPoint) {
-        float distance = glm::distance(activeControlPoint->coords, position);
-        if (distance < closest) {
-            return activeControlPoint;
+        if (!isComplete(*activeControlPoint) || includeCompleteControlPoints) {
+            float distance = glm::distance(activeControlPoint->coords, position);
+            if (distance < closest) {
+                return activeControlPoint;
+            }
         }
     }
 
@@ -850,7 +858,7 @@ bool Editor::toGroundCoordinates(const double cursorX, const double cursorY, con
 
 void Editor::updateMarkers(const Scene::Tracks& tracks) {
 
-    if (maybeDragging(tracks)) {
+    if (!canCreateTrack(tracks)) {
         return;
     }
 
@@ -1000,7 +1008,7 @@ glm::vec2 Editor::align(const ControlPoint& startPoint, const glm::vec2& positio
             return position;
         }
     } else {
-        std::shared_ptr<ControlPoint> connectedEnd = selectControlPoint(position, tracks);
+        std::shared_ptr<ControlPoint> connectedEnd = selectControlPoint(position, tracks, true, false);
         if (connectedEnd && connectedEnd.get() != &startPoint) {
             return connectedEnd->coords;
         } else {
@@ -1073,6 +1081,26 @@ void Editor::deselect() {
     dragState.coords.clear();
     dragState.trackModels.clear();
     dragState.trackModelMats.clear();
+}
+
+bool Editor::canCreateTrack(const Scene::Tracks& tracks) {
+
+    if (maybeDragging(tracks)) {
+        return false;
+    }
+
+    if (getEffectiveTrackMode() != TrackMode::Intersection
+            && activeControlPoint && isComplete(*activeControlPoint)) {
+        return false;
+    }
+
+    return true;
+}
+
+bool Editor::isComplete(const ControlPoint& cp) const {
+
+    std::shared_ptr<TrackIntersection> intersection = findIntersection(cp);
+    return intersection && intersection->center.lock().get() == &cp;
 }
 
 bool Editor::maybeDragging(const Scene::Tracks& tracks) {
