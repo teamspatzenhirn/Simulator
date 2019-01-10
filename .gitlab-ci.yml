@@ -24,5 +24,4 @@ deploy:
 #    - master
   stage: deploy
   script:
-    - GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=no" git archive --remote=git@git.spatz.wtf:spatzenhirn/ansible-server.git HEAD ansible_ssh_key | tar -x
     - ansible-playbook -i ansible/hosts ansible/deploy.yml
