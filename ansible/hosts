@@ -9,7 +9,7 @@ pc7    ansible_ssh_host=pc7.spatz.wtf
 pc8    ansible_ssh_host=pc8.spatz.wtf
 
 [all:vars]
-ansible_ssh_private_key_file=ansible_ssh_key
+ansible_ssh_private_key_file=ansible/ansible_ssh_key
 ansible_ssh_port=2244
 ansible_user=ansible
 ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
