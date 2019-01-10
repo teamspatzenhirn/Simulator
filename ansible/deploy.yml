@@ -7,13 +7,13 @@
       dest: "{{ item.dest }}"
       mode: 0777
     with_items:
-      - { src: 'CaroloSimulator', dest: '/opt/Simulator/' }
-      - { src: 'models', dest: '/opt/Simulator/' }
-      - { src: 'shaders', dest: '/opt/Simulator/' }
+      - { src: '../CaroloSimulator', dest: '/opt/Simulator/' }
+      - { src: '../models', dest: '/opt/Simulator/' }
+      - { src: '../shaders', dest: '/opt/Simulator/' }
   - name: "Copy startscript"
     become: true
     copy:
-      src: SimulatorLaunch.sh
+      src: ../SimulatorLaunch.sh
       dest: /usr/local/bin/Simulator
       owner: root
       group: root
