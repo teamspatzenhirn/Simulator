@@ -24,4 +24,5 @@ deploy:
 #    - master
   stage: deploy
   script:
+    - chmod 0600 ansible/ansible_ssh_key
     - ansible-playbook -i ansible/hosts ansible/deploy.yml
