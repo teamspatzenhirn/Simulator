@@ -1,0 +1,28 @@
+stages:
+  - build
+  - deploy
+
+compile:
+  tags:
+    - compile
+  stage: build
+  script:
+    - cmake .
+    - make -j8
+  artifacts:
+    paths:
+      - CaroloSimulator
+      - models
+      - shaders
+    when: on_success
+    expire_in: 1 hrs
+
+deploy:
+  tags:
+    - ansible
+#  only:
+#    - master
+  stage: deploy
+  script:
+    - git archive --remote=git@git.spatz.wtf:spatzenhirn/ansible-server.git HEAD ansible_ssh_key | tar -x
+    - ansible-playbook -i ansible/hosts ansible/deploy.yml
