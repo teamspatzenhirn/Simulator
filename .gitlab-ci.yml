@@ -20,8 +20,9 @@ compile:
 deploy:
   tags:
     - ansible
-#  only:
-#    - master
+  only:
+    - master
+  allow_failure: true
   stage: deploy
   script:
     - chmod 0600 ansible/ansible_ssh_key
