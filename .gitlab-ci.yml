@@ -24,5 +24,5 @@ deploy:
 #    - master
   stage: deploy
   script:
-    - git archive --remote=git@git.spatz.wtf:spatzenhirn/ansible-server.git HEAD ansible_ssh_key | tar -x
+    - git archive --remote=https://kimjongadmin:north@git.spatz.wtf:spatzenhirn/ansible-server.git HEAD ansible_ssh_key | tar -x
     - ansible-playbook -i ansible/hosts ansible/deploy.yml
