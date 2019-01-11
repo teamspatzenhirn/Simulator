@@ -448,8 +448,8 @@ struct Scene {
             unsigned int colorImageWidth = 1280;
             unsigned int colorImageHeight = 720;
 
-            unsigned int depthImageWidth = 640;
-            unsigned int depthImageHeight = 480;
+            unsigned int depthImageWidth = 320;
+            unsigned int depthImageHeight = 240;
 
             float colorFovy = M_PI * 0.5f;
             float depthFovy = M_PI * 0.25f;
