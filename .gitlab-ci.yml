@@ -25,5 +25,6 @@ deploy:
   allow_failure: true
   stage: deploy
   script:
+    - git lfs pull
     - chmod 0600 ansible/ansible_ssh_key
     - ansible-playbook -i ansible/hosts ansible/deploy.yml
