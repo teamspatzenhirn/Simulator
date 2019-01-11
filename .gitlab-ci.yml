@@ -1,0 +1,29 @@
+stages:
+  - build
+  - deploy
+
+compile:
+  tags:
+    - compile
+  stage: build
+  script:
+    - cmake .
+    - make -j8
+  artifacts:
+    paths:
+      - CaroloSimulator
+      - models
+      - shaders
+    when: on_success
+    expire_in: 1 hrs
+
+deploy:
+  tags:
+    - ansible
+  only:
+    - master
+  allow_failure: true
+  stage: deploy
+  script:
+    - chmod 0600 ansible/ansible_ssh_key
+    - ansible-playbook -i ansible/hosts ansible/deploy.yml
