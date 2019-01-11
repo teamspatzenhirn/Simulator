@@ -101,6 +101,7 @@ void CommModule::transmitCar(Scene::Car& car, bool paused, uint64_t time) {
         obj->time = time;
         obj->laserSensorValue = car.laserSensor.value;
         obj->binaryLightSensorTriggered = car.binaryLightSensor.triggered;
+        obj->paused = paused;
 
         /*
          * TODO: sucks

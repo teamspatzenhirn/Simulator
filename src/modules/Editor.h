@@ -132,7 +132,7 @@ private:
 
     std::shared_ptr<ControlPoint> selectControlPoint(const glm::vec2& position, const Scene::Tracks& tracks) const;
     std::shared_ptr<ControlPoint> selectControlPoint(const glm::vec2& position,
-            const Scene::Tracks& tracks, const bool includeActiveControlPoint) const;
+            const Scene::Tracks& tracks, const bool includeActiveControlPoint, const bool includeCompleteControlPoints) const;
 
     bool toGroundCoordinates(const double cursorX, const double cursorY, const int windowWidth, const int windowHeight,
             Camera& camera, glm::vec2& groundCoords);
@@ -160,6 +160,8 @@ private:
     bool isStartConnected();
 
     void deselect();
+    bool canCreateTrack(const Scene::Tracks& tracks);
+    bool isComplete(const ControlPoint& cp) const;
     bool maybeDragging(const Scene::Tracks& tracks);
 
 // model creation
