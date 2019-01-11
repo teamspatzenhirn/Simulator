@@ -1,0 +1,15 @@
+[PC]
+pc1    ansible_ssh_host=pc1.spatz.wtf
+pc2    ansible_ssh_host=pc2.spatz.wtf
+pc3    ansible_ssh_host=pc3.spatz.wtf
+pc4    ansible_ssh_host=pc4.spatz.wtf
+pc5    ansible_ssh_host=pc5.spatz.wtf
+pc6    ansible_ssh_host=pc6.spatz.wtf
+pc7    ansible_ssh_host=pc7.spatz.wtf
+pc8    ansible_ssh_host=pc8.spatz.wtf
+
+[all:vars]
+ansible_ssh_private_key_file=ansible/ansible_ssh_key
+ansible_ssh_port=2244
+ansible_user=ansible
+ansible_ssh_extra_args='-o StrictHostKeyChecking=no'
