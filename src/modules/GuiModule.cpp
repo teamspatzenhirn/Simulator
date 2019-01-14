@@ -11,7 +11,20 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
         openedFilename = scenePath.substr(
                 separatorIndex+1, scenePath.size());
     } else {
-        openedPath = "./";
+
+        std::string strHomePath("/");
+        char* homePath = getenv("HOME");
+
+        if (homePath) {
+            strHomePath = std::string(homePath);
+        } else {
+            homePath = getenv("HOMEPATH");
+            if (homePath) {
+                strHomePath = std::string(homePath);
+            }
+        }
+
+        openedPath = strHomePath;
         openedFilename = scenePath;
     }
 
