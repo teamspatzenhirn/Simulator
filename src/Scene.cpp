@@ -450,8 +450,29 @@ void to_json(json& j, const Scene::Tracks& t) {
             jsonTrack["center"] = arc->center;
             jsonTrack["radius"] = arc->radius;
             jsonTrack["rightArc"] = arc->rightArc;
+            switch (arc->centerLine) {
+                case LaneMarking::Dashed: {
+                    jsonTrack["centerLine"] = "Dashed";
+                    break;
+                }
+                case LaneMarking::DoubleSolid: {
+                    jsonTrack["centerLine"] = "DoubleSolid";
+                    break;
+                }
+            }
         } else {
+            std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track);
             jsonTrack["type"] = "line";
+            switch (line->centerLine) {
+                case LaneMarking::Dashed: {
+                    jsonTrack["centerLine"] = "Dashed";
+                    break;
+                }
+                case LaneMarking::DoubleSolid: {
+                    jsonTrack["centerLine"] = "DoubleSolid";
+                    break;
+                }
+            }
         }
 
         jsonTracks.push_back(jsonTrack);
@@ -462,6 +483,7 @@ void to_json(json& j, const Scene::Tracks& t) {
             {"markingWidth", t.markingWidth},
             {"centerLineLength", t.centerLineLength},
             {"centerLineInterrupt", t.centerLineInterrupt},
+            {"centerLineGap", t.centerLineGap},
             {"controlPoints", jsonControlPoints},
             {"tracks", jsonTracks}
         });
@@ -473,6 +495,11 @@ void from_json(const json& j, Scene::Tracks& t) {
     t.markingWidth = j.at("markingWidth").get<float>();
     t.centerLineLength = j.at("centerLineLength").get<float>();
     t.centerLineInterrupt = j.at("centerLineInterrupt").get<float>();
+    try {
+        t.centerLineGap = j.at("centerLineGap").get<float>();
+    } catch (json::exception& e) {
+        // use default value
+    }
 
     std::vector<std::shared_ptr<ControlPoint>> controlPoints;
 
@@ -507,9 +534,31 @@ void from_json(const json& j, Scene::Tracks& t) {
             glm::vec2 center = jsonTrack.at("center").get<glm::vec2>();
             float radius = jsonTrack.at("radius").get<float>();
             float rightArc = jsonTrack.at("rightArc").get<bool>();
-            t.addTrackArc(start, end, center, radius, rightArc);
+            std::shared_ptr<TrackArc> arc = t.addTrackArc(start, end, center, radius, rightArc);
+
+            try {
+                std::string centerLine = jsonTrack.at("centerLine").get<std::string>();
+                if (centerLine == "Dashed") {
+                    arc->centerLine = LaneMarking::Dashed;
+                } else if (centerLine == "DoubleSolid") {
+                    arc->centerLine = LaneMarking::DoubleSolid;
+                }
+            } catch (json::exception& e) {
+                // use default value
+            }
         } else {
-            t.addTrackLine(start, end);
+            std::shared_ptr<TrackLine> line = t.addTrackLine(start, end);
+
+            try {
+                std::string centerLine = jsonTrack.at("centerLine").get<std::string>();
+                if (centerLine == "Dashed") {
+                    line->centerLine = LaneMarking::Dashed;
+                } else if (centerLine == "DoubleSolid") {
+                    line->centerLine = LaneMarking::DoubleSolid;
+                }
+            } catch (json::exception& e) {
+                // use default value
+            }
         }
     }
 }

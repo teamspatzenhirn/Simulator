@@ -539,6 +539,37 @@ void GuiModule::renderSceneWindow(Scene& scene) {
             ImGui::TreePop();
         }
 
+        if (ImGui::TreeNode("Track")) {
+
+            Scene::Tracks::TrackSelection& selection = scene.tracks.trackSelection;
+
+            if (selection.track) {
+
+                LaneMarking* centerLine{nullptr};
+                if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(selection.track)) {
+                    centerLine = &line->centerLine;
+                } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(selection.track)) {
+                    centerLine = &arc->centerLine;
+                }
+
+                if (centerLine) {
+
+                    ImGui::Text("Center line");
+
+                    if (ImGui::RadioButton("Dashed", *centerLine == LaneMarking::Dashed)) {
+                        *centerLine = LaneMarking::Dashed;
+                        selection.changed = true;
+                    }
+                    if (ImGui::RadioButton("Double solid", *centerLine == LaneMarking::DoubleSolid)) {
+                        *centerLine = LaneMarking::DoubleSolid;
+                        selection.changed = true;
+                    }
+                }
+            }
+
+            ImGui::TreePop();
+        }
+
         ImGui::End(); 
     }
 }

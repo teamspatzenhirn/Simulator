@@ -24,6 +24,11 @@ struct ControlPoint {
     std::vector<std::shared_ptr<TrackBase>> tracks;
 };
 
+enum struct LaneMarking {
+    Dashed,
+    DoubleSolid
+};
+
 struct TrackBase {
 
     virtual ~TrackBase() = 0;
@@ -35,6 +40,8 @@ struct TrackLine : TrackBase {
 
     std::weak_ptr<ControlPoint> start;
     std::weak_ptr<ControlPoint> end;
+
+    LaneMarking centerLine{LaneMarking::Dashed};
 
     TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
 
@@ -49,6 +56,8 @@ struct TrackArc : TrackBase {
     glm::vec2 center;
     float radius{0};
     bool rightArc{false};
+
+    LaneMarking centerLine{LaneMarking::Dashed};
 
     TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
             const glm::vec2& center, const float radius, const bool rightArc);
@@ -516,6 +525,7 @@ struct Scene {
         float markingWidth = 0.02f;
         float centerLineLength = 0.2f;
         float centerLineInterrupt = 0.2f;
+        float centerLineGap = 0.02f;
 
         float stopLineWidth = 0.038f;
 
@@ -524,6 +534,14 @@ struct Scene {
         std::vector<std::shared_ptr<ControlPoint>> tracks;
 
     public:
+
+        struct TrackSelection {
+
+            std::shared_ptr<TrackBase> track;
+
+            bool changed{false};
+
+        } trackSelection;
 
         const std::vector<std::shared_ptr<ControlPoint>>& getTracks() const;
 

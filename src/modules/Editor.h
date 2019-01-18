@@ -75,6 +75,10 @@ private:
 
     std::shared_ptr<ControlPoint> activeControlPoint;
 
+    std::shared_ptr<TrackBase> activeTrack;
+    std::shared_ptr<Model> activeTrackModel;
+    glm::mat4 activeTrackMat;
+
     struct {
         bool dragging{false};
 
@@ -111,6 +115,8 @@ private:
     void renderMarker(GLuint shaderProgramId, const glm::vec2& position,
             const bool active, const glm::vec3& cameraPosition);
 
+    void selectTrack(const std::shared_ptr<TrackBase>& track, Scene::Tracks& tracks);
+
     void startTrack(const glm::vec2& position, const Scene::Tracks& tracks, float groundSize);
     void endTrack(const glm::vec2& position, Scene::Tracks& tracks, float groundSize);
     void createIntersection(const glm::vec2& position, Scene::Tracks& tracks, const float groundSize);
@@ -133,6 +139,7 @@ private:
     std::shared_ptr<ControlPoint> selectControlPoint(const glm::vec2& position, const Scene::Tracks& tracks) const;
     std::shared_ptr<ControlPoint> selectControlPoint(const glm::vec2& position,
             const Scene::Tracks& tracks, const bool includeActiveControlPoint, const bool includeCompleteControlPoints) const;
+    std::shared_ptr<TrackBase> findTrack(const glm::vec2& position, const Scene::Tracks& tracks) const;
 
     bool toGroundCoordinates(const double cursorX, const double cursorY, const int windowWidth, const int windowHeight,
             Camera& camera, glm::vec2& groundCoords);
@@ -148,6 +155,7 @@ private:
     bool getArc(const glm::vec2& start, const glm::vec2& end, const std::vector<glm::vec2>& directions,
             glm::vec2& center, float& radius, bool& rightArc);
 
+    float distanceLinePoint(const glm::vec2& p1, const glm::vec2& p2, const glm::vec2& x) const;
     bool intersectParam(const glm::vec2& p1, const glm::vec2& r1, const glm::vec2& p2, const glm::vec2& r2, float& t1);
 
     glm::vec2 align(const ControlPoint& startPoint, const glm::vec2& position, const Scene::Tracks& tracks);
@@ -159,7 +167,8 @@ private:
 
     bool isStartConnected();
 
-    void deselect();
+    void deselectControlPoint();
+    void deselectTrack(Scene::Tracks& tracks);
     bool canCreateTrack(const Scene::Tracks& tracks);
     bool isComplete(const ControlPoint& cp) const;
     bool maybeDragging(const Scene::Tracks& tracks);
@@ -167,9 +176,10 @@ private:
 // model creation
 
     static std::shared_ptr<Model> genTrackLineModel(const glm::vec2& start, const glm::vec2& end,
-            const Scene::Tracks& tracks);
+            const LaneMarking centerLine, const Scene::Tracks& tracks);
     static std::shared_ptr<Model> genTrackArcModel(const glm::vec2& start, const glm::vec2& end,
-            const glm::vec2& center, const float radius, const bool rightArc, const Scene::Tracks& tracks);
+            const glm::vec2& center, const float radius, const bool rightArc,
+            const LaneMarking centerLine, const Scene::Tracks& tracks);
     static std::shared_ptr<Model> genTrackIntersectionModel(const Scene::Tracks& tracks);
 
     static void genDefaultMarkerMaterial(Model& model);
@@ -177,8 +187,11 @@ private:
     static void genTrackMaterial(Model& model);
 
     static void genPointVertices(Model& model);
-    static void genTrackLineVertices(const glm::vec2& start, const glm::vec2& end, const Scene::Tracks& tracks, Model& model);
-    static void genTrackArcVertices(const glm::vec2& start, const glm::vec2& end, const glm::vec2& center, const float radius, const bool rightArc, const Scene::Tracks& tracks, Model& model);
+    static void genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
+            const LaneMarking centerLine, const Scene::Tracks& tracks, Model& model);
+    static void genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
+            const glm::vec2& center, const float radius, const bool rightArc,
+            const LaneMarking centerLine, const Scene::Tracks& tracks, Model& model);
     static void genTrackIntersectionVertices(const Scene::Tracks& tracks, Model& model);
     static void genTrackLineMarkerVertices(Model& model);
     static void genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& end,
