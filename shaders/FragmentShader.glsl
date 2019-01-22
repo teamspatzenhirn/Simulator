@@ -12,12 +12,21 @@ uniform vec3 kd;
 uniform vec3 ks;
 uniform float ns;
 
+uniform float time;
+
+uniform float noise = 0.0;
+
 in vec4 fragPosition;
 in vec3 fragNormal;
 in vec2 fragTextureCoord;
 in vec3 fragCameraPosition;
 
 layout (location = 0) out vec4 fragColor;
+
+float rand (vec2 co) {
+
+    return fract(sin(dot(co.xy, vec2(12.9898,78.233))) * (43758.5453 + time));
+}
 
 void main () {
 
@@ -40,4 +49,10 @@ void main () {
     } else {
         fragColor = vec4(kd, 1.0);
     }
+
+    // additive noise
+
+    float noiseColor = rand(vec2(gl_FragCoord));
+
+    fragColor = fragColor * (1 - noise) + noiseColor * noise;
 }

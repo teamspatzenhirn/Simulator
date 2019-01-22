@@ -415,6 +415,13 @@ struct Scene {
                 pose.setEulerAngles(glm::vec3(-12.0f, 180.0f, 0.0f));
             }
 
+            /*
+             * Interpolation factor, between an image consisting only
+             * of noise and the camera image without any noise.
+             * Noise calculation done in shader.
+             */
+            float noise = 0.2f;
+
             unsigned int imageWidth = 2064;
             unsigned int imageHeight = 1544;
 

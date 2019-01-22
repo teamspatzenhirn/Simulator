@@ -471,11 +471,14 @@ void GuiModule::renderSceneWindow(Scene& scene) {
 
                 ImGui::InputInt("image width", (int*)&scene.car.mainCamera.imageWidth);
                 ImGui::InputInt("image height", (int*)&scene.car.mainCamera.imageHeight);
+
                 ImGui::InputFloat("fov", &scene.car.mainCamera.fovy);
                 ImGui::InputFloat3("radial distortion",
                         scene.car.mainCamera.distortionCoefficients.radial);
                 ImGui::InputFloat3("tangential distortion",
                         scene.car.mainCamera.distortionCoefficients.radial);
+
+                ImGui::DragFloat("noise", &scene.car.mainCamera.noise, 0.01f, 0.0f, 1.0f);
 
                 ImGui::TreePop();
             }
