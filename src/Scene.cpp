@@ -297,15 +297,17 @@ void to_json(json& j, const Scene::Car::MainCamera& o) {
             {"imageWidth", o.imageWidth},
             {"imageHeight", o.imageHeight},
             {"fov", o.fovy},
+            {"noise", o.noise},
         });
 }
 
 void from_json(const json& j, Scene::Car::MainCamera& o) {
 
-    o.pose = j.at("pose").get<Pose>();
-    o.imageWidth = j.at("imageWidth").get<unsigned int>();
-    o.imageHeight = j.at("imageHeight").get<unsigned int>();
-    o.fovy = j.at("fov").get<float>();
+    tryGet(j, "pose", o.pose);
+    tryGet(j, "imageWidth", o.imageWidth);
+    tryGet(j, "imageHeight", o.imageHeight);
+    tryGet(j, "fov", o.fovy);
+    tryGet(j, "noise", o.noise);
 }
 
 /*

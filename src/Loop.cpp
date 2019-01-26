@@ -262,6 +262,12 @@ void Loop::renderFpsView() {
     Scene preRenderScene = scene;
     update(timer.accumulator, timer.accumulator * settings.simulationSpeed);
 
+    GLuint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
+    glUniform1f(timeLocation, scene.simulationTime);
+
+    GLuint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
+    glUniform1f(noiseLocation, 0.0);
+
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
     glViewport(0, 0, windowWidth, windowHeight);
@@ -317,6 +323,12 @@ void Loop::renderCarView() {
 
     glUseProgram(carShaderProgram.id);
 
+    GLuint timeLocation = glGetUniformLocation(carShaderProgram.id, "time");
+    glUniform1f(timeLocation, scene.simulationTime);
+
+    GLuint noiseLocation = glGetUniformLocation(carShaderProgram.id, "noise");
+    glUniform1f(noiseLocation, scene.car.mainCamera.noise);
+
     glBindFramebuffer(GL_FRAMEBUFFER, car.bayerFrameBuffer.id);
 
     glViewport(0, 0,
@@ -333,6 +345,12 @@ void Loop::renderCarView() {
     glUseProgram(shaderProgram.id);
 
     if (MAIN_CAMERA == selectedCamera) {
+
+        GLuint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
+        glUniform1f(timeLocation, scene.simulationTime);
+
+        GLuint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
+        glUniform1f(noiseLocation, scene.car.mainCamera.noise);
 
         glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
 

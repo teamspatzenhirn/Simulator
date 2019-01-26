@@ -11,7 +11,20 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
         openedFilename = scenePath.substr(
                 separatorIndex+1, scenePath.size());
     } else {
-        openedPath = "./";
+
+        std::string strHomePath("/");
+        char* homePath = getenv("HOME");
+
+        if (homePath) {
+            strHomePath = std::string(homePath);
+        } else {
+            homePath = getenv("HOMEPATH");
+            if (homePath) {
+                strHomePath = std::string(homePath);
+            }
+        }
+
+        openedPath = strHomePath;
         openedFilename = scenePath;
     }
 
@@ -498,11 +511,14 @@ void GuiModule::renderSceneWindow(Scene& scene) {
 
                 ImGui::InputInt("image width", (int*)&scene.car.mainCamera.imageWidth);
                 ImGui::InputInt("image height", (int*)&scene.car.mainCamera.imageHeight);
+
                 ImGui::InputFloat("fov", &scene.car.mainCamera.fovy);
                 ImGui::InputFloat3("radial distortion",
                         scene.car.mainCamera.distortionCoefficients.radial);
                 ImGui::InputFloat3("tangential distortion",
                         scene.car.mainCamera.distortionCoefficients.radial);
+
+                ImGui::DragFloat("noise", &scene.car.mainCamera.noise, 0.01f, 0.0f, 1.0f);
 
                 ImGui::TreePop();
             }
