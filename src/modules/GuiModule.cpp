@@ -343,6 +343,46 @@ void GuiModule::renderCreateMenu(Scene& scene) {
         ImGui::EndMenu();
     }
 
+    if (ImGui::BeginMenu("Signs")) {
+
+        if (ImGui::MenuItem("Forbidden")) {
+            newType = SIGN_FORBIDDEN;
+            newName = "sign_forbidden";
+        }
+
+        if (ImGui::MenuItem("Downhill")) {
+            newType = SIGN_DOWNHILL;
+            newName = "sign_downhill";
+        }
+
+        if (ImGui::MenuItem("Expressway start")) {
+            newType = SIGN_EXPRESSWAY_START;
+            newName = "sign_expressway_start";
+        }
+
+        if (ImGui::MenuItem("Expressway end")) {
+            newType = SIGN_EXPRESSWAY_END;
+            newName = "sign_expressway_end";
+        }
+
+        if (ImGui::MenuItem("Giveway")) {
+            newType = SIGN_GIVEWAY;
+            newName = "sign_giveway_end";
+        }
+
+        if (ImGui::MenuItem("No passing start")) {
+            newType = SIGN_NO_PASSING_START;
+            newName = "sign_no_passing_start";
+        }
+
+        if (ImGui::MenuItem("No passing end")) {
+            newType = SIGN_NO_PASSING_END;
+            newName = "sign_no_passing_end";
+        }
+
+        ImGui::EndMenu();
+    }
+
     if (NONE != newType) {
         scene.items.emplace_back(std::make_shared<Scene::Item>(newType, newName));
     }

@@ -128,6 +128,13 @@ enum ItemType {
     PARK_SLOTS = 39,
     NO_PARKING = 40,
     START_BOX = 41,
+    SIGN_FORBIDDEN = 42,
+    SIGN_DOWNHILL = 43,
+    SIGN_EXPRESSWAY_START = 44,
+    SIGN_EXPRESSWAY_END = 45,
+    SIGN_GIVEWAY = 46,
+    SIGN_NO_PASSING_START = 47,
+    SIGN_NO_PASSING_END = 48,
 };
 
 /*
@@ -137,7 +144,7 @@ enum ItemType {
  */
 struct ModelStore {
 
-    Model itemModels[42] = {
+    Model itemModels[49] = {
         Model{},
         Model{"models/obstacle.obj"},
         Model{"models/start_line.obj"},
@@ -180,6 +187,13 @@ struct ModelStore {
         Model{"models/park_slots.obj"},
         Model{"models/no_parking.obj"},
         Model{"models/start_box.obj"},
+        Model{"models/sign_forbidden.obj"},
+        Model{"models/sign_downhill.obj"},
+        Model{"models/sign_expressway_start.obj"},
+        Model{"models/sign_expressway_end.obj"},
+        Model{"models/sign_giveway.obj"},
+        Model{"models/sign_no_passing.obj"},
+        Model{"models/sign_no_passing_end.obj"},
     };
 };
 
