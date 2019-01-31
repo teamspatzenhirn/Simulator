@@ -190,7 +190,7 @@ void Loop::update(double deltaTime, double simDeltaTime) {
         car.updatePosition(scene.car, simDeltaTime);
     }
 
-    itemsModule.updateDynamicItems(simDeltaTime, scene.car, scene.items);
+    itemsModule.updateDynamicItems(simDeltaTime, scene.car, scene.dynamicItemSettings, scene.items);
 
     visModule.addPositionTrace(scene.car.modelPose.position, scene.simulationTime);
 

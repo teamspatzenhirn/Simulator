@@ -11,6 +11,7 @@ ItemsModule::~ItemsModule() {
 void ItemsModule::updateDynamicItems(
         float dt,
         Scene::Car& car, 
+        Scene::DynamicItemSettings& dis,
         std::vector<std::shared_ptr<Scene::Item>>& items) {
     
     for (std::shared_ptr<Scene::Item>& i : items) {
@@ -32,8 +33,11 @@ void ItemsModule::updateDynamicItems(
             } 
 
             if (state.active == true) {
-                i->pose.position = glm::vec3(
-                        i->pose.getMatrix() * glm::vec4(0, 0, 0.00015 * dt, 1));
+                glm::vec3 newPos = glm::vec3(
+                        i->pose.getMatrix() * glm::vec4(0, 0, dis.speed * dt / 1000.0, 1));
+
+                i->pose.position = newPos;
+
                 if (dist > 2) {
                     state.active = false;
                     i->pose = state.startPose;

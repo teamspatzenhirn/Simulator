@@ -602,6 +602,21 @@ void from_json(const json& j, std::vector<std::shared_ptr<Scene::Item>>& is) {
 }
 
 /*
+ * DynamicItemSettings
+ */
+void to_json(json& j, const Scene::DynamicItemSettings& dis) {
+
+    j = json({
+            {"speed", dis.speed}
+        });
+}
+
+void from_json(const json& j, Scene::DynamicItemSettings& dis) {
+
+    tryGet(j, "speed", dis.speed);
+}
+
+/*
  * Scene::Rules
  */
 
@@ -648,6 +663,7 @@ void to_json(json& j, const Scene& s) {
             {"car", s.car},
             {"tracks", s.tracks},
             {"items", s.items},
+            {"dynamicItemSettings", s.dynamicItemSettings},
             {"rules", s.rules}
         });
 }

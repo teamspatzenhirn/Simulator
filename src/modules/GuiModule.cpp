@@ -545,6 +545,13 @@ void GuiModule::renderSceneWindow(Scene& scene) {
             ImGui::TreePop();
         }
 
+        if (ImGui::TreeNode("DynamicItemSettings")) {
+
+            ImGui::InputFloat("speed", &scene.dynamicItemSettings.speed);
+
+            ImGui::TreePop();
+        }
+
         if (ImGui::TreeNode("Rules")) {
 
             ImGui::Checkbox("Exit on obstacle collision", &scene.rules.exitOnObstacleCollision);

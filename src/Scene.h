@@ -603,6 +603,17 @@ struct Scene {
     std::vector<std::shared_ptr<Item>> items;
 
     /*
+     * These are additional settings for the dynamic items.
+     *
+     * TODO: remove this when switching to a proper component system
+     */
+    struct DynamicItemSettings {
+
+        float speed = 0.6;
+
+    } dynamicItemSettings;
+
+    /*
      * This contains the RuleModule state and the set
      * reactions to violations of the Carolo Cup rules.
      */
