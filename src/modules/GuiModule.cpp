@@ -60,7 +60,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
             ImGuiCond_Always,
             ImVec2(0.0f, 1.0f));
 
-    ImGui::Begin("", NULL, ImGuiWindowFlags_NoTitleBar
+    ImGui::Begin(" ", NULL, ImGuiWindowFlags_NoTitleBar
             | ImGuiWindowFlags_NoMove
             | ImGuiWindowFlags_NoResize
             | ImGuiWindowFlags_AlwaysAutoResize
