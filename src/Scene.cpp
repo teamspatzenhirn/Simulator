@@ -1,5 +1,7 @@
 #include "Scene.h"
 
+#include <nlohmann/json.hpp>
+
 /*
  * JSON (de-)serialization functions comin' up here!
  */

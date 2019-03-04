@@ -6,6 +6,7 @@
 
 #include <set>
 #include <map>
+#include <algorithm>
 
 #include "helpers/Helpers.h"
 

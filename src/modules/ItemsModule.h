@@ -1,6 +1,9 @@
 #ifndef INC_2019_ITEMSMODULE_H
 #define INC_2019_ITEMSMODULE_H
 
+#include <map>
+#include <algorithm>
+
 #include "Scene.h"
 #include "helpers/Helpers.h"
 

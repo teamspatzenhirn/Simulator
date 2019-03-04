@@ -9,7 +9,6 @@
 #include <glm/gtx/intersect.hpp>
 
 #include "Scene.h"
-#include "imgui/imgui.h"
 #include "helpers/Helpers.h"
 
 #include "modules/GuiModule.h"

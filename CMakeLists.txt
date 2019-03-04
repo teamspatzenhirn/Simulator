@@ -1,10 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(CaroloSimulator)
 
-# Path to cmake modules.
-
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/cmake/Modules/")
-
 # ---[ Check for OpenGL (mandatory) ]---
 
 find_package(OpenGL QUIET)
@@ -26,15 +22,27 @@ else(GLEW_FOUND)
   message(FATAL_ERROR "${ColourBoldRed}GLEW missing.${ColourReset}")
 endif()
 
-# ---[ Check for GLEW (mandatory) ]---
+# --- [ External libs ]---
 
-find_package(GLFW REQUIRED)
-if(GLFW_FOUND)
-  message(STATUS "Found GLFW: " ${GLFW_LIBRARIES})
-  message(STATUS "            " ${GLFW_INCLUDE_DIR})
-else(GLFW_FOUND)
-  message(FATAL_ERROR "${ColourBoldRed}GLFW missing.${ColourReset}")
-endif()
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
+message(STATUS "Using extern/glfw_glfw")
+add_subdirectory(extern/glfw_glfw)
+
+set(GLM_TEST_ENABLE OFF CACHE BOOL "" FORCE)
+
+message(STATUS "Using extern/g-truc_glm")
+add_subdirectory(extern/g-truc_glm)
+
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+
+message(STATUS "Using extern/nlohmann_json")
+add_subdirectory(extern/nlohmann_json)
+
+message(STATUS "Using extern/ocornut_imgui")
+add_subdirectory(extern/ocornut_imgui)
 
 # Collect files.
 
@@ -53,11 +61,6 @@ set(SOURCE_FILES
    ./src/helpers/PointLight.cpp
    ./src/helpers/ObjLoader.cpp
    ./src/helpers/ScreenQuad.cpp
-   ./src/imgui/imgui.cpp
-   ./src/imgui/imgui_demo.cpp
-   ./src/imgui/imgui_draw.cpp
-   ./src/imgui/imgui_impl_opengl3.cpp
-   ./src/imgui/imgui_impl_glfw.cpp
    ./src/Scene.cpp
    ./src/Loop.cpp
    ./src/modules/Editor.cpp
@@ -76,7 +79,6 @@ set(HEADER_FILES
     ./src/Loop.h
     ./src/helpers/Model.h
     ./src/helpers/Helpers.h
-    ./src/helpers/Json.h
     ./src/helpers/FpsCamera.h
     ./src/helpers/ShaderProgram.h
     ./src/helpers/Input.h
@@ -91,14 +93,6 @@ set(HEADER_FILES
     ./src/helpers/Timer.h
     ./src/helpers/Id.h
     ./src/helpers/Shader.h
-    ./src/imgui/imconfig.h
-    ./src/imgui/stb_textedit.h
-    ./src/imgui/imgui_impl_opengl3.h
-    ./src/imgui/stb_truetype.h
-    ./src/imgui/imgui_internal.h
-    ./src/imgui/imgui.h
-    ./src/imgui/imgui_impl_glfw.h
-    ./src/imgui/stb_rect_pack.h
     ./src/Scene.h
     ./src/modules/Editor.h
     ./src/modules/GuiModule.h
@@ -118,13 +112,15 @@ add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
 target_link_libraries(${PROJECT_NAME}
                       ${OPENGL_gl_LIBRARY}
                       ${GLEW_LIBRARIES}
-                      ${GLFW_LIBRARIES})
+                      glm
+                      glfw
+                      imgui
+                      nlohmann_json)
 
 target_include_directories(${PROJECT_NAME}
                            PUBLIC src/
                            PUBLIC ${OPENGL_INCLUDE_DIR}
-                           PUBLIC ${GLEW_INCLUDE_DIRS}
-                           PUBLIC ${GLFW_INCLUDE_DIR})
+                           PUBLIC ${GLEW_INCLUDE_DIRS})
 
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wextra)

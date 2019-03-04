@@ -16,7 +16,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
 
-#include "imgui/imgui.h"
 #include "helpers/Helpers.h"
 #include "Scene.h"
 
