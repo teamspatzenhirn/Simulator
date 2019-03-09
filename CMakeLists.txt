@@ -24,24 +24,30 @@ endif()
 
 # --- [ External libs ]---
 
+# Order matters here!
+# Because imgui depends of glfw, glfw must be added first.
+
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 
-message(STATUS "Using extern/glfw_glfw")
+message(STATUS "External lib: extern/glfw_glfw")
 add_subdirectory(extern/glfw_glfw)
 
 set(GLM_TEST_ENABLE OFF CACHE BOOL "" FORCE)
 
-message(STATUS "Using extern/g-truc_glm")
+message(STATUS "External lib: extern/g-truc_glm")
 add_subdirectory(extern/g-truc_glm)
 
 set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
 
-message(STATUS "Using extern/nlohmann_json")
+message(STATUS "External lib: extern/nlohmann_json")
 add_subdirectory(extern/nlohmann_json)
 
-message(STATUS "Using extern/ocornut_imgui")
+message(STATUS "External lib: extern/bly7_obj-loader")
+add_subdirectory(extern/bly7_obj-loader)
+
+message(STATUS "External lib: extern/ocornut_imgui")
 add_subdirectory(extern/ocornut_imgui)
 
 # Collect files.
@@ -59,7 +65,6 @@ set(SOURCE_FILES
    ./src/helpers/Timer.cpp
    ./src/helpers/Pose.cpp
    ./src/helpers/PointLight.cpp
-   ./src/helpers/ObjLoader.cpp
    ./src/helpers/ScreenQuad.cpp
    ./src/Scene.cpp
    ./src/Loop.cpp
@@ -83,7 +88,6 @@ set(HEADER_FILES
     ./src/helpers/ShaderProgram.h
     ./src/helpers/Input.h
     ./src/helpers/Capture.h
-    ./src/helpers/ObjLoader.h
     ./src/helpers/Dirent.h
     ./src/helpers/Camera.h
     ./src/helpers/ScreenQuad.h
@@ -115,6 +119,7 @@ target_link_libraries(${PROJECT_NAME}
                       glm
                       glfw
                       imgui
+                      objloader
                       nlohmann_json)
 
 target_include_directories(${PROJECT_NAME}

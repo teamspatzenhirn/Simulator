@@ -1,14 +1,13 @@
 #ifndef INC_2019_MODEL_H
 #define INC_2019_MODEL_H
 
+#include <string>
+#include <vector>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/glm.hpp>
-#include <glm/gtx/io.hpp>
-
-#include "ObjLoader.h"
 
 class Model {
 
@@ -30,8 +29,31 @@ public:
 
     std::vector<Model> subModels;
 
-    objl::Material material;
-    std::vector<objl::Vertex> vertices;
+    struct Vertex {
+
+        glm::vec3 position;
+        glm::vec2 normal;
+        glm::vec2 textureCoordinate;
+    };
+    std::vector<Vertex> vertices;
+
+    struct Material {
+
+        std::string name;
+        glm::vec3 ka;    
+        glm::vec3 kd;
+        glm::vec3 ks;
+        float ns = 0.0f;
+        float ni = 0.0f;
+        float d = 0.0f;
+        float illum = 0.0f;
+        std::string mapKa;
+        std::string mapKd;
+        std::string mapKs;
+        std::string mapD;
+        std::string mapBump;
+
+    } material;
 
     struct BoundingBox {
 

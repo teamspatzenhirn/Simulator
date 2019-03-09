@@ -321,14 +321,14 @@ void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPositi
         markerMat = glm::scale(markerMat, glm::vec3(scale, scale, scale));
 
         if (selection.pose == pose.pose) {
-            markerModel->material.Ka = objl::Vector3(1.0f, 1.0f, 0.0f);
-            markerModel->material.Kd = objl::Vector3(1.0f, 1.0f, 0.0f);
-            markerModel->material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
+            markerModel->material.ka = {1.0f, 1.0f, 0.0f};
+            markerModel->material.kd = {1.0f, 1.0f, 0.0f};
+            markerModel->material.ks = {0.0f, 0.0f, 0.0f};
             markerModel->render(shaderProgramId, markerMat);
         } else {
-            markerModel->material.Ka = objl::Vector3(0.0f, 1.0f, 0.0f);
-            markerModel->material.Kd = objl::Vector3(0.0f, 1.0f, 0.0f);
-            markerModel->material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
+            markerModel->material.ka = {0.0f, 1.0f, 0.0f};
+            markerModel->material.kd = {0.0f, 1.0f, 0.0f};
+            markerModel->material.ks = {0.0f, 0.0f, 0.0f};
             markerModel->render(shaderProgramId, markerMat);
         }
     }
@@ -366,9 +366,9 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
         upMat = glm::translate(upMat, glm::vec3(0.0f, offset * scale, 0.0f));
         upMat = glm::scale(upMat, glm::vec3(scale, scale, scale));
 
-        model->material.Ka = objl::Vector3(0.0f, 1.0f, 0.0f);
-        model->material.Kd = objl::Vector3(0.0f, 1.0f, 0.0f);
-        model->material.Ks = objl::Vector3(0.0f, 1.0f, 0.0f);
+        model->material.ka = {0.0f, 1.0f, 0.0f};
+        model->material.kd = {0.0f, 1.0f, 0.0f};
+        model->material.ks = {0.0f, 1.0f, 0.0f};
 
         model->render(shaderProgramId, upMat);
     }
@@ -378,9 +378,9 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
                 selectionMode,
                 X_AXIS)) {
 
-        model->material.Ka = objl::Vector3(1.0f, 0.0f, 0.0f);
-        model->material.Kd = objl::Vector3(1.0f, 0.0f, 0.0f);
-        model->material.Ks = objl::Vector3(1.0f, 0.0f, 0.0f);
+        model->material.ka = {1.0f, 0.0f, 0.0f};
+        model->material.kd = {1.0f, 0.0f, 0.0f};
+        model->material.ks = {1.0f, 0.0f, 0.0f};
 
         glm::mat4 rightMat = glm::mat4(1.0f);
         rightMat = glm::translate(rightMat, selection.pose->position);
@@ -397,9 +397,9 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
                 selectionMode,
                 Z_AXIS)) {
 
-        model->material.Ka = objl::Vector3(0.0f, 0.0f, 1.0f);
-        model->material.Kd = objl::Vector3(0.0f, 0.0f, 1.0f);
-        model->material.Ks = objl::Vector3(0.0f, 0.0f, 1.0f);
+        model->material.ka = {0.0f, 0.0f, 1.0f};
+        model->material.kd = {0.0f, 0.0f, 1.0f};
+        model->material.ks = {0.0f, 0.0f, 1.0f};
 
         glm::mat4 forwardMat = glm::mat4(1.0f);
         forwardMat = glm::translate(forwardMat, selection.pose->position);

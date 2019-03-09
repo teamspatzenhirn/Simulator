@@ -1,49 +1,49 @@
 #include "Editor.h"
 
-objl::Material Editor::markerDefaultMaterial = []{
+Model::Material Editor::markerDefaultMaterial = []{
 
-    objl::Material material;
+    Model::Material material;
 
-    material.Ka = objl::Vector3(1.0f, 1.0f, 1.0f);
-    material.Kd = objl::Vector3(1.0f, 1.0f, 1.0f);
-    material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
-    material.Ns = 10.0f;
-
-    return material;
-}();
-
-objl::Material Editor::markerActiveMaterial = []{
-
-    objl::Material material;
-
-    material.Ka = objl::Vector3(1.0f, 1.0f, 1.0f);
-    material.Kd = objl::Vector3(0.0f, 1.0f, 0.0f);
-    material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
-    material.Ns = 10.0f;
+    material.ka = glm::vec3(1.0f, 1.0f, 1.0f);
+    material.kd = glm::vec3(1.0f, 1.0f, 1.0f);
+    material.ks = glm::vec3(0.0f, 0.0f, 0.0f);
+    material.ns = 10.0f;
 
     return material;
 }();
 
-objl::Material Editor::trackMaterial = []{
+Model::Material Editor::markerActiveMaterial = []{
 
-    objl::Material material;
+    Model::Material material;
 
-    material.Ka = objl::Vector3(1.0f, 1.0f, 1.0f);
-    material.Kd = objl::Vector3(1.0f, 1.0f, 1.0f);
-    material.Ks = objl::Vector3(0.0f, 0.0f, 0.0f);
-    material.Ns = 10.0f;
+    material.ka = glm::vec3(1.0f, 1.0f, 1.0f);
+    material.kd = glm::vec3(0.0f, 1.0f, 0.0f);
+    material.ks = glm::vec3(0.0f, 0.0f, 0.0f);
+    material.ns = 10.0f;
 
     return material;
 }();
 
-std::vector<objl::Vertex> Editor::pointVertices = []{
+Model::Material Editor::trackMaterial = []{
 
-    std::vector<objl::Vertex> vertices;
+    Model::Material material;
 
-    objl::Vector3 normal(0.0f, 1.0f, 0.0f);
-    objl::Vector2 texCoords(0.0f, 0.0f);
-    objl::Vector3 centerCoords(0.0f, 0.0f, 0.0f);
-    objl::Vertex center{centerCoords, normal, texCoords};
+    material.ka = glm::vec3(1.0f, 1.0f, 1.0f);
+    material.kd = glm::vec3(1.0f, 1.0f, 1.0f);
+    material.ks = glm::vec3(0.0f, 0.0f, 0.0f);
+    material.ns = 10.0f;
+
+    return material;
+}();
+
+std::vector<Model::Vertex> Editor::pointVertices = []{
+
+    std::vector<Model::Vertex> vertices;
+
+    glm::vec3 normal(0.0f, 1.0f, 0.0f);
+    glm::vec2 texCoords(0.0f, 0.0f);
+    glm::vec3 centerCoords(0.0f, 0.0f, 0.0f);
+    Model::Vertex center{centerCoords, normal, texCoords};
 
     const int n = 32; // number of sides
     const float radius = 0.1f;
@@ -52,10 +52,10 @@ std::vector<objl::Vertex> Editor::pointVertices = []{
         float angle1 = (2 * M_PI * i) / n;
         float angle2 = (2 * M_PI * (i + 1)) / n;
 
-        objl::Vector3 coords(cos(angle1) * radius, 0.0f, sin(angle1) * radius);
-        objl::Vertex v1{coords, normal, texCoords};
-        coords = objl::Vector3(cos(angle2) * radius, 0.0f, sin(angle2) * radius);
-        objl::Vertex v2{coords, normal, texCoords};
+        glm::vec3 coords(cos(angle1) * radius, 0.0f, sin(angle1) * radius);
+        Model::Vertex v1{coords, normal, texCoords};
+        coords = {cos(angle2) * radius, 0.0f, sin(angle2) * radius};
+        Model::Vertex v2{coords, normal, texCoords};
 
         vertices.push_back(center);
         vertices.push_back(v2);
@@ -65,14 +65,14 @@ std::vector<objl::Vertex> Editor::pointVertices = []{
     return vertices;
 }();
 
-std::vector<objl::Vertex> Editor::trackLineVertices = []{
+std::vector<Model::Vertex> Editor::trackLineVertices = []{
 
-    std::vector<objl::Vertex> vertices;
+    std::vector<Model::Vertex> vertices;
 
-    objl::Vector3 vec0(-1.0f, 0.0f, -1.0f);
-    objl::Vector3 vec1(-1.0f, 0.0f, 1.0f);
-    objl::Vector3 vec2(1.0f, 0.0f, 1.0f);
-    objl::Vector3 vec3(1.0f, 0.0f, -1.0f);
+    glm::vec3 vec0(-1.0f, 0.0f, -1.0f);
+    glm::vec3 vec1(-1.0f, 0.0f, 1.0f);
+    glm::vec3 vec2(1.0f, 0.0f, 1.0f);
+    glm::vec3 vec3(1.0f, 0.0f, -1.0f);
 
     appendQuad(vertices, vec0, vec1, vec2, vec3);
 
@@ -1323,23 +1323,23 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
 
     float dx{end.x - start.x};
     float dy{end.y - start.y};
-    float length{sqrt(dx * dx + dy * dy)};
+    float length{(float)sqrt(dx * dx + dy * dy)};
 
     model.vertices.clear();
 
     // left side
-    objl::Vector3 vec0(0.0f, 0.0f, -tracks.trackWidth / 2);
-    objl::Vector3 vec1(0.0f, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
-    objl::Vector3 vec2(length, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
-    objl::Vector3 vec3(length, 0.0f, -tracks.trackWidth / 2);
+    glm::vec3 vec0(0.0f, 0.0f, -tracks.trackWidth / 2);
+    glm::vec3 vec1(0.0f, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
+    glm::vec3 vec2(length, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
+    glm::vec3 vec3(length, 0.0f, -tracks.trackWidth / 2);
 
     appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
     // right side
-    vec0 = objl::Vector3(0.0f, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth);
-    vec1 = objl::Vector3(0.0f, 0.0f, tracks.trackWidth / 2);
-    vec2 = objl::Vector3(length, 0.0f, tracks.trackWidth / 2);
-    vec3 = objl::Vector3(length, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth);
+    vec0 = {0.0f, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth};
+    vec1 = {0.0f, 0.0f, tracks.trackWidth / 2};
+    vec2 = {length, 0.0f, tracks.trackWidth / 2};
+    vec3 = {length, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth};
 
     appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1353,10 +1353,10 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
                     xEnd = length;
                 }
 
-                vec0 = objl::Vector3(x, 0.0f, -tracks.markingWidth / 2);
-                vec1 = objl::Vector3(x, 0.0f, tracks.markingWidth / 2);
-                vec2 = objl::Vector3(xEnd, 0.0f, tracks.markingWidth / 2);
-                vec3 = objl::Vector3(xEnd, 0.0f, -tracks.markingWidth / 2);
+                vec0 = {x, 0.0f, -tracks.markingWidth / 2};
+                vec1 = {x, 0.0f, tracks.markingWidth / 2};
+                vec2 = {xEnd, 0.0f, tracks.markingWidth / 2};
+                vec3 = {xEnd, 0.0f, -tracks.markingWidth / 2};
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1366,17 +1366,17 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
             break;
         }
         case LaneMarking::DoubleSolid: {
-            vec0 = objl::Vector3(0.0f, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth);
-            vec1 = objl::Vector3(0.0f, 0.0f, -tracks.centerLineGap / 2);
-            vec2 = objl::Vector3(length, 0.0f, -tracks.centerLineGap / 2);
-            vec3 = objl::Vector3(length, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth);
+            vec0 = {0.0f, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth};
+            vec1 = {0.0f, 0.0f, -tracks.centerLineGap / 2};
+            vec2 = {length, 0.0f, -tracks.centerLineGap / 2};
+            vec3 = {length, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth};
 
             appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
-            vec0 = objl::Vector3(0.0f, 0.0f, tracks.centerLineGap / 2);
-            vec1 = objl::Vector3(0.0f, 0.0f, tracks.centerLineGap / 2 + tracks.markingWidth);
-            vec2 = objl::Vector3(length, 0.0f, tracks.centerLineGap / 2 + tracks.markingWidth);
-            vec3 = objl::Vector3(length, 0.0f, tracks.centerLineGap / 2);
+            vec0 = {0.0f, 0.0f, tracks.centerLineGap / 2};
+            vec1 = {0.0f, 0.0f, tracks.centerLineGap / 2 + tracks.markingWidth};
+            vec2 = {length, 0.0f, tracks.centerLineGap / 2 + tracks.markingWidth};
+            vec3 = {length, 0.0f, tracks.centerLineGap / 2};
 
             appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1412,26 +1412,26 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
         float angle2 = baseAngle + ((i + 1) * angle) / numQuads;
 
         // left side
-        objl::Vector3 vec0(cos(angle1) * rOuterOuter, 0.0f, sin(angle1) * rOuterOuter);
-        objl::Vector3 vec1(cos(angle1) * rOuterInner, 0.0f, sin(angle1) * rOuterInner);
-        objl::Vector3 vec2(cos(angle2) * rOuterInner, 0.0f, sin(angle2) * rOuterInner);
-        objl::Vector3 vec3(cos(angle2) * rOuterOuter, 0.0f, sin(angle2) * rOuterOuter);
+        glm::vec3 vec0(cos(angle1) * rOuterOuter, 0.0f, sin(angle1) * rOuterOuter);
+        glm::vec3 vec1(cos(angle1) * rOuterInner, 0.0f, sin(angle1) * rOuterInner);
+        glm::vec3 vec2(cos(angle2) * rOuterInner, 0.0f, sin(angle2) * rOuterInner);
+        glm::vec3 vec3(cos(angle2) * rOuterOuter, 0.0f, sin(angle2) * rOuterOuter);
 
         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
         // right side
-        vec0 = objl::Vector3(cos(angle1) * rInnerOuter, 0.0f, sin(angle1) * rInnerOuter);
-        vec1 = objl::Vector3(cos(angle1) * rInnerInner, 0.0f, sin(angle1) * rInnerInner);
-        vec2 = objl::Vector3(cos(angle2) * rInnerInner, 0.0f, sin(angle2) * rInnerInner);
-        vec3 = objl::Vector3(cos(angle2) * rInnerOuter, 0.0f, sin(angle2) * rInnerOuter);
+        vec0 = {cos(angle1) * rInnerOuter, 0.0f, sin(angle1) * rInnerOuter};
+        vec1 = {cos(angle1) * rInnerInner, 0.0f, sin(angle1) * rInnerInner};
+        vec2 = {cos(angle2) * rInnerInner, 0.0f, sin(angle2) * rInnerInner};
+        vec3 = {cos(angle2) * rInnerOuter, 0.0f, sin(angle2) * rInnerOuter};
 
         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
         // center line
-        objl::Vector3 vecStartOuter(cos(angle1) * rCenterOuter, 0.0f, sin(angle1) * rCenterOuter);
-        objl::Vector3 vecStartInner(cos(angle1) * rCenterInner, 0.0f, sin(angle1) * rCenterInner);
-        objl::Vector3 vecEndInner(cos(angle2) * rCenterInner, 0.0f, sin(angle2) * rCenterInner);
-        objl::Vector3 vecEndOuter(cos(angle2) * rCenterOuter, 0.0f, sin(angle2) * rCenterOuter);
+        glm::vec3 vecStartOuter(cos(angle1) * rCenterOuter, 0.0f, sin(angle1) * rCenterOuter);
+        glm::vec3 vecStartInner(cos(angle1) * rCenterInner, 0.0f, sin(angle1) * rCenterInner);
+        glm::vec3 vecEndInner(cos(angle2) * rCenterInner, 0.0f, sin(angle2) * rCenterInner);
+        glm::vec3 vecEndOuter(cos(angle2) * rCenterOuter, 0.0f, sin(angle2) * rCenterOuter);
 
         switch (centerLine) {
             case LaneMarking::Dashed: {
@@ -1451,7 +1451,6 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
                         // add quad from markingStart to markingEnd
                         float tStart{markingStart / quadLength};
                         float tEnd{markingEnd / quadLength};
-                        using namespace objl::algorithm;
                         vec0 = (1 - tStart) * vecStartOuter + tStart * vecEndOuter;
                         vec1 = (1 - tStart) * vecStartInner + tStart * vecEndInner;
                         vec2 = (1 - tEnd) * vecStartInner + tEnd * vecEndInner;
@@ -1477,20 +1476,20 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
                 float rCenter1Outer = radius + tracks.centerLineGap / 2 + tracks.markingWidth;
                 float rCenter1Inner = radius + tracks.centerLineGap / 2;
 
-                vec0 = objl::Vector3(cos(angle1) * rCenter1Outer, 0.0f, sin(angle1) * rCenter1Outer);
-                vec1 = objl::Vector3(cos(angle1) * rCenter1Inner, 0.0f, sin(angle1) * rCenter1Inner);
-                vec2 = objl::Vector3(cos(angle2) * rCenter1Inner, 0.0f, sin(angle2) * rCenter1Inner);
-                vec3 = objl::Vector3(cos(angle2) * rCenter1Outer, 0.0f, sin(angle2) * rCenter1Outer);
+                vec0 = {cos(angle1) * rCenter1Outer, 0.0f, sin(angle1) * rCenter1Outer};
+                vec1 = {cos(angle1) * rCenter1Inner, 0.0f, sin(angle1) * rCenter1Inner};
+                vec2 = {cos(angle2) * rCenter1Inner, 0.0f, sin(angle2) * rCenter1Inner};
+                vec3 = {cos(angle2) * rCenter1Outer, 0.0f, sin(angle2) * rCenter1Outer};
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
                 float rCenter2Outer = radius - tracks.centerLineGap / 2;
                 float rCenter2Inner = radius - tracks.centerLineGap / 2 - tracks.markingWidth;
 
-                vec0 = objl::Vector3(cos(angle1) * rCenter2Outer, 0.0f, sin(angle1) * rCenter2Outer);
-                vec1 = objl::Vector3(cos(angle1) * rCenter2Inner, 0.0f, sin(angle1) * rCenter2Inner);
-                vec2 = objl::Vector3(cos(angle2) * rCenter2Inner, 0.0f, sin(angle2) * rCenter2Inner);
-                vec3 = objl::Vector3(cos(angle2) * rCenter2Outer, 0.0f, sin(angle2) * rCenter2Outer);
+                vec0 = {cos(angle1) * rCenter2Outer, 0.0f, sin(angle1) * rCenter2Outer};
+                vec1 = {cos(angle1) * rCenter2Inner, 0.0f, sin(angle1) * rCenter2Inner};
+                vec2 = {cos(angle2) * rCenter2Inner, 0.0f, sin(angle2) * rCenter2Inner};
+                vec3 = {cos(angle2) * rCenter2Outer, 0.0f, sin(angle2) * rCenter2Outer};
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1510,31 +1509,29 @@ void Editor::genTrackIntersectionVertices(const Scene::Tracks& tracks, Model& mo
     float d4 = tracks.markingWidth / 2.0f;
 
     // left and right lane boundaries
-    for (int i = -1; i <= 1; i += 2) {
-        using namespace objl::algorithm;
-
-        objl::Vector3 vec0(-d1, 0.0f, -d2);
-        objl::Vector3 vec1(-d1, 0.0f, -d3);
-        objl::Vector3 vec2(-d3, 0.0f, -d3);
-        objl::Vector3 vec3(-d3, 0.0f, -d2);
+    for (float i = -1; i < 2; i += 2) {
+        glm::vec3 vec0(-d1, 0.0f, -d2);
+        glm::vec3 vec1(-d1, 0.0f, -d3);
+        glm::vec3 vec2(-d3, 0.0f, -d3);
+        glm::vec3 vec3(-d3, 0.0f, -d2);
         appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
 
-        vec0 = objl::Vector3(-d1, 0.0f, d3);
-        vec1 = objl::Vector3(-d1, 0.0f, d2);
-        vec2 = objl::Vector3(-d3, 0.0f, d2);
-        vec3 = objl::Vector3(-d3, 0.0f, d3);
+        vec0 = {-d1, 0.0f, d3};
+        vec1 = {-d1, 0.0f, d2};
+        vec2 = {-d3, 0.0f, d2};
+        vec3 = {-d3, 0.0f, d3};
         appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
 
-        vec0 = objl::Vector3(-d2, 0.0f, d3);
-        vec1 = objl::Vector3(-d2, 0.0f, d1);
-        vec2 = objl::Vector3(-d3, 0.0f, d1);
-        vec3 = objl::Vector3(-d3, 0.0f, d3);
+        vec0 = {-d2, 0.0f, d3};
+        vec1 = {-d2, 0.0f, d1};
+        vec2 = {-d3, 0.0f, d1};
+        vec3 = {-d3, 0.0f, d3};
         appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
 
-        vec0 = objl::Vector3(d3, 0.0f, d3);
-        vec1 = objl::Vector3(d3, 0.0f, d1);
-        vec2 = objl::Vector3(d2, 0.0f, d1);
-        vec3 = objl::Vector3(d2, 0.0f, d3);
+        vec0 = {d3, 0.0f, d3};
+        vec1 = {d3, 0.0f, d1};
+        vec2 = {d2, 0.0f, d1};
+        vec3 = {d2, 0.0f, d3};
         appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
     }
 
@@ -1552,19 +1549,17 @@ void Editor::genTrackIntersectionVertices(const Scene::Tracks& tracks, Model& mo
             xEnd = d1;
         }
 
-        for (int i = -1; i <= 1; i += 2) {
-            using namespace objl::algorithm;
-
-            objl::Vector3 vec0(-xEnd, 0.0f, -d4);
-            objl::Vector3 vec1(-xEnd, 0.0f, d4);
-            objl::Vector3 vec2(-x, 0.0f, d4);
-            objl::Vector3 vec3(-x, 0.0f, -d4);
+        for (float i = -1; i < 2; i += 2) {
+            glm::vec3 vec0(-xEnd, 0.0f, -d4);
+            glm::vec3 vec1(-xEnd, 0.0f, d4);
+            glm::vec3 vec2(-x, 0.0f, d4);
+            glm::vec3 vec3(-x, 0.0f, -d4);
             appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
 
-            vec0 = objl::Vector3(-d4, 0.0f, x);
-            vec1 = objl::Vector3(-d4, 0.0f, xEnd);
-            vec2 = objl::Vector3(d4, 0.0f, xEnd);
-            vec3 = objl::Vector3(d4, 0.0f, x);
+            vec0 = {-d4, 0.0f, x};
+            vec1 = {-d4, 0.0f, xEnd};
+            vec2 = {d4, 0.0f, xEnd};
+            vec3 = {d4, 0.0f, x};
             appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
         }
 
@@ -1596,10 +1591,10 @@ void Editor::genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& 
         float angle1 = baseAngle + (i * angle) / numQuads;
         float angle2 = baseAngle + ((i + 1) * angle) / numQuads;
 
-        objl::Vector3 vec0(cos(angle1) * outerRadius, 0.0f, sin(angle1) * outerRadius);
-        objl::Vector3 vec1(cos(angle1) * innerRadius, 0.0f, sin(angle1) * innerRadius);
-        objl::Vector3 vec2(cos(angle2) * innerRadius, 0.0f, sin(angle2) * innerRadius);
-        objl::Vector3 vec3(cos(angle2) * outerRadius, 0.0f, sin(angle2) * outerRadius);
+        glm::vec3 vec0(cos(angle1) * outerRadius, 0.0f, sin(angle1) * outerRadius);
+        glm::vec3 vec1(cos(angle1) * innerRadius, 0.0f, sin(angle1) * innerRadius);
+        glm::vec3 vec2(cos(angle2) * innerRadius, 0.0f, sin(angle2) * innerRadius);
+        glm::vec3 vec3(cos(angle2) * outerRadius, 0.0f, sin(angle2) * outerRadius);
 
         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
     }
@@ -1612,17 +1607,17 @@ void Editor::genTrackIntersectionMarkerVertices(const Scene::Tracks& tracks, Mod
     float d1 = tracks.trackWidth / 2 + intersectionTrackLength;
     float d2 = tracks.trackWidth / 2;
 
-    objl::Vector3 vec0(-d1, 0.0f, -d2);
-    objl::Vector3 vec1(-d1, 0.0f, d2);
-    objl::Vector3 vec2(d1, 0.0f, d2);
-    objl::Vector3 vec3(d1, 0.0f, -d2);
+    glm::vec3 vec0(-d1, 0.0f, -d2);
+    glm::vec3 vec1(-d1, 0.0f, d2);
+    glm::vec3 vec2(d1, 0.0f, d2);
+    glm::vec3 vec3(d1, 0.0f, -d2);
 
     appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
-    vec0 = objl::Vector3(-d2, 0.0f, -d1);
-    vec1 = objl::Vector3(-d2, 0.0f, d1);
-    vec2 = objl::Vector3(d2, 0.0f, d1);
-    vec3 = objl::Vector3(d2, 0.0f, -d1);
+    vec0 = {-d2, 0.0f, -d1};
+    vec1 = {-d2, 0.0f, d1};
+    vec2 = {d2, 0.0f, d1};
+    vec3 = {d2, 0.0f, -d1};
 
     appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 }
@@ -1637,7 +1632,7 @@ glm::mat4 Editor::genTrackLineMatrix(const glm::vec2& start, const glm::vec2& en
     glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3(start.x, y, start.y));
     float dx(end.x - start.x);
     float dy(end.y - start.y);
-    modelMat = glm::rotate(modelMat, atan2(-dy, dx), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMat = glm::rotate(modelMat, atan2f(-dy, dx), glm::vec3(0.0f, 1.0f, 0.0f));
 
     return modelMat;
 }
@@ -1659,22 +1654,22 @@ glm::mat4 Editor::genTrackLineMarkerMatrix(const glm::vec2& start,
     glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3((start.x + end.x) / 2, y, (start.y + end.y) / 2));
     float dx(end.x - start.x);
     float dy(end.y - start.y);
-    modelMat = glm::rotate(modelMat, atan2(-dy, dx), glm::vec3(0.0f, 1.0f, 0.0f));
+    modelMat = glm::rotate(modelMat, atan2f(-dy, dx), glm::vec3(0.0f, 1.0f, 0.0f));
     modelMat = glm::scale(modelMat, glm::vec3(sqrt(dx * dx + dy * dy) / 2, 1.0f, tracks.trackWidth / 2)); // division by 2 because model has size 2x2
 
     return modelMat;
 }
 
-void Editor::appendQuad(std::vector<objl::Vertex>& vertices, const objl::Vector3& vec0,
-        const objl::Vector3& vec1, const objl::Vector3& vec2, const objl::Vector3& vec3) {
+void Editor::appendQuad(std::vector<Model::Vertex>& vertices, const glm::vec3& vec0,
+        const glm::vec3& vec1, const glm::vec3& vec2, const glm::vec3& vec3) {
 
-    objl::Vector3 normalVector(0.0f, 1.0f, 0.0f);
-    objl::Vector2 texCoords(0.0f, 0.0f);
+    glm::vec3 normalVector(0.0f, 1.0f, 0.0f);
+    glm::vec2 texCoords(0.0f, 0.0f);
 
-    objl::Vertex v0{vec0, normalVector, texCoords};
-    objl::Vertex v1{vec1, normalVector, texCoords};
-    objl::Vertex v2{vec2, normalVector, texCoords};
-    objl::Vertex v3{vec3, normalVector, texCoords};
+    Model::Vertex v0{vec0, normalVector, texCoords};
+    Model::Vertex v1{vec1, normalVector, texCoords};
+    Model::Vertex v2{vec2, normalVector, texCoords};
+    Model::Vertex v3{vec3, normalVector, texCoords};
 
     vertices.push_back(v0);
     vertices.push_back(v1);
@@ -1689,8 +1684,8 @@ void Editor::getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
         float& angle, int& numQuads) {
 
     // angles
-    float angleStart = atan2(start.y - center.y, start.x - center.x);
-    float angleEnd = atan2(end.y - center.y, end.x - center.x);
+    float angleStart = atan2f(start.y - center.y, start.x - center.x);
+    float angleEnd = atan2f(end.y - center.y, end.x - center.x);
 
     if (rightArc) {
         // right arc

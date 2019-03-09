@@ -37,13 +37,13 @@ private:
     static constexpr float intersectionTrackLength{0.75f};
 
     // materials
-    static objl::Material markerDefaultMaterial;
-    static objl::Material markerActiveMaterial;
-    static objl::Material trackMaterial;
+    static Model::Material markerDefaultMaterial;
+    static Model::Material markerActiveMaterial;
+    static Model::Material trackMaterial;
 
     // vertices
-    static std::vector<objl::Vertex> pointVertices;
-    static std::vector<objl::Vertex> trackLineVertices;
+    static std::vector<Model::Vertex> pointVertices;
+    static std::vector<Model::Vertex> trackLineVertices;
 
     // ground
     Model ground{"models/ground.obj"};
@@ -207,8 +207,8 @@ private:
     static glm::mat4 genTrackLineMarkerMatrix(const glm::vec2& start,
             const glm::vec2& end, const float y, const Scene::Tracks& tracks);
 
-    static void appendQuad(std::vector<objl::Vertex>& vertices, const objl::Vector3& vec0,
-            const objl::Vector3& vec1, const objl::Vector3& vec2, const objl::Vector3& vec3);
+    static void appendQuad(std::vector<Model::Vertex>& vertices, const glm::vec3& vec0,
+            const glm::vec3& vec1, const glm::vec3& vec2, const glm::vec3& vec3);
 
     static void getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
             const glm::vec2& center, const bool rightArc, float& baseAngle,

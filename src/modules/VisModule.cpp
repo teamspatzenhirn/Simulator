@@ -12,9 +12,9 @@ void VisModule::drawRing(GLuint shaderProgramId, glm::vec3 position, float scale
 
     // TODO: nearly identical to drawCircle, remove duplication
 
-    circleModel->material.Ka = objl::Vector3(color.r, color.g, color.b);
-    circleModel->material.Kd = objl::Vector3(color.r, color.g, color.b);
-    circleModel->material.Ks = objl::Vector3(color.r, color.g, color.b);
+    circleModel->material.ka = {color.r, color.g, color.b};
+    circleModel->material.kd = {color.r, color.g, color.b};
+    circleModel->material.ks = {color.r, color.g, color.b};
     
     glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), position);
     modelMat = glm::scale(modelMat, glm::vec3(scale, scale, scale));
@@ -23,9 +23,9 @@ void VisModule::drawRing(GLuint shaderProgramId, glm::vec3 position, float scale
 
 void VisModule::drawCircle(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color) {
 
-    circleModel->material.Ka = objl::Vector3(color.r, color.g, color.b);
-    circleModel->material.Kd = objl::Vector3(color.r, color.g, color.b);
-    circleModel->material.Ks = objl::Vector3(color.r, color.g, color.b);
+    circleModel->material.ka = {color.r, color.g, color.b};
+    circleModel->material.kd = {color.r, color.g, color.b};
+    circleModel->material.ks = {color.r, color.g, color.b};
     
     glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), position);
     modelMat = glm::scale(modelMat, glm::vec3(scale, scale, scale));
@@ -39,9 +39,9 @@ void VisModule::drawLine(GLuint shaderProgramId, glm::vec2 start, glm::vec2 end,
 
 void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float width, glm::vec3 color) {
 
-    lineModel->material.Ka = objl::Vector3(color.r, color.g, color.b);
-    lineModel->material.Kd = objl::Vector3(color.r, color.g, color.b);
-    lineModel->material.Ks = objl::Vector3(color.r, color.g, color.b);
+    lineModel->material.ka = {color.r, color.g, color.b};
+    lineModel->material.kd = {color.r, color.g, color.b};
+    lineModel->material.ks = {color.r, color.g, color.b};
 
     glm::vec3 distVec = end - start;
     glm::vec3 middelVec = start + distVec * 0.5f;
@@ -58,9 +58,9 @@ void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end,
 
 void VisModule::drawArrow(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float scale, glm::vec3 color) {
 
-    arrowModel->material.Ka = objl::Vector3(color.r, color.g, color.b);
-    arrowModel->material.Kd = objl::Vector3(color.r, color.g, color.b);
-    arrowModel->material.Ks = objl::Vector3(color.r, color.g, color.b);
+    arrowModel->material.ka = {color.r, color.g, color.b};
+    arrowModel->material.kd = {color.r, color.g, color.b};
+    arrowModel->material.ks = {color.r, color.g, color.b};
 
     glm::vec3 distVec = end - start;
     glm::lookAt(start, distVec, glm::vec3(0, 1, 0));

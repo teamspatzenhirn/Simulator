@@ -4,7 +4,6 @@
 #include "FpsCamera.h"
 #include "FrameBuffer.h"
 #include "Model.h"
-#include "ObjLoader.h"
 #include "PointLight.h"
 #include "Pose.h"
 #include "Timer.h"

@@ -1,6 +1,13 @@
+# Note: this is a custom CMakeLists.txt file that is
+# not part of the original imgui repo.
+
+# This builds the glew + glfw + opengl3 version of imgui.
+
 cmake_minimum_required(VERSION 3.8)
 
-add_library(imgui STATIC
+project(imgui)
+
+add_library(${PROJECT_NAME} STATIC
     imconfig.h
     imgui.cpp
     imgui.h
@@ -17,11 +24,14 @@ add_library(imgui STATIC
     examples/imgui_impl_opengl3.h
 )
 
-target_compile_definitions(imgui
+target_compile_definitions(${PROJECT_NAME}
     PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_GLEW
 )
 
-target_include_directories(imgui
-    PUBLIC ${CMAKE_SOURCE_DIR}/extern/ocornut_imgui
-    PUBLIC ${CMAKE_SOURCE_DIR}/extern/ocornut_imgui/examples
+target_include_directories(${PROJECT_NAME}
+    PUBLIC ${CMAKE_SOURCE_DIR}/extern/
+    PRIVATE ${CMAKE_SOURCE_DIR}/extern/ocornut_imgui
+    PRIVATE ${CMAKE_SOURCE_DIR}/extern/ocornut_imgui/examples
 )
+
+target_link_libraries(${PROJECT_NAME} glfw)

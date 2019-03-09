@@ -28,17 +28,17 @@ float CarModule::calcLaserSensorValue(
         for (unsigned int i = 2 ; i < itemModel.vertices.size() ; i += 3) {
 
             glm::vec3 vec0 = {
-                itemModel.vertices[i-2].Position.X,
-                itemModel.vertices[i-2].Position.Y,
-                itemModel.vertices[i-2].Position.Z };
+                itemModel.vertices[i-2].position.x,
+                itemModel.vertices[i-2].position.y,
+                itemModel.vertices[i-2].position.z };
             glm::vec3 vec1 = {
-                itemModel.vertices[i-1].Position.X,
-                itemModel.vertices[i-1].Position.Y,
-                itemModel.vertices[i-1].Position.Z };
+                itemModel.vertices[i-1].position.x,
+                itemModel.vertices[i-1].position.y,
+                itemModel.vertices[i-1].position.z };
             glm::vec3 vec2 = {
-                itemModel.vertices[i].Position.X,
-                itemModel.vertices[i].Position.Y,
-                itemModel.vertices[i].Position.Z };
+                itemModel.vertices[i].position.x,
+                itemModel.vertices[i].position.y,
+                itemModel.vertices[i].position.z };
 
             vec0 = modelMat * glm::vec4(vec0, 1);
             vec1 = modelMat * glm::vec4(vec1, 1);
