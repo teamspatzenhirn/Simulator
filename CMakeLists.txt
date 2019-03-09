@@ -130,7 +130,10 @@ target_include_directories(${PROJECT_NAME}
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wextra)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wpedantic)
-target_compile_options(${PROJECT_NAME} PUBLIC -std=c++11)
+target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
+target_compile_options(${PROJECT_NAME} PUBLIC -Wunreachable-code)
+target_compile_options(${PROJECT_NAME} PUBLIC -Wswitch-default)
+target_compile_options(${PROJECT_NAME} PUBLIC -std=c++17)
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 
 # Compile type dependent (release or debug) flags.

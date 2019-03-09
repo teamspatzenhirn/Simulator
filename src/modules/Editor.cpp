@@ -931,7 +931,7 @@ std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Sc
                         || glm::dot(start - end, position - end) < 0) {
                     continue;
                 }
-                distance = abs(distanceLinePoint(start, end, position));
+                distance = fabs(distanceLinePoint(start, end, position));
             } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track)) {
                 glm::vec2 start = arc->start.lock()->coords;
                 glm::vec2 end = arc->end.lock()->coords;
@@ -950,7 +950,7 @@ std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Sc
                         continue;
                     }
                 }
-                distance = abs(glm::distance(center, position) - arc->radius);
+                distance = fabs(glm::distance(center, position) - arc->radius);
             } else {
                 std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
                 glm::vec2 link1(intersection->link1.lock()->coords);
@@ -964,8 +964,8 @@ std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Sc
                     continue;
                 }
                 distance = std::min(
-                        abs(distanceLinePoint(link1, link3, position)),
-                        abs(distanceLinePoint(link2, link4, position)));
+                        fabs(distanceLinePoint(link1, link3, position)),
+                        fabs(distanceLinePoint(link2, link4, position)));
             }
 
             if (distance < minDistance) {
@@ -1098,7 +1098,7 @@ bool Editor::getArc(const glm::vec2& start, const glm::vec2& end, const std::vec
     } else {
         // arc
         center = start + t * r1;
-        radius = abs(t);
+        radius = fabs(t);
         rightArc = (t > 0);
 
         return true;
@@ -1121,7 +1121,7 @@ bool Editor::intersectParam(const glm::vec2& p1, const glm::vec2& r1, const glm:
     // intersect
     float m(0);
     float x(0);
-    if (abs(r2.x) > abs(r2.y)) {
+    if (fabs(r2.x) > fabs(r2.y)) {
         float f = r2.y / r2.x;
         m = r1.y - f * r1.x;
         x = (p2.y - p1.y) - f * (p2.x - p1.x);
@@ -1420,10 +1420,10 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
         // right side
-        vec0 = {cos(angle1) * rInnerOuter, 0.0f, sin(angle1) * rInnerOuter};
-        vec1 = {cos(angle1) * rInnerInner, 0.0f, sin(angle1) * rInnerInner};
-        vec2 = {cos(angle2) * rInnerInner, 0.0f, sin(angle2) * rInnerInner};
-        vec3 = {cos(angle2) * rInnerOuter, 0.0f, sin(angle2) * rInnerOuter};
+        vec0 = glm::vec3{cos(angle1) * rInnerOuter, 0.0f, sin(angle1) * rInnerOuter};
+        vec1 = glm::vec3{cos(angle1) * rInnerInner, 0.0f, sin(angle1) * rInnerInner};
+        vec2 = glm::vec3{cos(angle2) * rInnerInner, 0.0f, sin(angle2) * rInnerInner};
+        vec3 = glm::vec3{cos(angle2) * rInnerOuter, 0.0f, sin(angle2) * rInnerOuter};
 
         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1451,10 +1451,10 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
                         // add quad from markingStart to markingEnd
                         float tStart{markingStart / quadLength};
                         float tEnd{markingEnd / quadLength};
-                        vec0 = (1 - tStart) * vecStartOuter + tStart * vecEndOuter;
-                        vec1 = (1 - tStart) * vecStartInner + tStart * vecEndInner;
-                        vec2 = (1 - tEnd) * vecStartInner + tEnd * vecEndInner;
-                        vec3 = (1 - tEnd) * vecStartOuter + tEnd * vecEndOuter;
+                        vec0 = (1.0f - tStart) * vecStartOuter + tStart * vecEndOuter;
+                        vec1 = (1.0f - tStart) * vecStartInner + tStart * vecEndInner;
+                        vec2 = (1.0f - tEnd) * vecStartInner + tEnd * vecEndInner;
+                        vec3 = (1.0f - tEnd) * vecStartOuter + tEnd * vecEndOuter;
                         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
                     } else {
                         markingEnd = markingStart + tracks.centerLineLength
@@ -1591,10 +1591,10 @@ void Editor::genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& 
         float angle1 = baseAngle + (i * angle) / numQuads;
         float angle2 = baseAngle + ((i + 1) * angle) / numQuads;
 
-        glm::vec3 vec0(cos(angle1) * outerRadius, 0.0f, sin(angle1) * outerRadius);
-        glm::vec3 vec1(cos(angle1) * innerRadius, 0.0f, sin(angle1) * innerRadius);
-        glm::vec3 vec2(cos(angle2) * innerRadius, 0.0f, sin(angle2) * innerRadius);
-        glm::vec3 vec3(cos(angle2) * outerRadius, 0.0f, sin(angle2) * outerRadius);
+        glm::vec3 vec0(cosf(angle1) * outerRadius, 0.0f, sinf(angle1) * outerRadius);
+        glm::vec3 vec1(cosf(angle1) * innerRadius, 0.0f, sinf(angle1) * innerRadius);
+        glm::vec3 vec2(cosf(angle2) * innerRadius, 0.0f, sinf(angle2) * innerRadius);
+        glm::vec3 vec3(cosf(angle2) * outerRadius, 0.0f, sinf(angle2) * outerRadius);
 
         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
     }
@@ -1684,8 +1684,8 @@ void Editor::getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
         float& angle, int& numQuads) {
 
     // angles
-    float angleStart = atan2f(start.y - center.y, start.x - center.x);
-    float angleEnd = atan2f(end.y - center.y, end.x - center.x);
+    float angleStart = atan2(start.y - center.y, start.x - center.x);
+    float angleEnd = atan2(end.y - center.y, end.x - center.x);
 
     if (rightArc) {
         // right arc
@@ -1710,8 +1710,5 @@ void Editor::getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
         numQuads = 64;
     }
 }
-
-
-
 
 
