@@ -2,14 +2,14 @@
 
 std::shared_ptr<Loop> Loop::instance;
 
-Loop::Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight, Settings settings)
+Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings)
     : window{window}
     , windowWidth{windowWidth}
     , windowHeight{windowHeight}
     , settings{settings}
     , scene{settings.configPath}
     , frameBuffer{windowWidth, windowHeight}
-    , screenQuad{windowWidth, windowHeight, "shaders/ScreenQuadFragment.glsl"}
+    , screenQuad{"shaders/ScreenQuadFragment.glsl"}
     , guiModule{window, settings.configPath} {
 }
 
@@ -125,10 +125,10 @@ void Loop::loop() {
             float carCameraAspect = scene.car.mainCamera.getAspectRatio();
 
             if (((float) windowWidth) / windowHeight > carCameraAspect) {
-                int width = windowHeight * carCameraAspect;
+                GLsizei width = (GLsizei)(windowHeight * carCameraAspect);
                 glViewport((windowWidth - width) / 2, 0, width, windowHeight);
             } else {
-                int height = windowWidth / carCameraAspect;
+                GLsizei height = (GLsizei)(windowWidth / carCameraAspect);
                 glViewport(0, (windowHeight - height) / 2, windowWidth, height);
             }
 
@@ -150,10 +150,10 @@ void Loop::loop() {
             float carCameraAspect = scene.car.depthCamera.getDepthAspectRatio();
 
             if (((float) windowWidth) / windowHeight > carCameraAspect) {
-                int width = windowHeight * carCameraAspect;
+                GLsizei width = (GLsizei)(windowHeight * carCameraAspect);
                 glViewport((windowWidth - width) / 2, 0, width, windowHeight);
             } else {
-                int height = windowWidth / carCameraAspect;
+                GLsizei height = (GLsizei)(windowWidth / carCameraAspect);
                 glViewport(0, (windowHeight - height) / 2, windowWidth, height);
             }
 
@@ -262,10 +262,10 @@ void Loop::renderFpsView() {
     Scene preRenderScene = scene;
     update(timer.accumulator, timer.accumulator * settings.simulationSpeed);
 
-    GLuint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
+    GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
     glUniform1f(timeLocation, scene.simulationTime);
 
-    GLuint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
+    GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
     glUniform1f(noiseLocation, 0.0);
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
@@ -323,10 +323,10 @@ void Loop::renderCarView() {
 
     glUseProgram(carShaderProgram.id);
 
-    GLuint timeLocation = glGetUniformLocation(carShaderProgram.id, "time");
+    GLint timeLocation = glGetUniformLocation(carShaderProgram.id, "time");
     glUniform1f(timeLocation, scene.simulationTime);
 
-    GLuint noiseLocation = glGetUniformLocation(carShaderProgram.id, "noise");
+    GLint noiseLocation = glGetUniformLocation(carShaderProgram.id, "noise");
     glUniform1f(noiseLocation, scene.car.mainCamera.noise);
 
     glBindFramebuffer(GL_FRAMEBUFFER, car.bayerFrameBuffer.id);
@@ -346,10 +346,10 @@ void Loop::renderCarView() {
 
     if (MAIN_CAMERA == selectedCamera) {
 
-        GLuint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
+        GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
         glUniform1f(timeLocation, scene.simulationTime);
 
-        GLuint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
+        GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
         glUniform1f(noiseLocation, scene.car.mainCamera.noise);
 
         glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);

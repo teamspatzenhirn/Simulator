@@ -45,8 +45,8 @@ void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end,
 
     glm::vec3 distVec = end - start;
     glm::vec3 middelVec = start + distVec * 0.5f;
-    float angleY = atan2(distVec.x, distVec.z);
-    float angleX = atan2(distVec.y, distVec.z);
+    float angleY = atan2f(distVec.x, distVec.z);
+    float angleX = atan2f(distVec.y, distVec.z);
 
     glm::mat4 modelMat = glm::mat4(1.0f);
     modelMat = glm::translate(modelMat, middelVec);
@@ -64,7 +64,7 @@ void VisModule::drawArrow(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end
 
     glm::vec3 distVec = end - start;
     glm::lookAt(start, distVec, glm::vec3(0, 1, 0));
-    float angleZ = -atan2(distVec.x, distVec.z);
+    float angleZ = -atan2f(distVec.x, distVec.z);
 
     // TODO: rotation incomplete!
 
@@ -91,27 +91,27 @@ void VisModule::addPositionTrace(glm::vec3 position, uint64_t simulationTime) {
 
 void VisModule::renderPositionTrace(GLuint shaderProgramId, uint64_t simulationTime, bool fancy) {
 
-    GLuint billboardLocation = 
+    GLint billboardLocation = 
         glGetUniformLocation(shaderProgramId, "billboard");
     glUniform1i(billboardLocation, true);
 
-    GLuint lightingLocation = 
+    GLint lightingLocation = 
         glGetUniformLocation(shaderProgramId, "lighting");
     glUniform1i(lightingLocation, false);
 
     for (StampedPosition& pos : tracedPositions) {
 
-        float t = (float)(simulationTime - pos.time) * 0.01;
+        float t = (float)(simulationTime - pos.time) * 0.01f;
 
-        float scale = 0.05;
+        float scale = 0.05f;
         glm::vec3 color(0.0f, 1.0f, 0.0f);
 
         if (fancy) {
-            scale = 0.05 + 0.02 * std::sin(t);
+            scale = 0.05f + 0.02f * std::sin(t);
             color = glm::vec3(
-                    0.5 + 0.5 * std::sin(t),
-                    0.5 + 0.5 * std::sin(t + glm::radians(120.0f)),
-                    0.5 + 0.5 * std::sin(t + glm::radians(240.0f)));
+                    0.5f + 0.5f * std::sin(t),
+                    0.5f + 0.5f * std::sin(t + glm::radians(120.0f)),
+                    0.5f + 0.5f * std::sin(t + glm::radians(240.0f)));
         }
 
         drawCircle(shaderProgramId, pos.position, scale, color);
@@ -127,7 +127,7 @@ void VisModule::renderDynamicItems(
         double simulationTime, 
         std::vector<std::shared_ptr<Scene::Item>>& items) {
 
-    float offset = std::sin(simulationTime * 0.01) * 0.01;
+    float offset = std::sin((float)simulationTime * 0.01f) * 0.01f;
 
     for (std::shared_ptr<Scene::Item>& item : items) {
 
@@ -140,7 +140,7 @@ void VisModule::renderDynamicItems(
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
 
-            drawArrow(shaderProgramId, startWorld, endWorld, 0.05, glm::vec3(1, 1, 0));
+            drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
 
         if (item->type == DYNAMIC_PEDESTRIAN_RIGHT) {
@@ -152,7 +152,7 @@ void VisModule::renderDynamicItems(
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
 
-            drawArrow(shaderProgramId, startWorld, endWorld, 0.05, glm::vec3(1, 1, 0));
+            drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
 
         if (item->type == DYNAMIC_PEDESTRIAN_LEFT) {
@@ -164,7 +164,7 @@ void VisModule::renderDynamicItems(
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
 
-            drawArrow(shaderProgramId, startWorld, endWorld, 0.05, glm::vec3(1, 1, 0));
+            drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
     }
 
@@ -172,11 +172,11 @@ void VisModule::renderDynamicItems(
 
 void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings& settings) {
 
-    GLuint lightingLocation = 
+    GLint lightingLocation = 
         glGetUniformLocation(shaderProgramId, "lighting");
     glUniform1i(lightingLocation, false);
 
-    GLuint billboardLocation = 
+    GLint billboardLocation = 
         glGetUniformLocation(shaderProgramId, "billboard");
     glUniform1i(billboardLocation, true);
 
@@ -190,7 +190,7 @@ void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings&
         drawCircle(
                 shaderProgramId,
                 binaryLightSensorWorldPos,
-                0.05,
+                0.05f,
                 glm::vec3(1, 1, 0));
     }
 
@@ -198,7 +198,7 @@ void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings&
         drawCircle(
                 shaderProgramId,
                 laserSensorWorldPos,
-                0.05,
+                0.05f,
                 glm::vec3(1, 1, 0));
     }
 
@@ -219,7 +219,7 @@ void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings&
                 shaderProgramId,
                 binaryLightSensorWorldPos,
                 binaryLightSensorWorldPos + glm::vec3(glm::normalize(dir)) * lineLength,
-                0.005,
+                0.005f,
                 color);
     }
 
@@ -230,7 +230,7 @@ void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings&
                 shaderProgramId,
                 laserSensorWorldPos,
                 laserSensorWorldPos + glm::vec3(glm::normalize(dir)) * lineLength,
-                0.005,
+                0.005f,
                 glm::vec3(1, 0, 0));
     }
 
@@ -242,7 +242,7 @@ void VisModule::renderVisualization(
         Scene::Visualization& visualization,
         Settings& settings) {
 
-    GLuint lightingLocation = 
+    GLint lightingLocation = 
         glGetUniformLocation(shaderProgramId, "lighting");
     glUniform1i(lightingLocation, false);
 
@@ -252,7 +252,7 @@ void VisModule::renderVisualization(
 
             glm::vec2 prevTrajectoryPoint = visualization.trajectoryPoints[0];
 
-            for (int i = 1; i < 128; i++) {
+            for (size_t i = 1; i < 128; i++) {
 
                 glm::vec2 trajectoryPoint = visualization.trajectoryPoints[i];
 
@@ -260,13 +260,13 @@ void VisModule::renderVisualization(
                         shaderProgramId,
                         prevTrajectoryPoint,
                         trajectoryPoint,
-                        0.01,
+                        0.01f,
                         glm::vec3(1, 0, 0));
 
                 prevTrajectoryPoint = trajectoryPoint;
             }
 
-            GLuint billboardLocation = 
+            GLint billboardLocation = 
                 glGetUniformLocation(shaderProgramId, "billboard");
             glUniform1i(billboardLocation, true);
 
@@ -276,7 +276,7 @@ void VisModule::renderVisualization(
             drawCircle(
                     shaderProgramId,
                     endPoint,
-                    0.1,
+                    0.1f,
                     glm::vec3(1, 1, 0));
 
             glUniform1i(billboardLocation, false);

@@ -23,8 +23,8 @@ public:
 
     GLuint id;
 
-    GLuint width;
-    GLuint height;
+    GLsizei width;
+    GLsizei height;
 
     GLuint colorTextureId;
     GLuint depthTextureId;
@@ -32,11 +32,11 @@ public:
     GLint internalFormatColor;
     GLenum formatColor;
 
-    FrameBuffer(GLuint width, GLuint height);
-    FrameBuffer(GLuint width, GLuint height, GLint internalFormatColor, GLenum formatColor);
+    FrameBuffer(GLsizei width, GLsizei height);
+    FrameBuffer(GLsizei width, GLsizei height, GLint internalFormatColor, GLenum formatColor);
     ~FrameBuffer();
 
-    void resize(GLuint width, GLuint height);
+    void resize(GLsizei newWidth, GLsizei newHeight);
 };
 
 #endif

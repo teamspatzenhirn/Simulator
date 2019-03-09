@@ -1,10 +1,10 @@
 #include "FrameBuffer.h"
 
-FrameBuffer::FrameBuffer(GLuint width, GLuint height) 
+FrameBuffer::FrameBuffer(GLsizei width, GLsizei height) 
     : FrameBuffer(width, height, GL_RGBA, GL_RGBA) {
 }
 
-FrameBuffer::FrameBuffer(GLuint width, GLuint height, GLint internalFormatColor, GLenum formatColor) {
+FrameBuffer::FrameBuffer(GLsizei width, GLsizei height, GLint internalFormatColor, GLenum formatColor) {
 
     this->internalFormatColor = internalFormatColor;
     this->formatColor = formatColor;
@@ -76,15 +76,15 @@ FrameBuffer::~FrameBuffer() {
     glDeleteTextures(1, &depthTextureId);
 }
 
-void FrameBuffer::resize(GLuint width, GLuint height) {
+void FrameBuffer::resize(GLsizei newWidth, GLsizei newHeight) {
 
     glBindTexture(GL_TEXTURE_2D, colorTextureId);
 
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  internalFormatColor,
-                 width,
-                 height,
+                 newWidth,
+                 newHeight,
                  0,
                  formatColor,
                  GL_UNSIGNED_BYTE,
@@ -95,8 +95,8 @@ void FrameBuffer::resize(GLuint width, GLuint height) {
     glTexImage2D(GL_TEXTURE_2D,
                  0,
                  GL_DEPTH_COMPONENT24,
-                 width,
-                 height,
+                 newWidth,
+                 newHeight,
                  0,
                  GL_DEPTH_COMPONENT,
                  GL_FLOAT,
@@ -104,7 +104,7 @@ void FrameBuffer::resize(GLuint width, GLuint height) {
 
     glBindTexture(GL_TEXTURE_2D, 0);
 
-    this->width = width;
-    this->height = height;
+    this->width = newWidth;
+    this->height = newHeight;
 }
 

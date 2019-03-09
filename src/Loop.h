@@ -21,8 +21,8 @@ class Loop {
 
     GLFWwindow* window;
 
-    GLuint windowWidth;
-    GLuint windowHeight;
+    GLsizei windowWidth;
+    GLsizei windowHeight;
 
     Settings settings;
 
@@ -82,7 +82,7 @@ public:
 
     static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 
-    Loop(GLFWwindow* window, GLuint windowWidth, GLuint windowHeight, Settings settings);
+    Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
 
     void loop();
 };

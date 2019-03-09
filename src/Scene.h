@@ -316,7 +316,7 @@ struct Scene {
     /*
      * This is free camera that is used in the editor.
      */
-    FpsCamera fpsCamera{{0, 1, 1.5}, 0.5, 0, M_PI * 0.3f, 4.0f/3.0f};
+    FpsCamera fpsCamera{{0, 1, 1.5}, 0.5, 0, (float)M_PI * 0.3f, 4.0f/3.0f};
 
     struct Selection {
 
@@ -432,7 +432,7 @@ struct Scene {
          */
         struct MainCamera {
 
-            Pose pose{0, 0.260, 0.110};
+            Pose pose{0, 0.260f, 0.110f};
 
             MainCamera() {
                 pose.setEulerAngles(glm::vec3(-12.0f, 180.0f, 0.0f));
@@ -448,7 +448,7 @@ struct Scene {
             unsigned int imageWidth = 2064;
             unsigned int imageHeight = 1544;
 
-            float fovy = M_PI * 0.5f;
+            float fovy = (float)M_PI * 0.5f;
 
             struct DistortionCoefficients {
 
@@ -469,7 +469,7 @@ struct Scene {
          */
         struct DepthCamera {
 
-            Pose pose{0, 0.19, 0.05};
+            Pose pose{0, 0.19f, 0.05f};
 
             DepthCamera() {
                 pose.setEulerAngles(glm::vec3(0.0f, 180.0f, 0.0f));
@@ -481,8 +481,8 @@ struct Scene {
             unsigned int depthImageWidth = 320;
             unsigned int depthImageHeight = 240;
 
-            float colorFovy = M_PI * 0.5f;
-            float depthFovy = M_PI * 0.25f;
+            float colorFovy = (float)M_PI * 0.5f;
+            float depthFovy = (float)M_PI * 0.25f;
 
             float getColorAspectRatio() {
                 return (float)colorImageWidth / (float)colorImageHeight;
@@ -499,7 +499,7 @@ struct Scene {
             /*
              * The position of the sensor in car coordinate.
              */
-            Pose pose{-0.05, 0.1, -0.025};
+            Pose pose{-0.05f, 0.1f, -0.025f};
 
             /*
              * The distance detected by this light sensors
@@ -515,7 +515,7 @@ struct Scene {
             /*
              * The minimum trigger distance to an obstacle in meters.
              */
-            float triggerDistance = 0.3;
+            float triggerDistance = 0.3f;
 
         } binaryLightSensor;
 
@@ -524,7 +524,7 @@ struct Scene {
             /*
              * The position of the sensor in car coordinate.
              */
-            Pose pose{-0.05, 0.1, 0.21};
+            Pose pose{-0.05f, 0.1f, 0.21f};
 
             /*
              * The distance detected by this light sensors
@@ -609,7 +609,7 @@ struct Scene {
      */
     struct DynamicItemSettings {
 
-        float speed = 0.6;
+        float speed = 0.6f;
 
     } dynamicItemSettings;
 

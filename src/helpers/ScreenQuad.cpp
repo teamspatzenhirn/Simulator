@@ -1,9 +1,6 @@
 #include "ScreenQuad.h"
 
-ScreenQuad::ScreenQuad(GLuint width, GLuint height, Shader fragmentShader) {
-
-    this->width = width;
-    this->height = height;
+ScreenQuad::ScreenQuad(Shader fragmentShader) {
 
     Shader vertexShader("shaders/ScreenQuadVertex.glsl", GL_VERTEX_SHADER);
 
@@ -50,8 +47,8 @@ ScreenQuad::ScreenQuad(GLuint width, GLuint height, Shader fragmentShader) {
     glBindVertexArray(0);
 }
 
-ScreenQuad::ScreenQuad(GLuint width, GLuint height, std::string fragmentShaderPath) 
-    : ScreenQuad(width, height, Shader(fragmentShaderPath, GL_FRAGMENT_SHADER)) {
+ScreenQuad::ScreenQuad(std::string fragmentShaderPath) 
+    : ScreenQuad(Shader(fragmentShaderPath, GL_FRAGMENT_SHADER)) {
 
 }
 
