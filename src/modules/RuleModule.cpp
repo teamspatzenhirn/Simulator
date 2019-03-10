@@ -3,7 +3,7 @@
 RuleModule::RuleModule() {
 }
 
-void RuleModule::printViolation(float simulationTime) {
+void RuleModule::printViolation(double simulationTime) {
 
     std::cerr << "\nRULE VIOLATION AFTER "
               << simulationTime
@@ -12,7 +12,7 @@ void RuleModule::printViolation(float simulationTime) {
 }
 
 void RuleModule::update(
-        float simulationTime,
+        double simulationTime,
         Scene::Rules& rules,
         Scene::Car& car,
         Scene::Tracks& tracks,
@@ -288,15 +288,15 @@ void RuleModule::update(
                     }
                 } else if (rules.line == i) { 
                     if (isReallyClose && rules.linePassed == false) {
-                        uint64_t delta = simulationTime - rules.lineTime;
-                        uint64_t deltaLimit = 0;
+                        double delta = simulationTime - rules.lineTime;
+                        double deltaLimit = 0;
                         std::string typeString = "";
                         if (i->type == STOP_LINE) {
-                            deltaLimit = 3000;
+                            deltaLimit = 3.0;
                             typeString = "stop line";
                         }
                         if (i->type == GIVE_WAY_LINE) {
-                            deltaLimit = 1000;
+                            deltaLimit = 1.0;
                             typeString = "give-way line";
                         }
                         if (i->type == CROSSWALK || i->type == CROSSWALK_SMALL) {
@@ -310,7 +310,7 @@ void RuleModule::update(
                                 }
                             }
                             if (pedestrianNearby) {
-                                deltaLimit = 1000;
+                                deltaLimit = 1.000;
                             } else {
                                 deltaLimit = 0;
                             }
@@ -322,7 +322,7 @@ void RuleModule::update(
                                       << typeString
                                       << " in: "
                                       << delta
-                                      << "ms"
+                                      << "s"
                                       << std::endl;
 
                             if (i->type == GIVE_WAY_LINE && rules.exitIfGiveWayLineIgnored) {

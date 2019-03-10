@@ -2,10 +2,7 @@
 #define INC_2019_MARKER_H
 
 #include <vector>
-#include <string>
 #include <memory>
-#include <algorithm>
-#include <cstdint>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -16,7 +13,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
 
-#include "helpers/Helpers.h"
 #include "Scene.h"
 
 class MarkerModule {

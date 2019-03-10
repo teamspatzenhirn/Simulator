@@ -9,18 +9,18 @@ void Timer::frameStep() {
 
     auto newTime = std::chrono::steady_clock::now();
 
-    frameTime = std::chrono::duration_cast<std::chrono::microseconds>(
-            newTime - currentTime).count() / 1000.0f;
+    frameTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(
+            newTime - currentTime).count() / 1000000.0f;
     currentTime = newTime;
 
     accumulator += frameTime;
 }
 
-bool Timer::updateStep(double deltaTimeMilliSeconds) {
+bool Timer::updateStep(float deltaTime) {
 
-    if (accumulator >= deltaTimeMilliSeconds) {
-        accumulator -= deltaTimeMilliSeconds;
-        time += deltaTimeMilliSeconds;
+    if (accumulator >= deltaTime) {
+        accumulator -= deltaTime;
+        time += deltaTime;
         return true;
     } else {
         return false;

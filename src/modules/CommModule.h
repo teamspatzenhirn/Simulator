@@ -58,7 +58,7 @@ class CommModule {
         double alphaFront;
         double alphaRear;
 
-        uint64_t time;
+        double time;
 
         bool paused;
 
@@ -101,7 +101,7 @@ public:
 
     void transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebufferId);
     void transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebufferId);
-    void transmitCar(Scene::Car& car, bool paused, uint64_t time);
+    void transmitCar(Scene::Car& car, bool paused, double simulationTime);
     void receiveVesc(Scene::Car::Vesc& car);
     void receiveVisualization(Scene::Visualization& vis);
 };

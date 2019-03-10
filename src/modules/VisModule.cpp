@@ -76,9 +76,9 @@ void VisModule::drawArrow(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end
     arrowModel->render(shaderProgramId, modelMat);
 }
 
-void VisModule::addPositionTrace(glm::vec3 position, uint64_t simulationTime) {
+void VisModule::addPositionTrace(glm::vec3 position, double simulationTime) {
 
-    if (simulationTime - lastTraceTime > 50) {
+    if (simulationTime - lastTraceTime > 0.050) {
 
         if (tracedPositions.size() > 200) {
             tracedPositions.pop_front();
@@ -89,7 +89,7 @@ void VisModule::addPositionTrace(glm::vec3 position, uint64_t simulationTime) {
     }
 }
 
-void VisModule::renderPositionTrace(GLuint shaderProgramId, uint64_t simulationTime, bool fancy) {
+void VisModule::renderPositionTrace(GLuint shaderProgramId, double simulationTime, bool fancy) {
 
     GLint billboardLocation = 
         glGetUniformLocation(shaderProgramId, "billboard");

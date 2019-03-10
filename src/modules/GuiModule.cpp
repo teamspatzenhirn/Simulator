@@ -1,10 +1,19 @@
 #include "GuiModule.h"
 
+#include <string>
+#include <sstream>
+#include <vector>
+#include <algorithm>
+
+#include "ocornut_imgui/imgui.h"
+#include "ocornut_imgui/examples/imgui_impl_glfw.h"
+#include "ocornut_imgui/examples/imgui_impl_opengl3.h"
+
 GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     this->window = window;
 
-    int separatorIndex = scenePath.find_last_of("\\/");
+    unsigned long separatorIndex = scenePath.find_last_of("\\/");
 
     if (separatorIndex > 0) { 
         openedPath = scenePath.substr(0, separatorIndex+1);
@@ -120,8 +129,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
     }
     ImGui::Text("%s", msg.c_str());
 
-    ImGui::Text("Simulation time: %.2f seconds",
-            ((double)scene.simulationTime) / 1000.0);
+    ImGui::Text("Simulation time: %.2f seconds", (double)scene.simulationTime);
 
     if (scene.paused) {
         ImGui::Text("PAUSED");
@@ -139,7 +147,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
             if (!openedFilename.empty()) {
 
-                uint64_t savedSimulationTime = scene.simulationTime;
+                double savedSimulationTime = scene.simulationTime;
 
                 if (scene.load(openedPath + openedFilename)) {
                     Scene::history.clear();
@@ -865,7 +873,7 @@ void GuiModule::renderDirectoryListing() {
             selectedFilename.c_str(),
             sizeof(filenameInputBuf));
 
-    ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.8);
+    ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.8f);
     ImGui::InputText("Selected File",
             filenameInputBuf, IM_ARRAYSIZE(filenameInputBuf));
     ImGui::PopItemWidth();

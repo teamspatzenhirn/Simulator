@@ -236,7 +236,7 @@ void Model::renderMaterialAndVertices(GLuint shaderProgramId) {
     glUniform1f(nsLocation, material.ns);
 
     glBindVertexArray(vaoId);
-    glDrawArrays(GL_TRIANGLES, 0, vertices.size());
+    glDrawArrays(GL_TRIANGLES, 0, (GLsizei)vertices.size());
     glBindVertexArray(0);
 }
 

@@ -13,14 +13,14 @@
 
 class RuleModule {
 
-    void printViolation(float simulationTime);
+    void printViolation(double simulationTime);
 
 public:
 
     RuleModule();
 
     void update(
-            float simulationTime,
+            double simulationTime,
             Scene::Rules& rules,
             Scene::Car& car,
             Scene::Tracks& tracks,

@@ -164,8 +164,8 @@ void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
     double acc_x = dx.v_lon - x.v_lat * x.d_psi;
     double acc_y = dx.v_lat + x.v_lon * x.d_psi;
 
-    car.modelPose.position.x = x.x2;
-    car.modelPose.position.z = x.x1;
+    car.modelPose.position.x = (float)x.x2;
+    car.modelPose.position.z = (float)x.x1;
     car.modelPose.rotation = glm::angleAxis((float)x.psi, glm::vec3(0, 1, 0));
     car.velocity = glm::vec3(dx.x2, 0, dx.x1);
     car.acceleration = glm::vec3(acc_y, 0, acc_x);

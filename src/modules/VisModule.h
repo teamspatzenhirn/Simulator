@@ -19,7 +19,7 @@ class VisModule {
 
     struct StampedPosition {
 
-        uint64_t time;
+        double time;
         glm::vec3 position;
     };
 
@@ -28,7 +28,7 @@ class VisModule {
     std::shared_ptr<Model> lineModel;
     std::shared_ptr<Model> arrowModel;
 
-    uint64_t lastTraceTime;
+    double lastTraceTime;
     std::deque<StampedPosition> tracedPositions;
 
     void drawRing(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color);
@@ -41,13 +41,13 @@ public:
 
     VisModule();
 
-    void addPositionTrace(glm::vec3 position, uint64_t simulationTime);
+    void addPositionTrace(glm::vec3 position, double simulationTime);
 
     void renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings& settings);
 
     void renderPositionTrace(
             GLuint shaderProgramId,
-            uint64_t simulationTime,
+            double simulationTime,
             bool fancy);
 
     void renderDynamicItems(

@@ -2,12 +2,8 @@
 #define INC_2019_SHADER_H
 
 #include <string>
-#include <iostream>
-#include <fstream>
-#include <sstream>
 
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
 
 class Shader {
     

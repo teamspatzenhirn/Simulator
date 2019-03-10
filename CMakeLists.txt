@@ -132,7 +132,6 @@ target_compile_options(${PROJECT_NAME} PUBLIC -Wextra)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wpedantic)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wunreachable-code)
-target_compile_options(${PROJECT_NAME} PUBLIC -Wswitch-default)
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++17)
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 

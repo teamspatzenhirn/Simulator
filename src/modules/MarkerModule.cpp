@@ -10,7 +10,7 @@ MarkerModule::MarkerModule() {
 
 float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition) {
     
-    return glm::length(cameraPosition - modelPosition) * 0.05;
+    return glm::length(cameraPosition - modelPosition) * 0.05f;
 }
 
 bool MarkerModule::hasSelection(Scene::Selection& selection) {
@@ -35,11 +35,11 @@ void MarkerModule::deselect(Scene::Selection& selection) {
     selectionMode = TRANSLATE;
 }
 
-bool MarkerModule::isTransformAllowed(int transformRestriction, SelectionMode selectionMode, Axis axis) {
+bool MarkerModule::isTransformAllowed(int transformRestriction, SelectionMode mode, Axis axis) {
 
     switch (axis) {
         case X_AXIS:
-            switch (selectionMode) {
+            switch (mode) {
                 case TRANSLATE:
                     return (transformRestriction & TRANSLATE_X) > 0;
                 case SCALE:
@@ -48,7 +48,7 @@ bool MarkerModule::isTransformAllowed(int transformRestriction, SelectionMode se
                     return (transformRestriction & ROTATE_X) > 0;
             }
         case Y_AXIS:
-            switch (selectionMode) {
+            switch (mode) {
                 case TRANSLATE:
                     return (transformRestriction & TRANSLATE_Y) > 0;
                 case SCALE:
@@ -57,7 +57,7 @@ bool MarkerModule::isTransformAllowed(int transformRestriction, SelectionMode se
                     return (transformRestriction & ROTATE_Y) > 0;
             }
         case Z_AXIS:
-            switch (selectionMode) {
+            switch (mode) {
                 case TRANSLATE:
                     return (transformRestriction & TRANSLATE_Z) > 0;
                 case SCALE:

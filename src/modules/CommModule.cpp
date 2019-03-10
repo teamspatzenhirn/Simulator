@@ -81,7 +81,7 @@ void CommModule::transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebuf
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void CommModule::transmitCar(Scene::Car& car, bool paused, uint64_t time) {
+void CommModule::transmitCar(Scene::Car& car, bool paused, double simulationTime) {
 
     Car* obj = txCar.lock(SimulatorSHM::WRITE_OVERWRITE_OLDEST); 
 
@@ -98,7 +98,7 @@ void CommModule::transmitCar(Scene::Car& car, bool paused, uint64_t time) {
         obj->accY = car.acceleration.x;
         obj->alphaFront = car.alphaFront;
         obj->alphaRear = car.alphaRear;
-        obj->time = time;
+        obj->time = simulationTime;
         obj->laserSensorValue = car.laserSensor.value;
         obj->binaryLightSensorTriggered = car.binaryLightSensor.triggered;
         obj->paused = paused;

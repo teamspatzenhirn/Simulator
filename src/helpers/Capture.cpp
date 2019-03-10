@@ -1,10 +1,11 @@
 #include "Capture.h"
-#include <iostream>
+
+#include <cstring>
 
 Capture::Capture() {
 
-    width = 0;
-    height = 0;
+    pboWidth = 0;
+    pboHeight = 0;
     pboIndex = 0;
 
     glGenBuffers(2, pboIds);
@@ -17,17 +18,17 @@ Capture::~Capture() {
 
 bool Capture::capture(
         GLubyte* buffer,
-        GLuint width,
-        GLuint height,
-        GLuint elementSize,
+        GLsizei width,
+        GLsizei height,
+        GLsizei elementSize,
         GLenum format,
         GLenum dataType) {
 
-    int dataSize = width * height * elementSize;
+    GLsizei dataSize = width * height * elementSize;
 
-    if (this->width != width || this->height != height) {
-        this->height = height;
-        this->width = width;
+    if (pboWidth != width || pboHeight != height) {
+        pboHeight = height;
+        pboHeight = width;
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[0]);
         glBufferData(GL_PIXEL_PACK_BUFFER, dataSize, nullptr, GL_STREAM_READ);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[1]);
@@ -49,7 +50,7 @@ bool Capture::capture(
     GLubyte* ptr = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
 
     if (ptr) {
-        memcpy(buffer, ptr, dataSize);
+        memcpy(buffer, ptr, (size_t)dataSize);
         glUnmapBuffer(GL_PIXEL_PACK_BUFFER);
     }
 

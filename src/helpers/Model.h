@@ -46,7 +46,7 @@ public:
         float ns = 0.0f;
         float ni = 0.0f;
         float d = 0.0f;
-        float illum = 0.0f;
+        int illum = 0;
         std::string mapKa;
         std::string mapKd;
         std::string mapKs;

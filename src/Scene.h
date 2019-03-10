@@ -309,7 +309,7 @@ struct Scene {
     bool paused = false;
 
     /*
-     * The current time of the simulation in milliseconds.
+     * The current time of the simulation in seconds.
      */
     double simulationTime = 0;
 
@@ -445,8 +445,8 @@ struct Scene {
              */
             float noise = 0.2f;
 
-            unsigned int imageWidth = 2064;
-            unsigned int imageHeight = 1544;
+            int imageWidth = 2064;
+            int imageHeight = 1544;
 
             float fovy = (float)M_PI * 0.5f;
 
@@ -475,11 +475,11 @@ struct Scene {
                 pose.setEulerAngles(glm::vec3(0.0f, 180.0f, 0.0f));
             }
 
-            unsigned int colorImageWidth = 1280;
-            unsigned int colorImageHeight = 720;
+            int colorImageWidth = 1280;
+            int colorImageHeight = 720;
 
-            unsigned int depthImageWidth = 320;
-            unsigned int depthImageHeight = 240;
+            int depthImageWidth = 320;
+            int depthImageHeight = 240;
 
             float colorFovy = (float)M_PI * 0.5f;
             float depthFovy = (float)M_PI * 0.25f;
@@ -620,7 +620,7 @@ struct Scene {
     struct Rules {
 
         std::shared_ptr<Item> line;
-        uint64_t lineTime = 0;
+        double lineTime = 0;
         bool linePassed = false;
 
         std::shared_ptr<Item> rightArrow;

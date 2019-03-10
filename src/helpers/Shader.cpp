@@ -1,10 +1,14 @@
 #include "Shader.h"
 
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
 Shader::Shader(std::string sourcePath, GLenum shaderType) {
 
 	id = glCreateShader(shaderType);
 
-	if (id < 0) {
+	if (id == 0) {
 		std::cout << "Shader creation failed!" << std::endl;
 		std::cout << "OpenGl error:" << glGetError() << std::endl;
         std::exit(-1);
@@ -41,16 +45,18 @@ Shader::Shader(std::string sourcePath, GLenum shaderType) {
 		int logSize;
 		glGetShaderiv(id, GL_INFO_LOG_LENGTH, &logSize);
 
-		char logData[logSize];
+		char* logData = new char[logSize];
 		glGetShaderInfoLog(id, logSize, &logSize, logData);
 
 		glDeleteShader(id);
 
 		std::cout << "Shader compilation failed for: " << sourcePath << std::endl;
 		std::cout << logData << std::endl;
+
+        delete[] logData;
+
         std::exit(-1);
 	}
-
 }
 
 Shader::~Shader() {

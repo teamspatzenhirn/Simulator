@@ -67,7 +67,7 @@ class Loop {
 
     CarModule car;
 
-    void update(double deltaTime, double simDeltaTime);
+    void update(float deltaTime, float simDeltaTime);
     void updateCollisions();
 
     void renderMarkers(GLuint shaderProgramId);
