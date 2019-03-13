@@ -78,7 +78,7 @@ void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
     // Original implementation by Max Mertens.
     // Adapted to used glm datatypes for this simulator.
 
-    float dt = deltaTime / 1000; // in seconds, input is milliseconds
+    float dt = deltaTime;
 
     Scene::Car::SimulatorState& x = car.simulatorState;
     x.x1 = car.modelPose.position.z;

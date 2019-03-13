@@ -10,6 +10,7 @@ class GuiModule {
     bool showCreateItemsWindow = true;
     bool showSceneWindow = true;
     bool showSettingsWindow = false;
+    bool showRuleWindow = false;
     bool showHelpWindow = false;
 
     std::string openedPath;
@@ -35,6 +36,7 @@ public:
     void renderRootWindow(Scene& scene, Settings& settings);
     void renderSceneWindow(Scene& scene);
     void renderSettingsWindow(Settings& settings);
+    void renderRuleWindow(const Scene::Rules& rules);
     void renderHelpWindow();
 
     void begin();
