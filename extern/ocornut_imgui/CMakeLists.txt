@@ -7,7 +7,7 @@ cmake_minimum_required(VERSION 3.8)
 
 project(imgui)
 
-add_library(${PROJECT_NAME} STATIC
+add_library(${PROJECT_NAME} SHARED
     imconfig.h
     imgui.cpp
     imgui.h

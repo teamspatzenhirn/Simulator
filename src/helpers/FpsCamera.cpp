@@ -67,10 +67,10 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
         if (prevMouseX > 0 && prevMouseY > 0) {
 
-            pitch += std::asin(((float)mouseY - prevMouseY) / 700.0f * dt);
+            pitch += std::asin(((float)mouseY - prevMouseY) * dt);
             pitch = std::min(1.56f, std::max(-1.56f, pitch));
 
-            yaw += std::asin(((float)mouseX - prevMouseX) / 700.0f * dt);
+            yaw += std::asin(((float)mouseX - prevMouseX) * dt);
         }
 
         prevMouseX = (float)mouseX;
