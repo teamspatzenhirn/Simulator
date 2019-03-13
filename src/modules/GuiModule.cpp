@@ -106,6 +106,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
             ImGui::MenuItem("Scene", NULL, &showSceneWindow);
             ImGui::MenuItem("Settings", NULL, &showSettingsWindow);
+            ImGui::MenuItem("Rules", NULL, &showRuleWindow);
             ImGui::MenuItem("Help", NULL, &showHelpWindow);
 
             ImGui::EndMenu();
@@ -669,6 +670,60 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
 
         if (changed) {
             settings.save();
+        }
+    }
+}
+
+void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
+
+    if (showRuleWindow) {
+
+        std::string message = "";
+
+        if (rules.isColliding) {
+            message += "Collision with obstacle\n";
+        }
+        if (!rules.onTrack) {
+            message += "Vehicle left track\n";
+        }
+        if (rules.speedLimitExceeded) {
+            message += "Speed limit exceeded\n";
+        }
+        if (rules.leftArrowIgnored) {
+            message += "Left arrow ignored\n";
+        }
+        if (rules.rightArrowIgnored) {
+            message += "Right arrow ignored\n";
+        }
+        if (rules.stopLineIgnored) {
+            message += "Stop line ignored\n";
+        }
+        if (rules.giveWayLineIgnored) {
+            message += "Give way line ignored\n";
+        }
+        if (rules.noParkingIgnored) {
+            message += "No parking ignored\n";
+        }
+
+        if ("" != message) { 
+            ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(255, 0, 0, 1));
+            ImGui::PushStyleColor(ImGuiCol_TitleBgActive, ImVec4(255, 0, 0, 1));
+            ImGui::PushStyleColor(ImGuiCol_TitleBgCollapsed, ImVec4(255, 0, 0, 1));
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(255, 0, 0, 1));
+        }
+
+        ImGui::Begin("Rules", &showRuleWindow,
+                ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::Text("%s", message.c_str());
+
+        ImGui::End();
+
+        if ("" != message) {
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
         }
     }
 }

@@ -5,7 +5,7 @@ project(CaroloSimulator)
 
 find_package(OpenGL QUIET)
 if(OPENGL_FOUND)
-  message(STATUS "Found OpenGL: " ${OPENGL_gl_LIBRARY})
+  message(STATUS "Found OpenGL: " ${OPENGL_LIBRARIES})
   message(STATUS "              " ${OPENGL_glu_LIBRARY})
   message(STATUS "              " ${OPENGL_INCLUDE_DIR})
 else(OPENGL_FOUND)
@@ -114,7 +114,7 @@ set(HEADER_FILES
 add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
-                      ${OPENGL_gl_LIBRARY}
+                      ${OPENGL_LIBRARIES}
                       ${GLEW_LIBRARIES}
                       glm
                       glfw

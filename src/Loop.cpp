@@ -48,6 +48,7 @@ void Loop::loop() {
         guiModule.renderRootWindow(scene, settings);
         guiModule.renderSceneWindow(scene);
         guiModule.renderSettingsWindow(settings);
+        guiModule.renderRuleWindow(scene.rules);
         guiModule.renderHelpWindow();
 
         float deltaTime = 0.004f;
