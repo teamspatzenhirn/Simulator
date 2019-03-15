@@ -35,7 +35,7 @@ int main (int argc, char* argv[]) {
 
     glDepthFunc(GL_LEQUAL);
 
-    glfwSwapInterval(1);
+    glfwSwapInterval(0);
 
     // loop setup
     
