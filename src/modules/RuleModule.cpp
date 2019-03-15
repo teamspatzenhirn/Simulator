@@ -15,7 +15,7 @@ void RuleModule::update(
         double simulationTime,
         Scene::Rules& rules,
         Scene::Car& car,
-        Scene::Tracks& tracks,
+        Tracks& tracks,
         std::vector<std::shared_ptr<Scene::Item>>& items,
         CollisionModule& collisionModule) {
 

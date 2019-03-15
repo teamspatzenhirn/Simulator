@@ -613,7 +613,7 @@ void GuiModule::renderSceneWindow(Scene& scene) {
 
         if (ImGui::TreeNode("Track")) {
 
-            Scene::Tracks::TrackSelection& selection = scene.tracks.trackSelection;
+            Tracks::TrackSelection& selection = scene.tracks.trackSelection;
 
             if (selection.track) {
 

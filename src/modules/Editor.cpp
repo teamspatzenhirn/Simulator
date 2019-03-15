@@ -79,7 +79,7 @@ std::vector<Model::Vertex> Editor::trackLineVertices = []{
     return vertices;
 }();
 
-Editor::Editor(const Scene::Tracks& tracks, float groundSize) {
+Editor::Editor(const Tracks& tracks, float groundSize) {
 
     // ground
     groundModelMat = glm::scale(groundModelMat, glm::vec3(groundSize, 1.0f, groundSize));
@@ -107,7 +107,7 @@ Editor::Editor(const Scene::Tracks& tracks, float groundSize) {
     intersectionModel = genTrackIntersectionModel(tracks);
 }
 
-void Editor::updateInput(Camera& camera, Scene::Tracks& tracks, float groundSize) {
+void Editor::updateInput(Camera& camera, Tracks& tracks, float groundSize) {
 
     // ImGui input
     if (tracks.trackSelection.changed) {
@@ -157,7 +157,7 @@ void Editor::updateInput(Camera& camera, Scene::Tracks& tracks, float groundSize
     }
 }
 
-void Editor::onKey(int key, int action, const Scene::Tracks& tracks) {
+void Editor::onKey(int key, int action, const Tracks& tracks) {
 
     // track alignment
     if (key == GLFW_KEY_LEFT_CONTROL) {
@@ -188,14 +188,14 @@ void Editor::onKey(int key, int action, const Scene::Tracks& tracks) {
     if ((key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
             || (key == GLFW_KEY_DELETE && action == GLFW_PRESS)) {
         if (activeControlPoint != nullptr) {
-            ((Scene::Tracks&)tracks).removeControlPoint(activeControlPoint);
+            ((Tracks&)tracks).removeControlPoint(activeControlPoint);
             deselectControlPoint();
         }
     }
 }
 
 void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windowHeight,
-        int button, int action, Camera& camera, Scene::Tracks& tracks, float groundSize) {
+        int button, int action, Camera& camera, Tracks& tracks, float groundSize) {
 
     switch (button) {
         case GLFW_MOUSE_BUTTON_LEFT:
@@ -264,7 +264,7 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
 }
 
 void Editor::onMouseMoved(double cursorX, double cursorY, int windowWidth, int windowHeight,
-        Camera& camera, const Scene::Tracks& tracks, float groundSize) {
+        Camera& camera, const Tracks& tracks, float groundSize) {
 
     glm::vec2 groundCoords;
     bool positionValid = toGroundCoordinates(cursorX, cursorY, windowWidth, windowHeight, camera, groundCoords);
@@ -283,21 +283,21 @@ void Editor::onMouseMoved(double cursorX, double cursorY, int windowWidth, int w
     }
 }
 
-void Editor::setTrackMode(TrackMode trackMode, const Scene::Tracks& tracks) {
+void Editor::setTrackMode(TrackMode trackMode, const Tracks& tracks) {
 
     this->trackMode = trackMode;
 
     updateMarkers(tracks);
 }
 
-void Editor::setAutoAlign(bool autoAlign, const Scene::Tracks& tracks) {
+void Editor::setAutoAlign(bool autoAlign, const Tracks& tracks) {
 
     this->autoAlign = autoAlign;
 
     updateMarkers(tracks);
 }
 
-void Editor::renderScene(GLuint shaderProgramId, const Scene::Tracks& tracks) {
+void Editor::renderScene(GLuint shaderProgramId, const Tracks& tracks) {
 
     // render ground
     ground.render(shaderProgramId, groundModelMat);
@@ -375,7 +375,7 @@ void Editor::renderScene(GLuint shaderProgramId, const Scene::Tracks& tracks) {
     }
 }
 
-void Editor::renderMarkers(GLuint shaderProgramId, const Scene::Tracks& tracks, const glm::vec3 cameraPosition) {
+void Editor::renderMarkers(GLuint shaderProgramId, const Tracks& tracks, const glm::vec3 cameraPosition) {
 
     // render control points
     for (const std::shared_ptr<ControlPoint>& cp : tracks.getTracks()) {
@@ -437,7 +437,7 @@ void Editor::renderMarker(GLuint shaderProgramId, const glm::vec2& position,
     }
 }
 
-void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Scene::Tracks& tracks) {
+void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Tracks& tracks) {
 
     activeTrack = track;
 
@@ -471,7 +471,7 @@ void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Scene::Tracks&
     tracks.trackSelection.track = track;
 }
 
-void Editor::startTrack(const glm::vec2& position, const Scene::Tracks& tracks, float groundSize) {
+void Editor::startTrack(const glm::vec2& position, const Tracks& tracks, float groundSize) {
 
     // check connection to existing tracks
     std::shared_ptr<ControlPoint> connectedStart = selectControlPoint(position, tracks);
@@ -495,7 +495,7 @@ void Editor::startTrack(const glm::vec2& position, const Scene::Tracks& tracks, 
     updateMarkers(tracks);
 }
 
-void Editor::endTrack(const glm::vec2& position, Scene::Tracks& tracks, float groundSize) {
+void Editor::endTrack(const glm::vec2& position, Tracks& tracks, float groundSize) {
 
     // update temporary state
     glm::vec2 end = align(*activeControlPoint, position, tracks);
@@ -539,7 +539,7 @@ void Editor::endTrack(const glm::vec2& position, Scene::Tracks& tracks, float gr
     updateMarkers(tracks);
 }
 
-void Editor::createIntersection(const glm::vec2& position, Scene::Tracks& tracks, const float groundSize) {
+void Editor::createIntersection(const glm::vec2& position, Tracks& tracks, const float groundSize) {
 
     float d = intersectionTrackLength + tracks.trackWidth / 2;
 
@@ -564,7 +564,7 @@ void Editor::createIntersection(const glm::vec2& position, Scene::Tracks& tracks
 }
 
 void Editor::addTrackLine(const std::shared_ptr<ControlPoint>& start,
-        const std::shared_ptr<ControlPoint>& end, Scene::Tracks& tracks) {
+        const std::shared_ptr<ControlPoint>& end, Tracks& tracks) {
 
     // add track
     std::shared_ptr<TrackLine> track = tracks.addTrackLine(start, end);
@@ -574,7 +574,7 @@ void Editor::addTrackLine(const std::shared_ptr<ControlPoint>& start,
     trackModelMats[track] = genTrackLineMatrix(start->coords, end->coords, trackYOffset);
 }
 
-void Editor::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc, Scene::Tracks& tracks) {
+void Editor::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc, Tracks& tracks) {
 
     // add track
     std::shared_ptr<TrackArc> track = tracks.addTrackArc(start, end, center, radius, rightArc);
@@ -587,7 +587,7 @@ void Editor::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::
 void Editor::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
         const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
         const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4,
-        Scene::Tracks& tracks) {
+        Tracks& tracks) {
 
     // add track
     std::shared_ptr<TrackIntersection> track = tracks.addTrackIntersection(
@@ -598,7 +598,7 @@ void Editor::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
     trackModelMats[track] = genTrackIntersectionMatrix(center->coords, 0, trackYOffset);
 }
 
-void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint, const Scene::Tracks& tracks) {
+void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint, const Tracks& tracks) {
 
     std::shared_ptr<TrackIntersection> intersection = findIntersection(*controlPoint);
 
@@ -666,7 +666,7 @@ void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint,
     }
 }
 
-void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Scene::Tracks& tracks, float groundSize) {
+void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Tracks& tracks, float groundSize) {
 
     // validate new positions
     for (const std::pair<const std::shared_ptr<ControlPoint>, glm::vec2>& p : dragState.coords) {
@@ -693,7 +693,7 @@ void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Scene
         for (auto it = controlPoint->tracks.begin(); it != controlPoint->tracks.end();) {
             std::shared_ptr<TrackBase>& track = *it;
 
-            if (Scene::Tracks::isConnected(dragState.connectedPoint, track)) {
+            if (Tracks::isConnected(dragState.connectedPoint, track)) {
                 dragState.connectedPoint->tracks.erase(
                         std::remove(dragState.connectedPoint->tracks.begin(),
                             dragState.connectedPoint->tracks.end(),
@@ -738,7 +738,7 @@ void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Scene
 }
 
 void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlPoint>>& controlPoints,
-        bool applyMovement, const Scene::Tracks& tracks) {
+        bool applyMovement, const Tracks& tracks) {
 
     // collect affected tracks
     std::set<std::shared_ptr<TrackBase>> movedTracks;
@@ -874,13 +874,13 @@ bool Editor::isDragged(const std::shared_ptr<ControlPoint>& cp) const {
     return dragState.coords.find(cp) != dragState.coords.end();
 }
 
-std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& position, const Scene::Tracks& tracks) const {
+std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& position, const Tracks& tracks) const {
 
     return selectControlPoint(position, tracks, true, true);
 }
 
 std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& position,
-        const Scene::Tracks& tracks, const bool includeActiveControlPoint, const bool includeCompleteControlPoints) const {
+        const Tracks& tracks, const bool includeActiveControlPoint, const bool includeCompleteControlPoints) const {
 
     std::shared_ptr<ControlPoint> controlPoint;
     float closest{controlPointClickRadius};
@@ -916,7 +916,7 @@ std::shared_ptr<ControlPoint> Editor::selectControlPoint(const glm::vec2& positi
     return controlPoint;
 }
 
-std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Scene::Tracks& tracks) const {
+std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Tracks& tracks) const {
 
     std::shared_ptr<TrackBase> selectedTrack;
     float minDistance{tracks.trackWidth / 2};
@@ -999,7 +999,7 @@ bool Editor::toGroundCoordinates(const double cursorX, const double cursorY, con
     return true;
 }
 
-void Editor::updateMarkers(const Scene::Tracks& tracks) {
+void Editor::updateMarkers(const Tracks& tracks) {
 
     if (!canCreateTrack(tracks)) {
         return;
@@ -1028,14 +1028,14 @@ void Editor::updateMarkers(const Scene::Tracks& tracks) {
     }
 }
 
-void Editor::updateTrackLineMarker(const glm::vec2& start, const glm::vec2& end, const Scene::Tracks& tracks) {
+void Editor::updateTrackLineMarker(const glm::vec2& start, const glm::vec2& end, const Tracks& tracks) {
 
     trackMarker = markerTrackLine;
     trackMarkerMat = genTrackLineMarkerMatrix(start, end, markerYOffset, tracks);
 }
 
 void Editor::updateTrackArcMarker(const ControlPoint& startPoint,
-        const glm::vec2& end, const Scene::Tracks& tracks) {
+        const glm::vec2& end, const Tracks& tracks) {
 
     glm::vec2 start = startPoint.coords;
 
@@ -1141,7 +1141,7 @@ bool Editor::intersectParam(const glm::vec2& p1, const glm::vec2& r1, const glm:
     return true;
 }
 
-glm::vec2 Editor::align(const ControlPoint& startPoint, const glm::vec2& position, const Scene::Tracks& tracks) {
+glm::vec2 Editor::align(const ControlPoint& startPoint, const glm::vec2& position, const Tracks& tracks) {
 
     if (autoAlign) {
         glm::vec2 exactVector = position - startPoint.coords;
@@ -1232,7 +1232,7 @@ void Editor::deselectControlPoint() {
     dragState.trackModelMats.clear();
 }
 
-void Editor::deselectTrack(Scene::Tracks& tracks) {
+void Editor::deselectTrack(Tracks& tracks) {
 
     activeTrack = nullptr;
     activeTrackModel = nullptr;
@@ -1240,7 +1240,7 @@ void Editor::deselectTrack(Scene::Tracks& tracks) {
     tracks.trackSelection.track = nullptr;
 }
 
-bool Editor::canCreateTrack(const Scene::Tracks& tracks) {
+bool Editor::canCreateTrack(const Tracks& tracks) {
 
     if (maybeDragging(tracks)) {
         return false;
@@ -1260,13 +1260,13 @@ bool Editor::isComplete(const ControlPoint& cp) const {
     return intersection && intersection->center.lock().get() == &cp;
 }
 
-bool Editor::maybeDragging(const Scene::Tracks& tracks) {
+bool Editor::maybeDragging(const Tracks& tracks) {
 
     return dragState.dragging || (activeControlPoint && selectControlPoint(cursorPos, tracks) == activeControlPoint);
 }
 
 std::shared_ptr<Model> Editor::genTrackLineModel(const glm::vec2& start, const glm::vec2& end,
-        const LaneMarking centerLine, const Scene::Tracks& tracks) {
+        const LaneMarking centerLine, const Tracks& tracks) {
 
     std::shared_ptr<Model> model = std::make_shared<Model>();
     genTrackLineVertices(start, end, centerLine, tracks, *model);
@@ -1278,7 +1278,7 @@ std::shared_ptr<Model> Editor::genTrackLineModel(const glm::vec2& start, const g
 
 std::shared_ptr<Model> Editor::genTrackArcModel(const glm::vec2& start, const glm::vec2& end,
         const glm::vec2& center, const float radius, const bool rightArc,
-        const LaneMarking centerLine, const Scene::Tracks& tracks) {
+        const LaneMarking centerLine, const Tracks& tracks) {
 
     std::shared_ptr<Model> model = std::make_shared<Model>();
     genTrackArcVertices(start, end, center, radius, rightArc, centerLine, tracks, *model);
@@ -1288,7 +1288,7 @@ std::shared_ptr<Model> Editor::genTrackArcModel(const glm::vec2& start, const gl
     return model;
 }
 
-std::shared_ptr<Model> Editor::genTrackIntersectionModel(const Scene::Tracks& tracks) {
+std::shared_ptr<Model> Editor::genTrackIntersectionModel(const Tracks& tracks) {
 
     std::shared_ptr<Model> model = std::make_shared<Model>();
     genTrackIntersectionVertices(tracks, *model);
@@ -1319,7 +1319,7 @@ void Editor::genPointVertices(Model& model) {
 }
 
 void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
-        const LaneMarking centerLine, const Scene::Tracks& tracks, Model& model) {
+        const LaneMarking centerLine, const Tracks& tracks, Model& model) {
 
     float dx{end.x - start.x};
     float dy{end.y - start.y};
@@ -1387,7 +1387,7 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
 
 void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
         const glm::vec2& center, const float radius, const bool rightArc,
-        const LaneMarking centerLine, const Scene::Tracks& tracks, Model& model) {
+        const LaneMarking centerLine, const Tracks& tracks, Model& model) {
 
     float baseAngle{0.0f};
     float angle{0.0f};
@@ -1499,7 +1499,7 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
     }
 }
 
-void Editor::genTrackIntersectionVertices(const Scene::Tracks& tracks, Model& model) {
+void Editor::genTrackIntersectionVertices(const Tracks& tracks, Model& model) {
 
     model.vertices.clear();
 
@@ -1574,7 +1574,7 @@ void Editor::genTrackLineMarkerVertices(Model& model) {
 
 void Editor::genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& end,
         const glm::vec2& center, const float radius, const bool rightArc,
-        const Scene::Tracks& tracks, Model& model) {
+        const Tracks& tracks, Model& model) {
 
     float baseAngle{0.0f};
     float angle{0.0f};
@@ -1600,7 +1600,7 @@ void Editor::genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& 
     }
 }
 
-void Editor::genTrackIntersectionMarkerVertices(const Scene::Tracks& tracks, Model& model) {
+void Editor::genTrackIntersectionMarkerVertices(const Tracks& tracks, Model& model) {
 
     model.vertices.clear();
 
@@ -1649,7 +1649,7 @@ glm::mat4 Editor::genTrackIntersectionMatrix(const glm::vec2& center, const floa
 }
 
 glm::mat4 Editor::genTrackLineMarkerMatrix(const glm::vec2& start,
-        const glm::vec2& end, const float y, const Scene::Tracks& tracks) {
+        const glm::vec2& end, const float y, const Tracks& tracks) {
 
     glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), glm::vec3((start.x + end.x) / 2, y, (start.y + end.y) / 2));
     float dx(end.x - start.x);

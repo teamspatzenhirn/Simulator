@@ -78,6 +78,7 @@ set(SOURCE_FILES
    ./src/modules/MarkerModule.cpp
    ./src/modules/RuleModule.cpp
    ./src/modules/VisModule.cpp
+   ./src/scene/Tracks.cpp
    )
 
 set(HEADER_FILES
@@ -108,6 +109,7 @@ set(HEADER_FILES
     ./src/modules/ItemsModule.h
     ./src/modules/RuleModule.h
     ./src/modules/VisModule.h
+    ./src/scene/Tracks.h
    )
 
 # Build the library/program.
