@@ -14,7 +14,7 @@ void RuleModule::printViolation(double simulationTime) {
 void RuleModule::update(
         double simulationTime,
         Scene::Rules& rules,
-        Scene::Car& car,
+        Car& car,
         Tracks& tracks,
         std::vector<std::shared_ptr<Scene::Item>>& items,
         CollisionModule& collisionModule) {

@@ -3,13 +3,13 @@
 CommModule::CommModule() :
     txMainCamera(SimulatorSHM::SERVER, mainCameraMemId),
     txDepthCamera(SimulatorSHM::SERVER, depthCameraMemId),
-    txCar(SimulatorSHM::SERVER, carMemId),
+    txCarState(SimulatorSHM::SERVER, carMemId),
     rxVesc(SimulatorSHM::CLIENT, vescMemId),
     rxVisual(SimulatorSHM::CLIENT, visualMemId) { 
 
     initSharedMemory(txMainCamera);
     initSharedMemory(txDepthCamera);
-    initSharedMemory(txCar);
+    initSharedMemory(txCarState);
     initSharedMemory(rxVesc);
     initSharedMemory(rxVisual);
 }
@@ -27,7 +27,7 @@ void CommModule::initSharedMemory(SimulatorSHM::SHMComm<T>& mem) {
     }
 }
 
-void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebufferId) {
+void CommModule::transmitMainCamera(Car& car, GLuint mainCameraFramebufferId) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, mainCameraFramebufferId);
 
@@ -54,7 +54,7 @@ void CommModule::transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebuffe
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void CommModule::transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebufferId) {
+void CommModule::transmitDepthCamera(Car& car, GLuint depthCameraFramebufferId) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthCameraFramebufferId);
 
@@ -81,9 +81,9 @@ void CommModule::transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebuf
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void CommModule::transmitCar(Scene::Car& car, bool paused, double simulationTime) {
+void CommModule::transmitCar(Car& car, bool paused, double simulationTime) {
 
-    Car* obj = txCar.lock(SimulatorSHM::WRITE_OVERWRITE_OLDEST); 
+    CarState* obj = txCarState.lock(SimulatorSHM::WRITE_OVERWRITE_OLDEST); 
 
     if (obj != nullptr) {
 
@@ -112,11 +112,11 @@ void CommModule::transmitCar(Scene::Car& car, bool paused, double simulationTime
             }
         }
 
-        txCar.unlock(obj);
+        txCarState.unlock(obj);
     }
 }
 
-void CommModule::receiveVesc(Scene::Car::Vesc& vesc) {
+void CommModule::receiveVesc(Car::Vesc& vesc) {
 
     Vesc* obj = rxVesc.lock(SimulatorSHM::READ_NEWEST);
 

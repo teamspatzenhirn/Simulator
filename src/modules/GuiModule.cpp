@@ -669,7 +669,8 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
         ImGui::End();
 
         if (changed) {
-            settings.save();
+            // TODO: make saving work again!
+            // settings.save();
         }
     }
 }
@@ -782,7 +783,8 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
                 openedFilename = selectedFilename;
 
                 settings.configPath = currentDirectory + selectedFilename;
-                settings.save();
+                // TODO: make saving work again!
+                // settings.save();
 
                 Scene::history.clear();
 

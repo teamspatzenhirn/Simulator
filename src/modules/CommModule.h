@@ -5,7 +5,7 @@
 #include <cstring>
 
 #include "Scene.h"
-#include "helpers/Helpers.h"
+#include "helpers/Capture.h"
 #include "sharedmem/shmcomm.h"
 
 class CommModule {
@@ -39,7 +39,7 @@ class CommModule {
         int imageHeight;
     };
 
-    struct Car {
+    struct CarState {
         
         double x;
         double y;
@@ -87,7 +87,7 @@ class CommModule {
 
     SimulatorSHM::SHMComm<MainCameraImage> txMainCamera; 
     SimulatorSHM::SHMComm<DepthCameraImage> txDepthCamera; 
-    SimulatorSHM::SHMComm<Car> txCar; 
+    SimulatorSHM::SHMComm<CarState> txCarState; 
     SimulatorSHM::SHMComm<Vesc> rxVesc; 
     SimulatorSHM::SHMComm<Visualization> rxVisual; 
 
@@ -99,10 +99,10 @@ public:
     CommModule();
     ~CommModule();
 
-    void transmitMainCamera(Scene::Car& car, GLuint mainCameraFramebufferId);
-    void transmitDepthCamera(Scene::Car& car, GLuint depthCameraFramebufferId);
-    void transmitCar(Scene::Car& car, bool paused, double simulationTime);
-    void receiveVesc(Scene::Car::Vesc& car);
+    void transmitMainCamera(Car& car, GLuint mainCameraFramebufferId);
+    void transmitDepthCamera(Car& car, GLuint depthCameraFramebufferId);
+    void transmitCar(Car& car, bool paused, double simulationTime);
+    void receiveVesc(Car::Vesc& car);
     void receiveVisualization(Scene::Visualization& vis);
 };
 

@@ -8,7 +8,9 @@
 #include <glm/gtx/io.hpp>
 #include <glm/gtx/intersect.hpp>
 
+#include "scene/Car.h"
 #include "Scene.h"
+
 #include "helpers/Helpers.h"
 
 #include "modules/GuiModule.h"
@@ -35,22 +37,22 @@ public:
 
     CarModule();
 
-    void updatePosition(Scene::Car& car, float deltaTime);
+    void updatePosition(Car& car, float deltaTime);
 
     void updateMainCamera(
-            Scene::Car::MainCamera& carMainCamera,
+            Car::MainCamera& carMainCamera,
             Pose& carModelPose);
 
     void updateDepthCamera(
-            Scene::Car::DepthCamera& carDepthCamera,
+            Car::DepthCamera& carDepthCamera,
             Pose& carModelPose);
 
     void updateLaserSensors(
-            Scene::Car& car,
+            Car& car,
             ModelStore& modelStore,
             std::vector<std::shared_ptr<Scene::Item>>& items);
 
-    void render(GLuint shaderProgramId, Scene::Car& car);
+    void render(GLuint shaderProgramId, Car& car);
 };
 
 #endif

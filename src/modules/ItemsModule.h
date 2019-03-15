@@ -23,7 +23,7 @@ public:
 
     void updateDynamicItems(
             float dt,
-            Scene::Car& car, 
+            Car& car, 
             Scene::DynamicItemSettings& dis,
             std::vector<std::shared_ptr<Scene::Item>>& items);
 

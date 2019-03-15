@@ -43,7 +43,7 @@ public:
 
     void addPositionTrace(glm::vec3 position, double simulationTime);
 
-    void renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings& settings);
+    void renderSensors(GLuint shaderProgramId, Car& car, Settings& settings);
 
     void renderPositionTrace(
             GLuint shaderProgramId,

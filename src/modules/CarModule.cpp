@@ -72,7 +72,7 @@ float CarModule::calcLaserSensorValue(
     return minDist;
 }
 
-void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
+void CarModule::updatePosition(Car& car, float deltaTime) {
 
     // The procedure implements a pacejka wheel model.
     // Original implementation by Max Mertens.
@@ -80,7 +80,7 @@ void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
 
     float dt = deltaTime;
 
-    Scene::Car::SimulatorState& x = car.simulatorState;
+    Car::SimulatorState& x = car.simulatorState;
     x.x1 = car.modelPose.position.z;
     x.x2 = car.modelPose.position.x;
     x.psi = glm::radians(car.modelPose.getEulerAngles().y);
@@ -93,7 +93,7 @@ void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
     F = std::min(F, car.limits.max_F * car.systemParams.mass);
     F = std::max(F, -car.limits.max_F * car.systemParams.mass);
 
-    Scene::Car::SimulatorState dx;
+    Car::SimulatorState dx;
     dx.delta = (car.vesc.steeringAngle - x.delta) / dt;
     dx.delta = std::min(dx.delta, car.limits.max_d_delta);
     dx.delta = std::max(dx.delta, -car.limits.max_d_delta);
@@ -191,7 +191,7 @@ void CarModule::updatePosition(Scene::Car& car, float deltaTime) {
 }
 
 void CarModule::updateMainCamera(
-        Scene::Car::MainCamera& carMainCamera,
+        Car::MainCamera& carMainCamera,
         Pose& carModelPose) {
 
     mainCamera.fov = carMainCamera.fovy;
@@ -212,7 +212,7 @@ void CarModule::updateMainCamera(
 }
 
 void CarModule::updateDepthCamera(
-        Scene::Car::DepthCamera& carDepthCamera,
+        Car::DepthCamera& carDepthCamera,
         Pose& carModelPose) {
 
     depthCamera.fov = carDepthCamera.depthFovy;
@@ -227,7 +227,7 @@ void CarModule::updateDepthCamera(
 }
 
 void CarModule::updateLaserSensors(
-        Scene::Car& car,
+        Car& car,
         ModelStore& modelStore,
         std::vector<std::shared_ptr<Scene::Item>>& items) {
 
@@ -256,7 +256,7 @@ void CarModule::updateLaserSensors(
             items);
 }
 
-void CarModule::render(GLuint shaderProgramId, Scene::Car& car) {
+void CarModule::render(GLuint shaderProgramId, Car& car) {
 
     carModel.render(shaderProgramId, car.modelPose.getMatrix());
 }

@@ -170,7 +170,7 @@ void VisModule::renderDynamicItems(
 
 }
 
-void VisModule::renderSensors(GLuint shaderProgramId, Scene::Car& car, Settings& settings) {
+void VisModule::renderSensors(GLuint shaderProgramId, Car& car, Settings& settings) {
 
     GLint lightingLocation = 
         glGetUniformLocation(shaderProgramId, "lighting");

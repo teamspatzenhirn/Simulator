@@ -1,5 +1,8 @@
 #include "Scene.h"
 
+#include <iostream>
+#include <fstream>
+
 #include <nlohmann/json.hpp>
 
 /*
@@ -178,10 +181,10 @@ void from_json(const json& j, Settings& s) {
 }
 
 /*
- * Scene::Car::SystemParams
+ * Car::SystemParams
  */
 
-void to_json(json& j, const Scene::Car::SystemParams& o) {
+void to_json(json& j, const Car::SystemParams& o) {
 
     j = json({
             {"axesDistance", o.axesDistance},
@@ -194,7 +197,7 @@ void to_json(json& j, const Scene::Car::SystemParams& o) {
 
 }
 
-void from_json(const json& j, Scene::Car::SystemParams& o) {
+void from_json(const json& j, Car::SystemParams& o) {
 
     o.axesDistance = j.at("axesDistance").get<double>();
     o.axesMomentRatio = j.at("axesMomentRatio").get<double>();
@@ -205,10 +208,10 @@ void from_json(const json& j, Scene::Car::SystemParams& o) {
 }
 
 /*
- * Scene::Car::SimulatorState
+ * Car::SimulatorState
  */
 
-void to_json(json& j, const Scene::Car::SimulatorState& o) {
+void to_json(json& j, const Car::SimulatorState& o) {
 
     j = json({
             {"x1", o.x1},
@@ -222,7 +225,7 @@ void to_json(json& j, const Scene::Car::SimulatorState& o) {
         });
 }
 
-void from_json(const json& j, Scene::Car::SimulatorState& o) {
+void from_json(const json& j, Car::SimulatorState& o) {
 
     o.x1 = j.at("x1").get<double>();
     o.x2 = j.at("x2").get<double>();
@@ -235,10 +238,10 @@ void from_json(const json& j, Scene::Car::SimulatorState& o) {
 }
 
 /*
- * Scene::Car::Limits
+ * Car::Limits
  */
 
-void to_json(json& j, const Scene::Car::Limits& o) {
+void to_json(json& j, const Car::Limits& o) {
 
     j = json({
             {"maxF", o.max_F},
@@ -247,7 +250,7 @@ void to_json(json& j, const Scene::Car::Limits& o) {
         });
 }
 
-void from_json(const json& j, Scene::Car::Limits& o) {
+void from_json(const json& j, Car::Limits& o) {
 
     o.max_F = j.at("maxF").get<double>();
     o.max_delta = j.at("maxDelta").get<double>();
@@ -255,10 +258,10 @@ void from_json(const json& j, Scene::Car::Limits& o) {
 }
 
 /*
- * Scene::Car::Wheels
+ * Car::Wheels
  */
 
-void to_json(json& j, const Scene::Car::Wheels& o) {
+void to_json(json& j, const Car::Wheels& o) {
     
     j = json({
             {"usePacejkaModel", o.usePacejkaModel},
@@ -274,7 +277,7 @@ void to_json(json& j, const Scene::Car::Wheels& o) {
 
 }
 
-void from_json(const json& j, Scene::Car::Wheels& o) {
+void from_json(const json& j, Car::Wheels& o) {
 
     o.usePacejkaModel = j.at("usePacejkaModel").get<bool>();
 
@@ -289,10 +292,10 @@ void from_json(const json& j, Scene::Car::Wheels& o) {
 }
 
 /*
- * Scene::Car::MainCamera
+ * Car::MainCamera
  */
 
-void to_json(json& j, const Scene::Car::MainCamera& o) {
+void to_json(json& j, const Car::MainCamera& o) {
 
     j = json({
             {"pose", o.pose},
@@ -303,7 +306,7 @@ void to_json(json& j, const Scene::Car::MainCamera& o) {
         });
 }
 
-void from_json(const json& j, Scene::Car::MainCamera& o) {
+void from_json(const json& j, Car::MainCamera& o) {
 
     tryGet(j, "pose", o.pose);
     tryGet(j, "imageWidth", o.imageWidth);
@@ -313,26 +316,26 @@ void from_json(const json& j, Scene::Car::MainCamera& o) {
 }
 
 /*
- * Scene::Car::LaserSensor
+ * Car::LaserSensor
  */
 
-void to_json(json& j, const Scene::Car::LaserSensor& o) {
+void to_json(json& j, const Car::LaserSensor& o) {
 
     j = json({
             {"pose", o.pose},
         });
 }
 
-void from_json(const json& j, Scene::Car::LaserSensor& o) {
+void from_json(const json& j, Car::LaserSensor& o) {
 
     tryGet(j, "pose", o.pose);
 }
 
 /*
- * Scene::Car::BinaryLightSensor
+ * Car::BinaryLightSensor
  */
 
-void to_json(json& j, const Scene::Car::BinaryLightSensor& o) {
+void to_json(json& j, const Car::BinaryLightSensor& o) {
 
     j = json({
             {"pose", o.pose},
@@ -340,7 +343,7 @@ void to_json(json& j, const Scene::Car::BinaryLightSensor& o) {
         });
 }
 
-void from_json(const json& j, Scene::Car::BinaryLightSensor& o) {
+void from_json(const json& j, Car::BinaryLightSensor& o) {
 
     tryGet(j, "pose", o.pose);
     tryGet(j, "triggerDistance", o.triggerDistance);
@@ -350,7 +353,7 @@ void from_json(const json& j, Scene::Car::BinaryLightSensor& o) {
  * Car
  */
 
-void to_json(json& j, const Scene::Car& o) {
+void to_json(json& j, const Car& o) {
 
     j = json({
             {"modelPose", o.modelPose},
@@ -364,7 +367,7 @@ void to_json(json& j, const Scene::Car& o) {
         });
 }
 
-void from_json(const json& j, Scene::Car& o) {
+void from_json(const json& j, Car& o) {
 
     tryGet(j, "modelPose", o.modelPose);
     tryGet(j, "simulatorState", o.simulatorState);
@@ -379,6 +382,7 @@ void from_json(const json& j, Scene::Car& o) {
 /*
  * Tracks
  */
+
 
 void to_json(json& j, const Tracks& t) {
 
@@ -675,7 +679,7 @@ void from_json(const json& j, Scene& s) {
     s.version = j.at("version").get<unsigned int>();
     s.paused = j.at("paused").get<bool>();
     s.fpsCamera = j.at("fpsCamera").get<FpsCamera>();
-    s.car = j.at("car").get<Scene::Car>();
+    s.car = j.at("car").get<Car>();
     s.tracks = j.at("tracks").get<Tracks>();
     s.items = j.at("items").get<std::vector<std::shared_ptr<Scene::Item>>>();
 
@@ -688,7 +692,6 @@ void from_json(const json& j, Scene& s) {
 
 /*
  * Settings comin right up, mate!
- */
 
 bool Settings::save() {
 
@@ -725,6 +728,7 @@ bool Settings::load() {
 
     return true;
 }
+*/
 
 /*
  * Now that's the actual Scene implementation, fellas!
