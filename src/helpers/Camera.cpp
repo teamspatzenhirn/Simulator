@@ -1,6 +1,6 @@
 #include "Camera.h"
 
-Camera::Camera() : Camera(M_PI * 0.3, 4.0f/3.0f) {
+Camera::Camera() : Camera((float)M_PI * 0.3f, 4.0f/3.0f) {
 }
 
 Camera::Camera(float fov, float aspectRatio) 

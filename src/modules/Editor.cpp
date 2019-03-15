@@ -49,8 +49,8 @@ std::vector<Model::Vertex> Editor::pointVertices = []{
     const float radius = 0.1f;
 
     for (int i = 0; i < n; i++) {
-        float angle1 = (2 * M_PI * i) / n;
-        float angle2 = (2 * M_PI * (i + 1)) / n;
+        float angle1 = (float)(2 * M_PI * i) / n;
+        float angle2 = (float)(2 * M_PI * (i + 1)) / n;
 
         glm::vec3 coords(cos(angle1) * radius, 0.0f, sin(angle1) * radius);
         Model::Vertex v1{coords, normal, texCoords};
@@ -153,7 +153,7 @@ void Editor::updateInput(Camera& camera, Tracks& tracks, float groundSize) {
         int windowWidth{0}, windowHeight{0};
         glfwGetWindowSize(event.window, &windowWidth, &windowHeight);
 
-        onMouseMoved(getCursorX(), getCursorY(), windowWidth, windowHeight, camera, tracks, groundSize);
+        onMouseMoved(getCursorX(), getCursorY(), windowWidth, windowHeight, camera, tracks);
     }
 }
 
@@ -264,7 +264,7 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
 }
 
 void Editor::onMouseMoved(double cursorX, double cursorY, int windowWidth, int windowHeight,
-        Camera& camera, const Tracks& tracks, float groundSize) {
+        Camera& camera, const Tracks& tracks) {
 
     glm::vec2 groundCoords;
     bool positionValid = toGroundCoordinates(cursorX, cursorY, windowWidth, windowHeight, camera, groundCoords);
@@ -357,7 +357,7 @@ void Editor::renderScene(GLuint shaderProgramId, const Tracks& tracks) {
 
                 const glm::vec2& center = intersection->center.lock()->coords;
                 const glm::vec2& v = intersection->link1.lock()->coords - center;
-                trackModelMats[track] = genTrackIntersectionMatrix(center, atan2(-v.y, v.x), trackYOffset);
+                trackModelMats[track] = genTrackIntersectionMatrix(center, std::atan2(-v.y, v.x), trackYOffset);
             }
         }
 
@@ -423,7 +423,7 @@ void Editor::renderMarker(GLuint shaderProgramId, const glm::vec2& position,
         const bool active, const glm::vec3& cameraPosition) {
 
     // scale marker by distance
-    float scale = glm::length(cameraPosition - glm::vec3(position.x, 0, position.y)) * 0.15;
+    float scale = glm::length(cameraPosition - glm::vec3(position.x, 0, position.y)) * 0.15f;
 
     // create model matrix
     glm::mat4 modelMat = genPointMatrix(position, 0.0f);
@@ -462,7 +462,7 @@ void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Tracks& tracks
 
         glm::vec2 center = intersection->center.lock()->coords;
         glm::vec2 v = intersection->link1.lock()->coords - center;
-        activeTrackMat = genTrackIntersectionMatrix(center, atan2(-v.y, v.x), markerYOffset);
+        activeTrackMat = genTrackIntersectionMatrix(center, std::atan2(-v.y, v.x), markerYOffset);
     }
 
     genActiveMarkerMaterial(*activeTrackModel);
@@ -623,26 +623,26 @@ void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint,
             // dragging link point of intersection
 
             // rotate all link control points by the same angle
-            float angle = atan2(-(cursorPos.y - cc.y), cursorPos.x - cc.x)
-                    - atan2(-(controlPoint->coords.y - cc.y), controlPoint->coords.x - cc.x);
+            float angle = std::atan2(-(cursorPos.y - cc.y), cursorPos.x - cc.x)
+                    - std::atan2(-(controlPoint->coords.y - cc.y), controlPoint->coords.x - cc.x);
 
             glm::vec2 v = c1 - cc;
-            float a = atan2(-v.y, v.x) + angle;
+            float a = std::atan2(-v.y, v.x) + angle;
             float d = glm::length(v);
             dragState.coords[intersection->link1.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
 
             v = c2 - cc;
-            a = atan2(-v.y, v.x) + angle;
+            a = std::atan2(-v.y, v.x) + angle;
             d = glm::length(v);
             dragState.coords[intersection->link2.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
 
             v = c3 - cc;
-            a = atan2(-v.y, v.x) + angle;
+            a = std::atan2(-v.y, v.x) + angle;
             d = glm::length(v);
             dragState.coords[intersection->link3.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
 
             v = c4 - cc;
-            a = atan2(-v.y, v.x) + angle;
+            a = std::atan2(-v.y, v.x) + angle;
             d = glm::length(v);
             dragState.coords[intersection->link4.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
         }
@@ -756,7 +756,7 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
             } else {
                 glm::vec2 pos = getDraggedPosition(intersection->center.lock());
                 glm::vec2 v = getDraggedPosition(intersection->link1.lock()) - pos;
-                dragState.trackModelMats[track] = genTrackIntersectionMatrix(pos, atan2(-v.y, v.x), trackYOffset);
+                dragState.trackModelMats[track] = genTrackIntersectionMatrix(pos, std::atan2(-v.y, v.x), trackYOffset);
             }
 
             continue;
@@ -792,7 +792,7 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
                 glm::vec2 v1 = trackEnd->coords - trackStart->coords;
                 glm::vec2 v2 = dragState.coords[trackEnd] - dragState.coords[trackStart];
                 direction = -track->getDirection(*trackStart);
-                float angle = atan2(direction.y, direction.x) + atan2(v2.y, v2.x) - atan2(v1.y, v1.x);
+                float angle = std::atan2(direction.y, direction.x) + std::atan2(v2.y, v2.x) - std::atan2(v1.y, v1.x);
                 direction = glm::vec2(cos(angle) * glm::length(direction), sin(angle) * glm::length(direction));
             } else if (isDragged(trackStart)) {
                 movingStart = true;
@@ -931,16 +931,16 @@ std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Tr
                         || glm::dot(start - end, position - end) < 0) {
                     continue;
                 }
-                distance = fabs(distanceLinePoint(start, end, position));
+                distance = std::fabs(distanceLinePoint(start, end, position));
             } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track)) {
                 glm::vec2 start = arc->start.lock()->coords;
                 glm::vec2 end = arc->end.lock()->coords;
                 glm::vec2 center = arc->center;
-                float angleStart = atan2(start.y - center.y, start.x - center.x);
-                float angleEnd = atan2(end.y - center.y, end.x - center.x);
+                float angleStart = std::atan2(start.y - center.y, start.x - center.x);
+                float angleEnd = std::atan2(end.y - center.y, end.x - center.x);
                 float angle1 = (arc->rightArc ? angleStart : angleEnd);
                 float angle2 = (arc->rightArc ? angleEnd : angleStart);
-                float anglePosition = atan2(position.y - center.y, position.x - center.x);
+                float anglePosition = std::atan2(position.y - center.y, position.x - center.x);
                 if (angle2 > angle1) {
                     if (anglePosition < angle1 || anglePosition > angle2) {
                         continue;
@@ -950,7 +950,7 @@ std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Tr
                         continue;
                     }
                 }
-                distance = fabs(glm::distance(center, position) - arc->radius);
+                distance = std::fabs(glm::distance(center, position) - arc->radius);
             } else {
                 std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
                 glm::vec2 link1(intersection->link1.lock()->coords);
@@ -964,8 +964,8 @@ std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Tr
                     continue;
                 }
                 distance = std::min(
-                        fabs(distanceLinePoint(link1, link3, position)),
-                        fabs(distanceLinePoint(link2, link4, position)));
+                        std::fabs(distanceLinePoint(link1, link3, position)),
+                        std::fabs(distanceLinePoint(link2, link4, position)));
             }
 
             if (distance < minDistance) {
@@ -1098,7 +1098,7 @@ bool Editor::getArc(const glm::vec2& start, const glm::vec2& end, const std::vec
     } else {
         // arc
         center = start + t * r1;
-        radius = fabs(t);
+        radius = std::fabs(t);
         rightArc = (t > 0);
 
         return true;
@@ -1200,7 +1200,7 @@ std::vector<glm::vec2> Editor::getAlignmentVectors(const ControlPoint& cp) {
     // use default directions if no tracks are connected
     if (directions.empty()) {
         for (int i = 0; i < 8; i++) {
-            float angle = i * M_PI * 0.25f;
+            float angle = (float)i * (float)M_PI * 0.25f;
             directions.push_back(glm::vec2(cos(angle), sin(angle)));
         }
     }
@@ -1405,11 +1405,11 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
     float rInnerInner = radius - tracks.trackWidth / 2;
 
     float offset{0.0f};
-    float quadLength{(angle / numQuads) * radius};
+    float quadLength{(angle / (float)numQuads) * radius};
 
     for (int i = 0; i < numQuads; i++) {
-        float angle1 = baseAngle + (i * angle) / numQuads;
-        float angle2 = baseAngle + ((i + 1) * angle) / numQuads;
+        float angle1 = baseAngle + ((float)i * angle) / (float)numQuads;
+        float angle2 = baseAngle + ((float)(i + 1) * angle) / (float)numQuads;
 
         // left side
         glm::vec3 vec0(cos(angle1) * rOuterOuter, 0.0f, sin(angle1) * rOuterOuter);
@@ -1536,7 +1536,7 @@ void Editor::genTrackIntersectionVertices(const Tracks& tracks, Model& model) {
     }
 
     // center lines
-    float offset = -(d3 * M_PI) / 2.0f + tracks.centerLineInterrupt;
+    float offset = -(d3 * (float)M_PI) / 2.0f + tracks.centerLineInterrupt;
     while (offset < 0) {
         offset = offset + tracks.centerLineLength + tracks.centerLineInterrupt;
     }
@@ -1588,8 +1588,8 @@ void Editor::genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& 
     float innerRadius = radius - tracks.trackWidth / 2;
 
     for (int i = 0; i < numQuads; i++) {
-        float angle1 = baseAngle + (i * angle) / numQuads;
-        float angle2 = baseAngle + ((i + 1) * angle) / numQuads;
+        float angle1 = baseAngle + ((float)(i) * angle) / (float)numQuads;
+        float angle2 = baseAngle + ((float)(i + 1) * angle) / (float)numQuads;
 
         glm::vec3 vec0(cosf(angle1) * outerRadius, 0.0f, sinf(angle1) * outerRadius);
         glm::vec3 vec1(cosf(angle1) * innerRadius, 0.0f, sinf(angle1) * innerRadius);
@@ -1684,8 +1684,8 @@ void Editor::getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
         float& angle, int& numQuads) {
 
     // angles
-    float angleStart = atan2(start.y - center.y, start.x - center.x);
-    float angleEnd = atan2(end.y - center.y, end.x - center.x);
+    float angleStart = std::atan2(start.y - center.y, start.x - center.x);
+    float angleEnd = std::atan2(end.y - center.y, end.x - center.x);
 
     if (rightArc) {
         // right arc
@@ -1698,11 +1698,11 @@ void Editor::getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
     }
 
     if (angle < 0) {
-        angle += 2 * M_PI;
+        angle += 2.0f * (float)M_PI;
     }
 
     // number of quads
-    numQuads = 50 * angle;
+    numQuads = (int)(50 * angle);
     if (numQuads < 1) {
         numQuads = 1;
     }

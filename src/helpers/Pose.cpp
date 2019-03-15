@@ -23,27 +23,27 @@ glm::vec3 Pose::getEulerAngles() {
      * http://www.euclideanspace.com/maths/geometry/rotations/conversions/quaternionToEuler/
      */
 
-    double test = rotation.x * rotation.y + rotation.z * rotation.w;
+    float test = rotation.x * rotation.y + rotation.z * rotation.w;
 
     if (test > 0.49999) { 
         // singularity at north pole
-        eulerAngles.y = 2 * atan2(rotation.x,rotation.w);
-        eulerAngles.z = M_PI / 2.0f;
+        eulerAngles.y = 2 * std::atan2(rotation.x,rotation.w);
+        eulerAngles.z = (float)(M_PI) / 2.0f;
         eulerAngles.x = 0;
     } else if (test < -0.49999) { 
         // singularity at south pole
-        eulerAngles.y = -2 * atan2(rotation.x,rotation.w);
-        eulerAngles.z = -M_PI / 2.0f;
+        eulerAngles.y = -2 * std::atan2(rotation.x,rotation.w);
+        eulerAngles.z = (float)(-M_PI) / 2.0f;
         eulerAngles.x = 0;
     } else {
-        double sqx = rotation.x*rotation.x;
-        double sqy = rotation.y*rotation.y;
-        double sqz = rotation.z*rotation.z;
+        float sqx = rotation.x*rotation.x;
+        float sqy = rotation.y*rotation.y;
+        float sqz = rotation.z*rotation.z;
 
-        eulerAngles.z = asin(2*test);
-        eulerAngles.y = atan2(2*rotation.y*rotation.w
+        eulerAngles.z = std::asin(2*test);
+        eulerAngles.y = std::atan2(2*rotation.y*rotation.w
                 - 2*rotation.x*rotation.z , 1 - 2*sqy - 2*sqz);
-        eulerAngles.x = atan2(2*rotation.x*rotation.w
+        eulerAngles.x = std::atan2(2*rotation.x*rotation.w
                 - 2*rotation.y*rotation.z , 1 - 2*sqx - 2*sqz);
     }
 
@@ -51,7 +51,7 @@ glm::vec3 Pose::getEulerAngles() {
     eulerAngles.y = glm::degrees(eulerAngles.y);
     eulerAngles.z = glm::degrees(eulerAngles.z);
 
-    float eps = 0.0001;
+    float eps = 0.0001f;
 
     if (std::abs(eulerAngles.x) < eps) {
         eulerAngles.x = 0.0f;
@@ -110,14 +110,14 @@ void Pose::setEulerAngles(glm::vec3 eulerAngles) {
      * Source:
      * http://www.euclideanspace.com/maths/geometry/rotations/conversions/eulerToQuaternion/
      */
-    double c1 = cos(eulerAngles.y / 2.0f);
-    double s1 = sin(eulerAngles.y / 2.0f);
-    double c2 = cos(eulerAngles.z / 2.0f);
-    double s2 = sin(eulerAngles.z / 2.0f);
-    double c3 = cos(eulerAngles.x / 2.0f);
-    double s3 = sin(eulerAngles.x / 2.0f);
-    double c1c2 = c1*c2;
-    double s1s2 = s1*s2;
+    float c1 = std::cos(eulerAngles.y / 2.0f);
+    float s1 = std::sin(eulerAngles.y / 2.0f);
+    float c2 = std::cos(eulerAngles.z / 2.0f);
+    float s2 = std::sin(eulerAngles.z / 2.0f);
+    float c3 = std::cos(eulerAngles.x / 2.0f);
+    float s3 = std::sin(eulerAngles.x / 2.0f);
+    float c1c2 = c1*c2;
+    float s1s2 = s1*s2;
 
     rotation.w = c1c2*c3 - s1s2*s3;
     rotation.x = c1c2*s3 + s1s2*c3;

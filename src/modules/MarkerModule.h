@@ -145,7 +145,6 @@ public:
             Scene::Selection& selection);
 
     void render(
-            GLFWwindow* window,
             GLuint shaderProgramId,
             Camera& cameraMatrix,
             Scene::Selection& selection);

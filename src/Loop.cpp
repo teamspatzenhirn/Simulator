@@ -15,12 +15,52 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
 
 void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
 
-    instance->windowWidth = width;
-    instance->windowHeight = height;
+    if (Loop::instance->window == window) {
 
-    instance->frameBuffer.resize(width, height);
+        instance->windowWidth = width;
+        instance->windowHeight = height;
 
-    instance->scene.fpsCamera.aspectRatio = ((float) width) / (float)height;
+        instance->frameBuffer.resize(width, height);
+
+        instance->scene.fpsCamera.aspectRatio = (float)width / (float)height;
+    }
+}
+
+void renderToScreen (
+        GLsizei windowWidth, 
+        GLsizei windowHeight, 
+        ScreenQuad& screenQuad, 
+        float aspectRatio, 
+        bool keepAspectRatio,
+        GLuint textureId) {
+
+    if (keepAspectRatio) {
+        float fwidth = (float)windowWidth;
+        float fheight = (float)windowHeight;
+
+        if (fwidth / fheight > aspectRatio) {
+            GLsizei width = (GLsizei)(fheight * aspectRatio);
+            glViewport((windowWidth - width) / 2, 0, width, windowHeight);
+        } else {
+            GLsizei height = (GLsizei)(fwidth / aspectRatio);
+            glViewport(0, (windowHeight - height) / 2, windowWidth, height);
+        }
+    } else { 
+        glViewport(0, 0, windowWidth, windowHeight);
+    }
+
+    GLuint shaderProgramId = screenQuad.start();
+
+    glUseProgram(shaderProgramId);
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    glUniform1i(glGetUniformLocation(shaderProgramId, "tex"), 0);
+
+    screenQuad.end();
 }
 
 void Loop::loop() {
@@ -50,6 +90,7 @@ void Loop::loop() {
         guiModule.renderSettingsWindow(settings);
         guiModule.renderRuleWindow(scene.rules);
         guiModule.renderHelpWindow();
+
 
         float deltaTime = 0.004f;
         float simDeltaTime = deltaTime * settings.simulationSpeed;
@@ -105,71 +146,30 @@ void Loop::loop() {
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-        if (FPS_CAMERA == selectedCamera) {
-
-            glViewport(0, 0, windowWidth, windowHeight);
-
-            GLuint shaderProgramId = screenQuad.start();
-
-            glUseProgram(shaderProgramId);
-
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, frameBuffer.colorTextureId);
-            glUniform1i(glGetUniformLocation(shaderProgramId, "tex"), 0);
-
-            screenQuad.end();
-            
-        } else if (MAIN_CAMERA == selectedCamera) {
-
-            float carCameraAspect = scene.car.mainCamera.getAspectRatio();
-
-            if ((float)windowWidth / (float)windowHeight > carCameraAspect) {
-                GLsizei width = (GLsizei)((float)windowHeight * carCameraAspect);
-                glViewport((windowWidth - width) / 2, 0, width, windowHeight);
-            } else {
-                GLsizei height = (GLsizei)((float)windowWidth / carCameraAspect);
-                glViewport(0, (windowHeight - height) / 2, windowWidth, height);
-            }
-
-            GLuint shaderProgramId = screenQuad.start();
-
-            glUseProgram(shaderProgramId);
-
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, car.frameBuffer.colorTextureId);
-            glUniform1i(glGetUniformLocation(shaderProgramId, "tex"), 0);
-
-            screenQuad.end();
-
+        if (MAIN_CAMERA == selectedCamera) {
+            renderToScreen(
+                    windowWidth, 
+                    windowHeight, 
+                    screenQuad, 
+                    scene.car.mainCamera.getAspectRatio(), 
+                    true, 
+                    car.frameBuffer.colorTextureId);
         } else if (DEPTH_CAMERA == selectedCamera) {
-
-            float carCameraAspect = scene.car.depthCamera.getDepthAspectRatio();
-
-            if ((float)windowWidth / (float)windowHeight > carCameraAspect) {
-                GLsizei width = (GLsizei)((float)windowHeight * carCameraAspect);
-                glViewport((windowWidth - width) / 2, 0, width, windowHeight);
-            } else {
-                GLsizei height = (GLsizei)((float)windowWidth / carCameraAspect);
-                glViewport(0, (windowHeight - height) / 2, windowWidth, height);
-            }
-
-            GLuint shaderProgramId = screenQuad.start();
-
-            glUseProgram(shaderProgramId);
-
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, car.depthCameraFrameBuffer.colorTextureId);
-            glUniform1i(glGetUniformLocation(shaderProgramId, "tex"), 0);
-
-            screenQuad.end();
+            renderToScreen(
+                    windowWidth, 
+                    windowHeight, 
+                    screenQuad, 
+                    scene.car.depthCamera.getDepthAspectRatio(), 
+                    true, 
+                    car.depthCameraFrameBuffer.colorTextureId);
+        } else { // FPS_CAMERA
+            renderToScreen(
+                    windowWidth, 
+                    windowHeight, 
+                    screenQuad, 
+                    1, 
+                    false, 
+                    frameBuffer.colorTextureId);
         }
 
         commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
@@ -248,7 +248,7 @@ void Loop::renderMarkers(GLuint shaderProgramId) {
                 | MarkerModule::ROTATE_Y);
     }
 
-    markerModule.render(window, shaderProgramId, scene.fpsCamera, scene.selection);
+    markerModule.render(shaderProgramId, scene.fpsCamera, scene.selection);
 }
 
 void Loop::renderFpsView() {
@@ -261,7 +261,7 @@ void Loop::renderFpsView() {
     itemsModule.update(scene.items, scene.selection.pose);
 
     Scene preRenderScene = scene;
-    update((float)timer.accumulator, (float)timer.accumulator * settings.simulationSpeed);
+    update(timer.accumulator, timer.accumulator * settings.simulationSpeed);
 
     GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
     glUniform1f(timeLocation, (float)scene.simulationTime * 1000);

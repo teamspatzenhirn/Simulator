@@ -453,12 +453,11 @@ void MarkerModule::update(
 }
 
 void MarkerModule::render(
-        GLFWwindow* window,
         GLuint shaderProgramId,
         Camera& camera,
         Scene::Selection& selection) {
 
-    GLuint lightingLocation =
+    GLint lightingLocation =
         glGetUniformLocation(shaderProgramId, "lighting");
     glUniform1i(lightingLocation, false);
 

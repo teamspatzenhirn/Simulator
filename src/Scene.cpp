@@ -432,8 +432,8 @@ void to_json(json& j, const Tracks& t) {
             trackEnd = arc->end;
         }
 
-        unsigned int start;
-        unsigned int end;
+        unsigned int start = 0;
+        unsigned int end = 0;
 
         for (unsigned int i = 0; i < tracks.size(); i++) {
             if (trackStart.lock().get() == tracks.at(i).get()) {
@@ -808,13 +808,13 @@ Scene& Scene::getFromHistory(float simulationTimePoint) {
     return history.back();
 }
 
-Scene& Scene::getHistoryBackStep(int step) {
+Scene& Scene::getHistoryBackStep(size_t step) {
     
-    int index = history.size() - 1 - step;
-
-    if (index < 0) {
+    if (step >= history.size()) {
         return history.front();
     } 
+
+    size_t index = history.size() - step - 1;
 
     return history[index];
 }

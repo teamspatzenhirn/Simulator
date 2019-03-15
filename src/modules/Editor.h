@@ -102,7 +102,7 @@ public:
     void onButton(double cursorX, double cursorY, int windowWidth, int windowHeight,
             int button, int action, Camera& camera, Tracks& tracks, float groundSize);
     void onMouseMoved(double cursorX, double cursorY, int windowWidth, int windowHeight,
-            Camera& camera, const Tracks& tracks, float groundSize);
+            Camera& camera, const Tracks& tracks);
 
     void setTrackMode(TrackMode trackMode, const Tracks& tracks);
     void setAutoAlign(bool autoAlign, const Tracks& tracks);

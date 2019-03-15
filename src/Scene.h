@@ -313,7 +313,7 @@ struct Scene {
     /*
      * Returns the nth-last element from the history.
      */
-    static Scene& getHistoryBackStep(int step);
+    static Scene& getHistoryBackStep(size_t step);
 };
 
 #endif
