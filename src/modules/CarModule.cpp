@@ -8,22 +8,22 @@ float CarModule::calcLaserSensorValue(
         glm::vec3 position,
         glm::vec3 direction,
         ModelStore& modelStore,
-        std::vector<std::shared_ptr<Scene::Item>>& items) {
+        std::vector<Scene::Item>& items) {
 
     float minDist = 1000.0f;
 
-    for (std::shared_ptr<Scene::Item>& it : items) {
+    for (Scene::Item& it : items) {
 
         float maxItemSize = std::max(
-            modelStore.itemModels[it->type].boundingBox.size.x * it->pose.scale.x,
-            modelStore.itemModels[it->type].boundingBox.size.z * it->pose.scale.z);
+            modelStore.itemModels[it.type].boundingBox.size.x * it.pose.scale.x,
+            modelStore.itemModels[it.type].boundingBox.size.z * it.pose.scale.z);
 
-        if (glm::length(position - it->pose.position) > 2.0 + maxItemSize / 2) {
+        if (glm::length(position - it.pose.position) > 2.0 + maxItemSize / 2) {
             continue;
         }
 
-        Model& itemModel = modelStore.itemModels[it->type];
-        glm::mat4 modelMat = it->pose.getMatrix();
+        Model& itemModel = modelStore.itemModels[it.type];
+        glm::mat4 modelMat = it.pose.getMatrix();
 
         for (unsigned int i = 2 ; i < itemModel.vertices.size() ; i += 3) {
 
@@ -229,7 +229,7 @@ void CarModule::updateDepthCamera(
 void CarModule::updateLaserSensors(
         Car& car,
         ModelStore& modelStore,
-        std::vector<std::shared_ptr<Scene::Item>>& items) {
+        std::vector<Scene::Item>& items) {
 
     glm::vec4 laserDirection{-1, 0, 0, 0};
     laserDirection = car.modelPose.getMatrix() * laserDirection;

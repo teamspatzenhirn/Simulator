@@ -406,7 +406,7 @@ void GuiModule::renderCreateMenu(Scene& scene) {
     }
 
     if (NONE != newType) {
-        scene.items.emplace_back(std::make_shared<Scene::Item>(newType, newName));
+        scene.items.emplace_back(Scene::Item(newType, newName));
     }
 }
 
@@ -579,29 +579,29 @@ void GuiModule::renderSceneWindow(Scene& scene) {
 
         if (ImGui::TreeNode("Items")) {
 
-            for (std::shared_ptr<Scene::Item> i : scene.items) {
+            for (Scene::Item i : scene.items) {
 
-                ImGui::PushID(i.get());
+                ImGui::PushID((int)i.id);
 
                 int flags = 0;
-                if (&(i->pose) == scene.selection.pose) {
+                if (&(i.pose) == scene.selection.pose) {
                     flags = ImGuiTreeNodeFlags_Selected;
                 }
                 
-                bool open = ImGui::TreeNodeEx((void*)&i, flags, "%s", i->name.c_str());
+                bool open = ImGui::TreeNodeEx((void*)&i, flags, "%s", i.name.c_str());
 
                 if(ImGui::IsItemClicked()) {
-                    scene.selection.pose = &i->pose;
+                    scene.selection.pose = &i.pose;
                     scene.selection.handled = true;
                 }
 
                 if (open) {
                     char nameInputBuf[256];
-                    strncpy(nameInputBuf, i->name.c_str(), sizeof(nameInputBuf));
+                    strncpy(nameInputBuf, i.name.c_str(), sizeof(nameInputBuf));
                     ImGui::InputText("name", nameInputBuf, IM_ARRAYSIZE(nameInputBuf));
-                    i->name = std::string(nameInputBuf);
+                    i.name = std::string(nameInputBuf);
 
-                    renderPoseGui(i->pose);
+                    renderPoseGui(i.pose);
 
                     ImGui::TreePop();
                 }

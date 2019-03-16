@@ -67,14 +67,12 @@ class Loop {
 
     CarModule car;
 
-    void update(float deltaTime, float simDeltaTime);
-    void updateCollisions();
+    void update(Scene& scene, float deltaTime, float simDeltaTime);
 
-    void renderMarkers(GLuint shaderProgramId);
     void renderScene(GLuint shaderProgramIdj);
-    void renderFpsView();
-    void renderCarView();
-    void renderDepthView();
+    void renderFpsView(Scene& scene);
+    void renderCarView(Scene& scene);
+    void renderDepthView(Scene& scene);
 
 public:
 

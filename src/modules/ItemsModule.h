@@ -14,7 +14,7 @@ class ItemsModule {
         bool active;
     };
 
-    std::map<Scene::Item*, DynamicItemState> itemState;
+    std::map<uint64_t, DynamicItemState> itemState;
 
 public:
 
@@ -25,16 +25,16 @@ public:
             float dt,
             Car& car, 
             Scene::DynamicItemSettings& dis,
-            std::vector<std::shared_ptr<Scene::Item>>& items);
+            std::vector<Scene::Item>& items);
 
     void update(
-            std::vector<std::shared_ptr<Scene::Item>>& items,
+            std::vector<Scene::Item>& items,
             Pose* selection);
 
     void render(
             GLuint shaderProgramId,
             ModelStore& modelStore,
-            std::vector<std::shared_ptr<Scene::Item>>& items);
+            std::vector<Scene::Item>& items);
 };
 
 #endif

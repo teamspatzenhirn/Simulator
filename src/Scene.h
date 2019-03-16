@@ -209,6 +209,7 @@ struct Scene {
      */
     struct Item {
 
+        uint64_t id = getId();
         ItemType type = NONE;
         Pose pose{0, 0, 0};
         std::string name = "unnamed_item";
@@ -223,7 +224,7 @@ struct Scene {
         }
     };
 
-    std::vector<std::shared_ptr<Item>> items;
+    std::vector<Item> items;
 
     /*
      * These are additional settings for the dynamic items.
@@ -242,14 +243,14 @@ struct Scene {
      */
     struct Rules {
 
-        std::shared_ptr<Item> line;
+        uint64_t lineId = 0;
         double lineTime = 0;
         bool linePassed = false;
 
-        std::shared_ptr<Item> rightArrow;
-        std::shared_ptr<Item> leftArrow;
+        uint64_t rightArrowId = 0;
+        uint64_t leftArrowId = 0;
 
-        std::vector<Item*> passedCheckpoints;
+        std::vector<uint64_t> passedCheckpointIds;
 
         float allowedMaxSpeed = 1000;
 

@@ -125,17 +125,17 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, double simulationTim
 void VisModule::renderDynamicItems(
         GLuint shaderProgramId,
         double simulationTime, 
-        std::vector<std::shared_ptr<Scene::Item>>& items) {
+        std::vector<Scene::Item>& items) {
 
     float offset = std::sin((float)simulationTime * 0.01f) * 0.01f;
 
-    for (std::shared_ptr<Scene::Item>& item : items) {
+    for (Scene::Item& item : items) {
 
-        if (item->type == DYNAMIC_OBSTACLE) {
+        if (item.type == DYNAMIC_OBSTACLE) {
 
             glm::vec4 start(0, 0.05, 0.17 + offset, 1); 
             glm::vec4 end(0, 0.05, 0.23 + offset, 1);
-            glm::mat4 mat = item->pose.getMatrix();
+            glm::mat4 mat = item.pose.getMatrix();
 
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
@@ -143,11 +143,11 @@ void VisModule::renderDynamicItems(
             drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
 
-        if (item->type == DYNAMIC_PEDESTRIAN_RIGHT) {
+        if (item.type == DYNAMIC_PEDESTRIAN_RIGHT) {
 
             glm::vec4 start(0.075 - offset, 0.075, 0.0, 1); 
             glm::vec4 end(0.12 - offset, 0.075, 0.0, 1);
-            glm::mat4 mat = item->pose.getMatrix();
+            glm::mat4 mat = item.pose.getMatrix();
 
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
@@ -155,11 +155,11 @@ void VisModule::renderDynamicItems(
             drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
 
-        if (item->type == DYNAMIC_PEDESTRIAN_LEFT) {
+        if (item.type == DYNAMIC_PEDESTRIAN_LEFT) {
 
             glm::vec4 start(-0.075 + offset, 0.075, 0.0, 1); 
             glm::vec4 end(-0.12 + offset, 0.075, 0.0, 1);
-            glm::mat4 mat = item->pose.getMatrix();
+            glm::mat4 mat = item.pose.getMatrix();
 
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
@@ -282,7 +282,6 @@ void VisModule::renderVisualization(
             glUniform1i(billboardLocation, false);
         }
     }
-
 
     glUniform1i(lightingLocation, true);
 }

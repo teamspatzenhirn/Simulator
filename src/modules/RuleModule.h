@@ -24,7 +24,7 @@ public:
             Scene::Rules& rules,
             Car& car,
             Tracks& tracks,
-            std::vector<std::shared_ptr<Scene::Item>>& items,
+            std::vector<Scene::Item>& items,
             CollisionModule& collisionModule);
 };
 

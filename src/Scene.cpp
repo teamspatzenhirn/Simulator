@@ -575,32 +575,32 @@ void from_json(const json& j, Tracks& t) {
  * Items
  */
 
-void to_json(json& j, const std::vector<std::shared_ptr<Scene::Item>>& is) {
+void to_json(json& j, const std::vector<Scene::Item>& is) {
 
     json jsonItems;
 
-    for (const std::shared_ptr<Scene::Item>& i : is) {
+    for (const Scene::Item& i : is) {
         jsonItems.push_back({
-                {"pose", i->pose},
-                {"type", (int)i->type},
-                {"name", i->name}
+                {"pose", i.pose},
+                {"type", (int)i.type},
+                {"name", i.name}
             });
     }
 
     j = jsonItems;
 }
 
-void from_json(const json& j, std::vector<std::shared_ptr<Scene::Item>>& is) {
+void from_json(const json& j, std::vector<Scene::Item>& is) {
 
     for (const json& jsonItem : j) {
-        std::shared_ptr<Scene::Item> i = std::make_shared<Scene::Item>(NONE);
-        i->pose = jsonItem.at("pose").get<Pose>();
-        i->type = (ItemType) jsonItem.at("type").get<int>();
+        Scene::Item i = Scene::Item(NONE);
+        i.pose = jsonItem.at("pose").get<Pose>();
+        i.type = (ItemType) jsonItem.at("type").get<int>();
 
         try {
-            i->name = jsonItem.at("name").get<std::string>();
+            i.name = jsonItem.at("name").get<std::string>();
         } catch (json::exception& e) {
-            i->name = "unnamed_item";
+            i.name = "unnamed_item";
         }
 
         is.push_back(i);
@@ -681,7 +681,7 @@ void from_json(const json& j, Scene& s) {
     s.fpsCamera = j.at("fpsCamera").get<FpsCamera>();
     s.car = j.at("car").get<Car>();
     s.tracks = j.at("tracks").get<Tracks>();
-    s.items = j.at("items").get<std::vector<std::shared_ptr<Scene::Item>>>();
+    s.items = j.at("items").get<std::vector<Scene::Item>>();
 
     try {
         s.rules = j.at("rules").get<Scene::Rules>();

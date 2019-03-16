@@ -16,7 +16,7 @@ void RuleModule::update(
         Scene::Rules& rules,
         Car& car,
         Tracks& tracks,
-        std::vector<std::shared_ptr<Scene::Item>>& items,
+        std::vector<Scene::Item>& items,
         CollisionModule& collisionModule) {
 
     /*
@@ -28,6 +28,8 @@ void RuleModule::update(
      * It would be correct (according to the rules) to
      * actually check if at least three wheels are on the track.
      */
+
+    // TODO: the on-track-check is still buggy
     
     std::vector<std::shared_ptr<TrackBase>> trackSegments;
 
@@ -140,16 +142,16 @@ void RuleModule::update(
         }
     }
 
-    for (std::shared_ptr<Scene::Item>& i : items) {
+    for (Scene::Item& i : items) {
 
-        if (TRAFFIC_ISLAND == i->type) {
+        if (TRAFFIC_ISLAND == i.type) {
 
             // base part of traffic island
             
             glm::vec4 startInModelCoords(0, 0, 1.9, 1);
             glm::vec4 endInModelCoords(0, 0, -1.9, 1);
 
-            glm::mat4 modelMat = i->pose.getMatrix();
+            glm::mat4 modelMat = i.pose.getMatrix();
 
             glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
             glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
@@ -179,12 +181,12 @@ void RuleModule::update(
             }
         }
 
-        if (PARK_SECTION == i->type) {
+        if (PARK_SECTION == i.type) {
 
             glm::vec4 startInModelCoords(0, 0, 1.85, 1);
             glm::vec4 endInModelCoords(0, 0, -1.85, 1);
 
-            glm::mat4 modelMat = i->pose.getMatrix();
+            glm::mat4 modelMat = i.pose.getMatrix();
 
             glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
             glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
@@ -198,12 +200,12 @@ void RuleModule::update(
             }
         }
 
-        if (PARK_SLOTS == i->type) {
+        if (PARK_SLOTS == i.type) {
 
             glm::vec4 startInModelCoords(0, 0, 1.5, 1);
             glm::vec4 endInModelCoords(0, 0, -1.5, 1);
 
-            glm::mat4 modelMat = i->pose.getMatrix();
+            glm::mat4 modelMat = i.pose.getMatrix();
 
             glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
             glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
@@ -217,12 +219,12 @@ void RuleModule::update(
             }
         }
 
-        if (START_BOX == i->type) {
+        if (START_BOX == i.type) {
 
             glm::vec4 startInModelCoords(0, 0, 0.85, 1);
             glm::vec4 endInModelCoords(0, 0, -0.85, 1);
 
-            glm::mat4 modelMat = i->pose.getMatrix();
+            glm::mat4 modelMat = i.pose.getMatrix();
 
             glm::vec4 startInWorldCoords = modelMat * startInModelCoords;
             glm::vec4 endInWorldCoords = modelMat * endInModelCoords;
@@ -269,43 +271,43 @@ void RuleModule::update(
     bool allCheckpointsPassed = true;
     int checkpointCounter = 0;
 
-    for (std::shared_ptr<Scene::Item>& i : items) {
+    for (Scene::Item& i : items) {
 
-        float d = glm::length(i->pose.position - car.modelPose.position);
+        float d = glm::length(i.pose.position - car.modelPose.position);
         bool isReallyClose = d < 0.15;
 
-        switch (i->type) {
+        switch (i.type) {
 
             case CROSSWALK:
                 isReallyClose = d < 0.3;
             case CROSSWALK_SMALL:
             case STOP_LINE:
             case GIVE_WAY_LINE:
-                if (!rules.line) {
+                if (!rules.lineId) {
                     if (d < 0.5) {
-                        rules.line = i;
+                        rules.lineId = i.id;
                         rules.lineTime = simulationTime;
                         rules.linePassed = false;
                     }
-                } else if (rules.line == i) { 
+                } else if (rules.lineId == i.id) { 
                     if (isReallyClose && rules.linePassed == false) {
                         double delta = simulationTime - rules.lineTime;
                         double deltaLimit = 0;
                         std::string typeString = "";
-                        if (i->type == STOP_LINE) {
+                        if (i.type == STOP_LINE) {
                             deltaLimit = 3.0;
                             typeString = "stop line";
                         }
-                        if (i->type == GIVE_WAY_LINE) {
+                        if (i.type == GIVE_WAY_LINE) {
                             deltaLimit = 1.0;
                             typeString = "give-way line";
                         }
-                        if (i->type == CROSSWALK || i->type == CROSSWALK_SMALL) {
+                        if (i.type == CROSSWALK || i.type == CROSSWALK_SMALL) {
                             bool pedestrianNearby = false;
-                            for (std::shared_ptr<Scene::Item>& j : items) {
-                                if((j->type == DYNAMIC_PEDESTRIAN_LEFT
-                                        || j->type == DYNAMIC_PEDESTRIAN_RIGHT)
-                                        && glm::length(j->pose.position - i->pose.position) < 1) {
+                            for (Scene::Item& j : items) {
+                                if((j.type == DYNAMIC_PEDESTRIAN_LEFT
+                                        || j.type == DYNAMIC_PEDESTRIAN_RIGHT)
+                                        && glm::length(j.pose.position - i.pose.position) < 1) {
                                    pedestrianNearby = true; 
                                    break;
                                 }
@@ -319,7 +321,7 @@ void RuleModule::update(
                         }
                         if (delta < deltaLimit) {
 
-                            if (i->type == GIVE_WAY_LINE) {
+                            if (i.type == GIVE_WAY_LINE) {
                                 rules.giveWayLineIgnored = true;
                                 if (rules.exitIfGiveWayLineIgnored) {
                                     printViolation(simulationTime);
@@ -332,7 +334,7 @@ void RuleModule::update(
                                     std::exit(-1);
                                 } 
                             }
-                            if (i->type == STOP_LINE) {
+                            if (i.type == STOP_LINE) {
                                 rules.stopLineIgnored = true;
                                 if (rules.exitIfStopLineIgnored) {
                                     printViolation(simulationTime);
@@ -345,7 +347,7 @@ void RuleModule::update(
                                     std::exit(-1);
                                 }
                             }
-                            if (i->type == CROSSWALK) {
+                            if (i.type == CROSSWALK) {
                                 rules.crosswalkIgnored = true;
                                 if (rules.exitIfCrosswalkIgnored) {
                                     printViolation(simulationTime);
@@ -362,7 +364,7 @@ void RuleModule::update(
                         rules.linePassed = true;
                     }
                     if (d > 0.5) {
-                        rules.line = nullptr;
+                        rules.lineId = 0;
                         rules.lineTime = 0;
                         rules.linePassed = false;
 
@@ -414,10 +416,67 @@ void RuleModule::update(
                 break;
 
             case GROUND_ARROW_RIGHT:
-                if (isReallyClose) rules.rightArrow = i;
+                if (!rules.rightArrowId && isReallyClose) {
+                    rules.rightArrowId = i.id;
+                }
+
+                if (rules.rightArrowId == i.id) {
+                    glm::vec4 carWorldCoords =
+                        glm::vec4(car.modelPose.position, 1.0f);
+                    glm::vec3 carArrowCoords = glm::vec3(
+                            i.pose.getInverseMatrix() * carWorldCoords);
+
+                    if (carArrowCoords.x < -0.5 
+                            || carArrowCoords.z < -1.5
+                            || carArrowCoords.z > 0.3) {
+
+                        rules.rightArrowIgnored = true;
+
+                        if (rules.exitIfRightArrowIgnored) {
+                            printViolation(simulationTime);
+                            std::cerr << "Ignored right arrow!" << std::endl;
+                            std::exit(-1);
+                        }
+                    } else {
+                        rules.rightArrowIgnored = false;
+                    }
+
+                    if (carArrowCoords.x > 0.5 || glm::length(carArrowCoords) > 3) {
+                        rules.rightArrowId = 0;
+                    }
+                }
                 break;
             case GROUND_ARROW_LEFT:
-                if (isReallyClose) rules.leftArrow = i;
+                if (!rules.leftArrowId && isReallyClose) {
+                    rules.leftArrowId = i.id;
+                }
+
+                if (rules.leftArrowId == i.id) {
+
+                    glm::vec4 carWorldCoords =
+                        glm::vec4(car.modelPose.position, 1.0f);
+                    glm::vec3 carArrowCoords = glm::vec3(
+                            i.pose.getInverseMatrix() * carWorldCoords);
+
+                    if (carArrowCoords.x > 0.2
+                            || carArrowCoords.z < -1.5
+                            || carArrowCoords.z > 0.3) {
+
+                        rules.leftArrowIgnored = true;
+
+                        if (rules.exitIfLeftArrowIgnored) {
+                            printViolation(simulationTime);
+                            std::cerr << "Ignored left arrow!" << std::endl;
+                            std::exit(-1);
+                        }
+                    } else {
+                        rules.leftArrowIgnored = false;
+                    }
+
+                    if (carArrowCoords.x < -0.9 || glm::length(carArrowCoords) > 3) {
+                        rules.leftArrowId = 0;
+                    }
+                }
                 break;
 
             case NO_PARKING:
@@ -437,12 +496,12 @@ void RuleModule::update(
 
             case CHECKPOINT:
                 if (std::find(
-                            rules.passedCheckpoints.begin(),
-                            rules.passedCheckpoints.end(),
-                            i.get()) == rules.passedCheckpoints.end()) {
+                            rules.passedCheckpointIds.begin(),
+                            rules.passedCheckpointIds.end(),
+                            i.id) == rules.passedCheckpointIds.end()) {
                     allCheckpointsPassed = false;
                     if (isReallyClose) {
-                        rules.passedCheckpoints.push_back(i.get());
+                        rules.passedCheckpointIds.push_back(i.id);
                     }
                 }
                 checkpointCounter += 1;
@@ -459,62 +518,7 @@ void RuleModule::update(
         std::exit(0);
     }
 
-    if (rules.rightArrow) {
-
-        glm::vec4 carWorldCoords =
-            glm::vec4(car.modelPose.position, 1.0f);
-        glm::vec3 carArrowCoords = glm::vec3(
-                rules.rightArrow->pose.getInverseMatrix() * carWorldCoords);
-
-        if (carArrowCoords.x < -0.5 
-                || carArrowCoords.z < -1.5
-                || carArrowCoords.z > 0.3) {
-
-            rules.rightArrowIgnored = true;
-
-            if (rules.exitIfRightArrowIgnored) {
-                printViolation(simulationTime);
-                std::cerr << "Ignored right arrow!" << std::endl;
-                std::exit(-1);
-            }
-        } else {
-            rules.rightArrowIgnored = false;
-        }
-
-        if (carArrowCoords.x > 0.5 || glm::length(carArrowCoords) > 3) {
-            rules.rightArrow = nullptr;
-        }
-    }
-
-    if (rules.leftArrow) {
-
-        glm::vec4 carWorldCoords =
-            glm::vec4(car.modelPose.position, 1.0f);
-        glm::vec3 carArrowCoords = glm::vec3(
-                rules.leftArrow->pose.getInverseMatrix() * carWorldCoords);
-
-        if (carArrowCoords.x > 0.2
-                || carArrowCoords.z < -1.5
-                || carArrowCoords.z > 0.3) {
-
-            rules.leftArrowIgnored = true;
-
-            if (rules.exitIfLeftArrowIgnored) {
-                printViolation(simulationTime);
-                std::cerr << "Ignored left arrow!" << std::endl;
-                std::exit(-1);
-            }
-        } else {
-            rules.leftArrowIgnored = false;
-        }
-
-        if (carArrowCoords.x < -0.9 || glm::length(carArrowCoords) > 3) {
-            rules.leftArrow = nullptr;
-        }
-    }
-
     // TODO: calc correct max speed
-    
 
     if (car.vesc.velocity - rules.allowedMaxSpeed / 3.6 / 10.0 > 0.05) {
 

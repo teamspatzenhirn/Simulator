@@ -91,7 +91,6 @@ void Loop::loop() {
         guiModule.renderRuleWindow(scene.rules);
         guiModule.renderHelpWindow();
 
-
         float deltaTime = 0.004f;
         float simDeltaTime = deltaTime * settings.simulationSpeed;
 
@@ -100,7 +99,7 @@ void Loop::loop() {
             commModule.receiveVesc(scene.car.vesc);
             commModule.receiveVisualization(scene.visualization);
 
-            update(deltaTime, simDeltaTime);
+            update(scene, deltaTime, simDeltaTime);
 
             if (!scene.paused) {
                 scene.simulationTime += simDeltaTime;
@@ -117,8 +116,6 @@ void Loop::loop() {
                 scene.items,
                 collisionModule);
 
-        glUseProgram(shaderProgram.id);
-
         for(KeyEvent& e : getKeyEvents()) {
             if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
                 selectedCamera = (SelectedCamera)((((int)selectedCamera) + 1) % 3);
@@ -128,19 +125,26 @@ void Loop::loop() {
             }
         }
 
-        // render fps / editor camera view if needed
-
         if (FPS_CAMERA == selectedCamera) {
-            renderFpsView();
+            if (settings.showMarkers) {
+                markerModule.update(window, scene.fpsCamera, scene.selection);
+                editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
+            }
+            itemsModule.update(scene.items, scene.selection.pose);
         }
 
-        // render from main car camera perspective
+        // render camera images
 
-        renderCarView();
+        Scene preRenderScene = scene;
+        update(scene, 
+                timer.accumulator, 
+                timer.accumulator * settings.simulationSpeed);
 
-        // render from depth camera perspective
+        renderFpsView(scene);
+        renderCarView(scene);
+        renderDepthView(scene);
 
-        renderDepthView();
+        scene = preRenderScene;
 
         // render on screen filling quad
 
@@ -181,44 +185,43 @@ void Loop::loop() {
     }
 }
 
-void Loop::update(float deltaTime, float simDeltaTime) {
+void Loop::update(Scene& scene, float deltaTime, float simDeltaTime) {
 
     scene.fpsCamera.update(window, deltaTime);
 
-    updateCollisions();
+    collisionModule.add(scene.car.modelPose, car.carModel);
+
+    for (auto& i : scene.items) {
+        if (i.type == OBSTACLE) {
+            collisionModule.add(i.pose, modelStore.itemModels[OBSTACLE]);
+        } else if (i.type == DYNAMIC_OBSTACLE) {
+            collisionModule.add(i.pose, modelStore.itemModels[DYNAMIC_OBSTACLE]);
+        } else if (i.type == PEDESTRIAN) {
+            collisionModule.add(i.pose, modelStore.itemModels[PEDESTRIAN]);
+        } else if (i.type == DYNAMIC_PEDESTRIAN_RIGHT) {
+            collisionModule.add(i.pose, modelStore.itemModels[PEDESTRIAN]);
+        } else if (i.type == DYNAMIC_PEDESTRIAN_LEFT) {
+            collisionModule.add(i.pose, modelStore.itemModels[PEDESTRIAN]);
+        }
+    }
+
+    collisionModule.update();
 
     if (!scene.paused) {
         car.updatePosition(scene.car, simDeltaTime);
     }
 
-    itemsModule.updateDynamicItems(simDeltaTime, scene.car, scene.dynamicItemSettings, scene.items);
+    itemsModule.updateDynamicItems(
+            simDeltaTime,
+            scene.car, 
+            scene.dynamicItemSettings,
+            scene.items);
 
     visModule.addPositionTrace(scene.car.modelPose.position, scene.simulationTime);
 
     car.updateMainCamera(scene.car.mainCamera, scene.car.modelPose);
     car.updateDepthCamera(scene.car.depthCamera, scene.car.modelPose);
     car.updateLaserSensors(scene.car, modelStore, scene.items);
-}
-
-void Loop::updateCollisions() {
-
-    collisionModule.add(scene.car.modelPose, car.carModel);
-
-    for (auto& i : scene.items) {
-        if (i->type == OBSTACLE) {
-            collisionModule.add(i->pose, modelStore.itemModels[OBSTACLE]);
-        } else if (i->type == DYNAMIC_OBSTACLE) {
-            collisionModule.add(i->pose, modelStore.itemModels[DYNAMIC_OBSTACLE]);
-        } else if (i->type == PEDESTRIAN) {
-            collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
-        } else if (i->type == DYNAMIC_PEDESTRIAN_RIGHT) {
-            collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
-        } else if (i->type == DYNAMIC_PEDESTRIAN_LEFT) {
-            collisionModule.add(i->pose, modelStore.itemModels[PEDESTRIAN]);
-        }
-    }
-
-    collisionModule.update();
 }
 
 void Loop::renderScene(GLuint shaderProgramId) {
@@ -232,36 +235,9 @@ void Loop::renderScene(GLuint shaderProgramId) {
     editor.renderScene(shaderProgramId, scene.tracks);
 }
 
-void Loop::renderMarkers(GLuint shaderProgramId) {
+void Loop::renderFpsView(Scene& scene) {
 
-    markerModule.add(light.pose, MarkerModule::TRANSLATE_ALL);
-    markerModule.add(scene.car.modelPose,
-            MarkerModule::TRANSLATE_X 
-            | MarkerModule::TRANSLATE_Z
-            | MarkerModule::ROTATE_Y);
-
-    for (std::shared_ptr<Scene::Item>& i : scene.items) {
-        markerModule.add(i->pose,
-                MarkerModule::TRANSLATE_X
-                | MarkerModule::TRANSLATE_Z
-                | MarkerModule::SCALE_ALL
-                | MarkerModule::ROTATE_Y);
-    }
-
-    markerModule.render(shaderProgramId, scene.fpsCamera, scene.selection);
-}
-
-void Loop::renderFpsView() {
-
-    if (settings.showMarkers) {
-        markerModule.update(window, scene.fpsCamera, scene.selection);
-        editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
-    }
-
-    itemsModule.update(scene.items, scene.selection.pose);
-
-    Scene preRenderScene = scene;
-    update(timer.accumulator, timer.accumulator * settings.simulationSpeed);
+    glUseProgram(shaderProgram.id);
 
     GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
     glUniform1f(timeLocation, (float)scene.simulationTime * 1000);
@@ -290,7 +266,22 @@ void Loop::renderFpsView() {
                 shaderProgram.id,
                 scene.tracks,
                 scene.fpsCamera.pose.position);
-        renderMarkers(shaderProgram.id);
+
+        markerModule.add(light.pose, MarkerModule::TRANSLATE_ALL);
+        markerModule.add(scene.car.modelPose,
+                MarkerModule::TRANSLATE_X 
+                | MarkerModule::TRANSLATE_Z
+                | MarkerModule::ROTATE_Y);
+
+        for (Scene::Item& i : scene.items) {
+            markerModule.add(i.pose,
+                    MarkerModule::TRANSLATE_X
+                    | MarkerModule::TRANSLATE_Z
+                    | MarkerModule::SCALE_ALL
+                    | MarkerModule::ROTATE_Y);
+        }
+
+        markerModule.render(shaderProgram.id, scene.fpsCamera, scene.selection);
     }
 
     if (settings.showVehiclePath) {
@@ -313,14 +304,9 @@ void Loop::renderFpsView() {
     visModule.renderVisualization(
             shaderProgram.id,
             scene.visualization, settings);
-
-    scene = preRenderScene;
 }
 
-void Loop::renderCarView() {
-
-    Scene preRenderScene = scene;
-    update(timer.accumulator, timer.accumulator * settings.simulationSpeed);
+void Loop::renderCarView(Scene& scene) {
 
     glUseProgram(carShaderProgram.id);
 
@@ -345,38 +331,31 @@ void Loop::renderCarView() {
 
     renderScene(carShaderProgram.id);
 
+    // main camera image in color
+
     glUseProgram(shaderProgram.id);
 
-    if (MAIN_CAMERA == selectedCamera) {
+    GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
+    glUniform1f(timeLocation, (float)scene.simulationTime * 1000);
 
-        GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
-        glUniform1f(timeLocation, (float)scene.simulationTime * 1000);
+    GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
+    glUniform1f(noiseLocation, scene.car.mainCamera.noise);
 
-        GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
-        glUniform1f(noiseLocation, scene.car.mainCamera.noise);
+    glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);
+    glViewport(0, 0,
+            scene.car.mainCamera.imageWidth,
+            scene.car.mainCamera.imageHeight);
 
-        glViewport(0, 0,
-                scene.car.mainCamera.imageWidth,
-                scene.car.mainCamera.imageHeight);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    car.mainCamera.render(carShaderProgram.id);
 
-        car.mainCamera.render(carShaderProgram.id);
-
-        renderScene(carShaderProgram.id);
-    }
-
-    scene = preRenderScene;
+    renderScene(carShaderProgram.id);
 }
 
-void Loop::renderDepthView() {
-
-    Scene preRenderScene = scene;
-
-    update(timer.accumulator, timer.accumulator * settings.simulationSpeed);
+void Loop::renderDepthView(Scene& scene) {
 
     glUseProgram(depthCameraShaderProgram.id);
 
@@ -394,6 +373,4 @@ void Loop::renderDepthView() {
     renderScene(depthCameraShaderProgram.id);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    scene = preRenderScene;
 }

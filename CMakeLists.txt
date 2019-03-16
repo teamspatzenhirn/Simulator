@@ -64,6 +64,7 @@ set(SOURCE_FILES
    ./src/helpers/FpsCamera.cpp
    ./src/helpers/FrameBuffer.cpp
    ./src/helpers/Timer.cpp
+   ./src/helpers/Id.cpp
    ./src/helpers/Pose.cpp
    ./src/helpers/PointLight.cpp
    ./src/helpers/ScreenQuad.cpp

@@ -1,12 +1,15 @@
 #ifndef INC_2019_CAR_H
 #define INC_2019_CAR_H
 
+#include "helpers/Id.h"
 #include "helpers/Pose.h"
 
 /*
  * This struct contains the state of the simulated model car.
  */
 struct Car {
+
+    uint64_t id = getId();
 
     Pose modelPose{0.0, 0.0, 0.0};
 

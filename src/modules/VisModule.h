@@ -53,7 +53,7 @@ public:
     void renderDynamicItems(
             GLuint shaderProgramId,
             double simulationTime, 
-            std::vector<std::shared_ptr<Scene::Item>>& items);
+            std::vector<Scene::Item>& items);
 
     void renderVisualization(
             GLuint shaderProgramId,

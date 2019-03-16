@@ -22,7 +22,7 @@ class CarModule {
             glm::vec3 position,
             glm::vec3 direction,
             ModelStore& modelStore,
-            std::vector<std::shared_ptr<Scene::Item>>& items);
+            std::vector<Scene::Item>& items);
 
 public:
 
@@ -50,7 +50,7 @@ public:
     void updateLaserSensors(
             Car& car,
             ModelStore& modelStore,
-            std::vector<std::shared_ptr<Scene::Item>>& items);
+            std::vector<Scene::Item>& items);
 
     void render(GLuint shaderProgramId, Car& car);
 };

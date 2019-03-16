@@ -308,7 +308,7 @@ void MarkerModule::updateModifiers(Camera& camera, Scene::Selection& selection) 
 
 void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition, Scene::Selection& selection) {
 
-    GLuint billboardLocation =
+    GLint billboardLocation =
         glGetUniformLocation(shaderProgramId, "billboard");
     glUniform1i(billboardLocation, true);
 

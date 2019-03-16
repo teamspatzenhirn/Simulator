@@ -17,7 +17,7 @@ public:
     PointLight();
     PointLight(float x, float y, float z);
 
-    Id<Pose> pose;
+    Pose pose;
 
     glm::vec3 ambientColor;
     glm::vec3 diffuseColor;
