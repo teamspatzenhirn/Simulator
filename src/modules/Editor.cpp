@@ -79,11 +79,7 @@ std::vector<Model::Vertex> Editor::trackLineVertices = []{
     return vertices;
 }();
 
-Editor::Editor(const Tracks& tracks, float groundSize) {
-
-    // ground
-    groundModelMat = glm::scale(groundModelMat, glm::vec3(groundSize, 1.0f, groundSize));
-    ground.upload();
+Editor::Editor() {
 
     // create markers
     genPointVertices(defaultMarker);
@@ -99,12 +95,8 @@ Editor::Editor(const Tracks& tracks, float groundSize) {
     genActiveMarkerMaterial(*markerTrackLine);
     markerTrackLine->upload();
 
-    genTrackIntersectionMarkerVertices(tracks, *markerTrackIntersection);
-    genActiveMarkerMaterial(*markerTrackIntersection);
-    markerTrackIntersection->upload();
-
     // track
-    intersectionModel = genTrackIntersectionModel(tracks);
+    //intersectionModel = genTrackIntersectionModel(tracks);
 }
 
 void Editor::updateInput(Camera& camera, Tracks& tracks, float groundSize) {
@@ -297,9 +289,12 @@ void Editor::setAutoAlign(bool autoAlign, const Tracks& tracks) {
     updateMarkers(tracks);
 }
 
-void Editor::renderScene(GLuint shaderProgramId, const Tracks& tracks) {
+void Editor::renderScene(GLuint shaderProgramId, const Tracks& tracks, float groundSize) {
 
     // render ground
+    glm::mat4 groundModelMat(1.0f);
+    groundModelMat = glm::scale(groundModelMat, glm::vec3(groundSize, 1.0f, groundSize));
+
     ground.render(shaderProgramId, groundModelMat);
 
     // render tracks
@@ -592,6 +587,10 @@ void Editor::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
     // add track
     std::shared_ptr<TrackIntersection> track = tracks.addTrackIntersection(
             center, link1, link2, link3, link4);
+
+    if (intersectionModel->vertices.size() == 0) {
+        intersectionModel = genTrackIntersectionModel(tracks);
+    }
 
     // create model
     trackModels[track] = intersectionModel;
@@ -1006,7 +1005,15 @@ void Editor::updateMarkers(const Tracks& tracks) {
     }
 
     if (getEffectiveTrackMode() == TrackMode::Intersection) {
-        updateTrackIntersectionMarker(cursorPos);
+
+        if (markerTrackIntersection->vertices.size() == 0) {
+            genTrackIntersectionMarkerVertices(tracks, *markerTrackIntersection);
+            genActiveMarkerMaterial(*markerTrackIntersection);
+            markerTrackIntersection->upload();
+        }
+
+        trackMarker = markerTrackIntersection;
+        trackMarkerMat = genTrackIntersectionMatrix(cursorPos, 0, markerYOffset);
     } else {
         if (!activeControlPoint) {
             return;
@@ -1064,12 +1071,6 @@ void Editor::updateTrackArcMarker(const ControlPoint& startPoint,
         // update model matrix
         trackMarkerMat = genTrackArcMatrix(center, markerYOffset);
     }
-}
-
-void Editor::updateTrackIntersectionMarker(const glm::vec2& center) {
-
-    trackMarker = markerTrackIntersection;
-    trackMarkerMat = genTrackIntersectionMatrix(center, 0, markerYOffset);
 }
 
 bool Editor::getArc(const ControlPoint& start, const glm::vec2& end,

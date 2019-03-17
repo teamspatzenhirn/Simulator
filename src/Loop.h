@@ -32,9 +32,6 @@ class Loop {
         DEPTH_CAMERA
     } selectedCamera = FPS_CAMERA;
 
-    Timer timer;
-    Timer simTimer;
-
     ShaderProgram shaderProgram{
         Shader("shaders/VertexShader.glsl", GL_VERTEX_SHADER),
         Shader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER)};
@@ -49,8 +46,6 @@ class Loop {
 
     ModelStore modelStore;
 
-    Scene scene;
-
     FrameBuffer frameBuffer;
     ScreenQuad screenQuad;
 
@@ -61,30 +56,26 @@ class Loop {
     CollisionModule collisionModule;
     RuleModule ruleModule;
     VisModule visModule;
+    CarModule car;
+    Editor editor;
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
-    Editor editor{scene.tracks, scene.groundSize};
-
-    CarModule car;
-
     void update(Scene& scene, float deltaTime);
 
-    void renderScene(GLuint shaderProgramIdj);
+    void renderScene(Scene& scene, GLuint shaderProgramId);
     void renderFpsView(Scene& scene);
     void renderCarView(Scene& scene);
     void renderDepthView(Scene& scene);
 
 public:
 
-    static std::shared_ptr<Loop> instance;
-
-    static void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-
     Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
 
-    void loop();
-    void step(float frameDeltaTime);
+    void loop(Scene& scene, Settings& settings);
+    void step(Scene& scene, Settings& settings, float frameDeltaTime);
+
+    void setFramebufferSize(GLFWwindow* window, int width, int height);
 };
 
 #endif

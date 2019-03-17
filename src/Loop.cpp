@@ -1,31 +1,24 @@
 #include "Loop.h"
 
-std::shared_ptr<Loop> Loop::instance;
+void setFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
+
+    Loop& loop = *(Loop*)glfwGetWindowUserPointer(window);
+    loop.setFramebufferSize(window, width, height);
+}
 
 Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings)
     : window{window}
     , windowWidth{windowWidth}
     , windowHeight{windowHeight}
     , settings{settings}
-    , scene{settings.configPath}
     , frameBuffer{windowWidth, windowHeight}
     , screenQuad{"shaders/ScreenQuadFragment.glsl"}
     , guiModule{window, settings.configPath} {
-    
+
+    glfwSetWindowUserPointer(window, this);
+    glfwSetFramebufferSizeCallback(window, setFramebufferSizeCallback);
+
     initInput(window);
-}
-
-void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
-
-    if (Loop::instance->window == window) {
-
-        instance->windowWidth = width;
-        instance->windowHeight = height;
-
-        instance->frameBuffer.resize(width, height);
-
-        instance->scene.fpsCamera.aspectRatio = (float)width / (float)height;
-    }
 }
 
 void renderToScreen (
@@ -65,7 +58,7 @@ void renderToScreen (
     screenQuad.end();
 }
 
-void Loop::loop() {
+void Loop::loop(Scene& scene, Settings& settings) {
 
     auto time = std::chrono::steady_clock::now();
 
@@ -78,16 +71,16 @@ void Loop::loop() {
                     now - time).count() / 1000000.0f;
         time = now;
 
-        step(frameDeltaTime);
+        step(scene, settings, frameDeltaTime);
     }
 }
 
-void Loop::step(float frameDeltaTime) {
+void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     scene.addToHistory();
 
-    timer.frameStep(frameDeltaTime); 
-    simTimer.frameStep(frameDeltaTime * settings.simulationSpeed); 
+    scene.displayTimer.frameStep(frameDeltaTime); 
+    scene.simulationTimer.frameStep(frameDeltaTime * settings.simulationSpeed); 
 
     updateInput();
 
@@ -111,7 +104,7 @@ void Loop::step(float frameDeltaTime) {
 
     // gui updates 
 
-    while (timer.updateStep(deltaTime)) {
+    while (scene.displayTimer.updateStep(deltaTime)) {
 
         commModule.receiveVisualization(scene.visualization);
 
@@ -120,7 +113,7 @@ void Loop::step(float frameDeltaTime) {
 
     // actual simulation updates
 
-    while (simTimer.updateStep(deltaTime)) {
+    while (scene.simulationTimer.updateStep(deltaTime)) {
 
         // TODO: Doing receive in such a way is not really correct!
         // Likely the vesc value will not actually change n-times
@@ -168,7 +161,7 @@ void Loop::step(float frameDeltaTime) {
     Scene preRenderScene = scene;
 
     scene.fpsCamera.update(window, deltaTime);
-    update(scene, simTimer.accumulator);
+    update(scene, scene.simulationTimer.accumulator);
 
     renderFpsView(scene);
     renderCarView(scene);
@@ -251,7 +244,7 @@ void Loop::update(Scene& scene, float deltaTime) {
     car.updateLaserSensors(scene.car, modelStore, scene.items);
 }
 
-void Loop::renderScene(GLuint shaderProgramId) {
+void Loop::renderScene(Scene& scene, GLuint shaderProgramId) {
 
     light.render(shaderProgramId);
 
@@ -259,7 +252,7 @@ void Loop::renderScene(GLuint shaderProgramId) {
 
     itemsModule.render(shaderProgramId, modelStore, scene.items);
 
-    editor.renderScene(shaderProgramId, scene.tracks);
+    editor.renderScene(shaderProgramId, scene.tracks, scene.groundSize);
 }
 
 void Loop::renderFpsView(Scene& scene) {
@@ -279,9 +272,10 @@ void Loop::renderFpsView(Scene& scene) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+    scene.fpsCamera.aspectRatio = (float)windowWidth / (float)windowHeight;
     scene.fpsCamera.render(shaderProgram.id);
 
-    renderScene(shaderProgram.id);
+    renderScene(scene, shaderProgram.id);
 
     // render markers over everything else
     // thus we clear the depth buffer here
@@ -356,7 +350,7 @@ void Loop::renderCarView(Scene& scene) {
 
     car.mainCamera.render(carShaderProgram.id);
 
-    renderScene(carShaderProgram.id);
+    renderScene(scene, carShaderProgram.id);
 
     // main camera image in color
 
@@ -379,7 +373,7 @@ void Loop::renderCarView(Scene& scene) {
 
     car.mainCamera.render(carShaderProgram.id);
 
-    renderScene(carShaderProgram.id);
+    renderScene(scene, carShaderProgram.id);
 }
 
 void Loop::renderDepthView(Scene& scene) {
@@ -397,7 +391,18 @@ void Loop::renderDepthView(Scene& scene) {
 
     car.depthCamera.render(depthCameraShaderProgram.id);
 
-    renderScene(depthCameraShaderProgram.id);
+    renderScene(scene, depthCameraShaderProgram.id);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Loop::setFramebufferSize(GLFWwindow* window, int width, int height) {
+
+    if (this->window == window) {
+
+        windowWidth = width;
+        windowHeight = height;
+
+        frameBuffer.resize(width, height);
+    }
 }

@@ -47,7 +47,6 @@ private:
 
     // ground
     Model ground{"models/ground.obj"};
-    glm::mat4 groundModelMat{1.0f};
 
     // markers
     static constexpr float markerYOffset{0.005f};
@@ -64,7 +63,7 @@ private:
     std::shared_ptr<Model> markerTrackIntersection = std::make_shared<Model>();
 
     // tracks
-    std::shared_ptr<Model> intersectionModel;
+    std::shared_ptr<Model> intersectionModel = std::make_shared<Model>();
 
     std::map<std::shared_ptr<TrackBase>, std::shared_ptr<Model>> trackModels;
     std::map<std::shared_ptr<TrackBase>, glm::mat4> trackModelMats;
@@ -95,7 +94,7 @@ private:
 
 public:
 
-    Editor(const Tracks& tracks, float groundSize);
+    Editor();
 
     void updateInput(Camera& camera, Tracks& tracks, float groundSize);
     void onKey(int key, int action, const Tracks& tracks);
@@ -107,7 +106,7 @@ public:
     void setTrackMode(TrackMode trackMode, const Tracks& tracks);
     void setAutoAlign(bool autoAlign, const Tracks& tracks);
 
-    void renderScene(GLuint shaderProgramId, const Tracks& tracks);
+    void renderScene(GLuint shaderProgramId, const Tracks& tracks, float groundSize);
     void renderMarkers(GLuint shaderProgramId, const Tracks& tracks, const glm::vec3 cameraPosition);
 
 private:
@@ -149,7 +148,6 @@ private:
     void updateTrackLineMarker(const glm::vec2& start, const glm::vec2& end, const Tracks& tracks);
     void updateTrackArcMarker(const ControlPoint& startPoint,
             const glm::vec2& end, const Tracks& tracks);
-    void updateTrackIntersectionMarker(const glm::vec2& center);
 
     bool getArc(const ControlPoint& start, const glm::vec2& end,
             glm::vec2& center, float& radius, bool& rightArc);

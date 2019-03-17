@@ -18,7 +18,7 @@ int main (int argc, char* argv[]) {
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     GLFWwindow* window = glfwCreateWindow(
-        windowWidth, windowHeight, "Spatz Simulator", nullptr, nullptr);
+        800, 600, "Spatz Simulator", nullptr, nullptr);
 
     glfwMakeContextCurrent(window);
 
@@ -48,19 +48,11 @@ int main (int argc, char* argv[]) {
         std::cout << settings.configPath << std::endl;
     }
 
-    std::shared_ptr<Loop> loop = std::make_shared<Loop>(
-            window,
-            windowWidth,
-            windowHeight,
-            settings);
+    Scene scene(settings.configPath);
 
-    Loop::instance = loop;
-
-    glfwSetFramebufferSizeCallback(window, Loop::framebufferSizeCallback);
-    
     // entering main loop
-    
-    loop->loop();
+    Loop loop(window, windowWidth, windowHeight, settings);
+    loop.loop(scene, settings);
 
     glfwDestroyWindow(window);
     glfwTerminate();
