@@ -5,18 +5,14 @@
 
 class Timer {
 
-    std::chrono::steady_clock::time_point currentTime;
-
 public:
-
-    float accumulator;
 
     Timer();
 
     double time;
-    float frameTime;
+    float accumulator;
 
-    void frameStep();
+    void frameStep(float frameDeltaTime);
     bool updateStep(float deltaTime);
 };
 

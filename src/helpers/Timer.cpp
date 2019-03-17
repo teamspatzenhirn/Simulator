@@ -2,18 +2,11 @@
 
 Timer::Timer () {
 
-    currentTime = std::chrono::steady_clock::now();
 }
 
-void Timer::frameStep() {
+void Timer::frameStep(float frameDeltaTime) {
 
-    auto newTime = std::chrono::steady_clock::now();
-
-    frameTime = (float)std::chrono::duration_cast<std::chrono::microseconds>(
-            newTime - currentTime).count() / 1000000.0f;
-    currentTime = newTime;
-
-    accumulator += frameTime;
+    accumulator += frameDeltaTime;
 }
 
 bool Timer::updateStep(float deltaTime) {

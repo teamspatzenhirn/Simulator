@@ -11,6 +11,8 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
     , frameBuffer{windowWidth, windowHeight}
     , screenQuad{"shaders/ScreenQuadFragment.glsl"}
     , guiModule{window, settings.configPath} {
+    
+    initInput(window);
 }
 
 void Loop::framebufferSizeCallback(GLFWwindow* window, int width, int height) {
@@ -65,129 +67,154 @@ void renderToScreen (
 
 void Loop::loop() {
 
-    initInput(window);
+    auto time = std::chrono::steady_clock::now();
 
     while (!glfwWindowShouldClose(window)) {
 
-        scene.addToHistory();
+        auto now = std::chrono::steady_clock::now();
 
-        timer.frameStep(); 
+        float frameDeltaTime = 
+            (float)std::chrono::duration_cast<std::chrono::microseconds>(
+                    now - time).count() / 1000000.0f;
+        time = now;
 
-        updateInput();
-
-        // TODO: make this less hacky, this is not right here
-
-        for (MouseButtonEvent& evt : getMouseButtonEvents()) {
-            if (evt.action == GLFW_PRESS && evt.button == GLFW_MOUSE_BUTTON_LEFT) {
-                scene.selection.handled = false;
-            }
-        }
-
-        guiModule.begin();
-
-        guiModule.renderRootWindow(scene, settings);
-        guiModule.renderSceneWindow(scene);
-        guiModule.renderSettingsWindow(settings);
-        guiModule.renderRuleWindow(scene.rules);
-        guiModule.renderHelpWindow();
-
-        float deltaTime = 0.004f;
-        float simDeltaTime = deltaTime * settings.simulationSpeed;
-
-        while (timer.updateStep(deltaTime)) {
-
-            commModule.receiveVesc(scene.car.vesc);
-            commModule.receiveVisualization(scene.visualization);
-
-            update(scene, deltaTime, simDeltaTime);
-
-            if (!scene.paused) {
-                scene.simulationTime += simDeltaTime;
-            }
-
-            commModule.transmitCar(scene.car, scene.paused, scene.simulationTime);
-        }
-
-        ruleModule.update(
-                scene.simulationTime,
-                scene.rules,
-                scene.car,
-                scene.tracks,
-                scene.items,
-                collisionModule);
-
-        for(KeyEvent& e : getKeyEvents()) {
-            if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
-                selectedCamera = (SelectedCamera)((((int)selectedCamera) + 1) % 3);
-            }
-            if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
-                scene.paused = !scene.paused;
-            }
-        }
-
-        if (FPS_CAMERA == selectedCamera) {
-            if (settings.showMarkers) {
-                markerModule.update(window, scene.fpsCamera, scene.selection);
-                editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
-            }
-            itemsModule.update(scene.items, scene.selection.pose);
-        }
-
-        // render camera images
-
-        Scene preRenderScene = scene;
-        update(scene, 
-                timer.accumulator, 
-                timer.accumulator * settings.simulationSpeed);
-
-        renderFpsView(scene);
-        renderCarView(scene);
-        renderDepthView(scene);
-
-        scene = preRenderScene;
-
-        // render on screen filling quad
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-        if (MAIN_CAMERA == selectedCamera) {
-            renderToScreen(
-                    windowWidth, 
-                    windowHeight, 
-                    screenQuad, 
-                    scene.car.mainCamera.getAspectRatio(), 
-                    true, 
-                    car.frameBuffer.colorTextureId);
-        } else if (DEPTH_CAMERA == selectedCamera) {
-            renderToScreen(
-                    windowWidth, 
-                    windowHeight, 
-                    screenQuad, 
-                    scene.car.depthCamera.getDepthAspectRatio(), 
-                    true, 
-                    car.depthCameraFrameBuffer.colorTextureId);
-        } else { // FPS_CAMERA
-            renderToScreen(
-                    windowWidth, 
-                    windowHeight, 
-                    screenQuad, 
-                    1, 
-                    false, 
-                    frameBuffer.colorTextureId);
-        }
-
-        commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
-        commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
-
-        guiModule.end();
-
-        glfwSwapBuffers(window);
+        step(frameDeltaTime);
     }
 }
 
-void Loop::update(Scene& scene, float deltaTime, float simDeltaTime) {
+void Loop::step(float frameDeltaTime) {
+
+    scene.addToHistory();
+
+    timer.frameStep(frameDeltaTime); 
+    simTimer.frameStep(frameDeltaTime * settings.simulationSpeed); 
+
+    updateInput();
+
+    // TODO: make this less hacky, this is not right here
+
+    for (MouseButtonEvent& evt : getMouseButtonEvents()) {
+        if (evt.action == GLFW_PRESS && evt.button == GLFW_MOUSE_BUTTON_LEFT) {
+            scene.selection.handled = false;
+        }
+    }
+
+    guiModule.begin();
+
+    guiModule.renderRootWindow(scene, settings);
+    guiModule.renderSceneWindow(scene);
+    guiModule.renderSettingsWindow(settings);
+    guiModule.renderRuleWindow(scene.rules);
+    guiModule.renderHelpWindow();
+
+    float deltaTime = 0.005f;
+
+    // gui updates 
+
+    while (timer.updateStep(deltaTime)) {
+
+        commModule.receiveVisualization(scene.visualization);
+
+        scene.fpsCamera.update(window, deltaTime);
+    }
+
+    // actual simulation updates
+
+    while (simTimer.updateStep(deltaTime)) {
+
+        // TODO: Doing receive in such a way is not really correct!
+        // Likely the vesc value will not actually change n-times
+        // during the iteration. Probably, we will read the same
+        // value n-times. We need to make sure that the buffer
+        // queue in the shared memory is actually used.
+
+        commModule.receiveVesc(scene.car.vesc);
+        commModule.transmitCar(scene.car, scene.paused, scene.simulationTime);
+
+        update(scene, deltaTime);
+
+        if (!scene.paused) {
+            scene.simulationTime += deltaTime;
+        }
+    }
+
+    ruleModule.update(
+            scene.simulationTime,
+            scene.rules,
+            scene.car,
+            scene.tracks,
+            scene.items,
+            collisionModule);
+
+    for(KeyEvent& e : getKeyEvents()) {
+        if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
+            selectedCamera = (SelectedCamera)((((int)selectedCamera) + 1) % 3);
+        }
+        if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
+            scene.paused = !scene.paused;
+        }
+    }
+
+    if (FPS_CAMERA == selectedCamera) {
+        if (settings.showMarkers) {
+            markerModule.update(window, scene.fpsCamera, scene.selection);
+            editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
+        }
+        itemsModule.update(scene.items, scene.selection.pose);
+    }
+
+    // render camera images
+
+    Scene preRenderScene = scene;
 
     scene.fpsCamera.update(window, deltaTime);
+    update(scene, simTimer.accumulator);
+
+    renderFpsView(scene);
+    renderCarView(scene);
+    renderDepthView(scene);
+
+    scene = preRenderScene;
+
+    // render on screen filling quad
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    if (MAIN_CAMERA == selectedCamera) {
+        renderToScreen(
+                windowWidth, 
+                windowHeight, 
+                screenQuad, 
+                scene.car.mainCamera.getAspectRatio(), 
+                true, 
+                car.frameBuffer.colorTextureId);
+    } else if (DEPTH_CAMERA == selectedCamera) {
+        renderToScreen(
+                windowWidth, 
+                windowHeight, 
+                screenQuad, 
+                scene.car.depthCamera.getDepthAspectRatio(), 
+                true, 
+                car.depthCameraFrameBuffer.colorTextureId);
+    } else { // FPS_CAMERA
+        renderToScreen(
+                windowWidth, 
+                windowHeight, 
+                screenQuad, 
+                1, 
+                false, 
+                frameBuffer.colorTextureId);
+    }
+
+    commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
+    commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
+
+    guiModule.end();
+
+    glfwSwapBuffers(window);
+}
+
+void Loop::update(Scene& scene, float deltaTime) {
 
     collisionModule.add(scene.car.modelPose, car.carModel);
 
@@ -208,11 +235,11 @@ void Loop::update(Scene& scene, float deltaTime, float simDeltaTime) {
     collisionModule.update();
 
     if (!scene.paused) {
-        car.updatePosition(scene.car, simDeltaTime);
+        car.updatePosition(scene.car, deltaTime);
     }
 
     itemsModule.updateDynamicItems(
-            simDeltaTime,
+            deltaTime,
             scene.car, 
             scene.dynamicItemSettings,
             scene.items);

@@ -33,6 +33,7 @@ class Loop {
     } selectedCamera = FPS_CAMERA;
 
     Timer timer;
+    Timer simTimer;
 
     ShaderProgram shaderProgram{
         Shader("shaders/VertexShader.glsl", GL_VERTEX_SHADER),
@@ -67,7 +68,7 @@ class Loop {
 
     CarModule car;
 
-    void update(Scene& scene, float deltaTime, float simDeltaTime);
+    void update(Scene& scene, float deltaTime);
 
     void renderScene(GLuint shaderProgramIdj);
     void renderFpsView(Scene& scene);
@@ -83,6 +84,7 @@ public:
     Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
 
     void loop();
+    void step(float frameDeltaTime);
 };
 
 #endif
