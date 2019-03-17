@@ -165,6 +165,16 @@ struct Scene {
     bool paused = false;
 
     /*
+     * This timer controls the updates of the non-simulation logic.
+     */
+    Timer displayTimer;
+
+    /*
+     * This timer controls the simulation updates.
+     */
+    Timer simulationTimer;
+
+    /*
      * The current time of the simulation in seconds.
      */
     double simulationTime = 0;

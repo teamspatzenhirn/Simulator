@@ -654,8 +654,11 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
 
         ImGui::Begin("Settings", &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
 
-        changed |= ImGui::DragFloat("Simulation speed", &settings.simulationSpeed, 0.05f, 0.01f, 4.0f);
-        settings.simulationSpeed = std::max(std::min(settings.simulationSpeed, 4.0f), 0.01f);
+        changed |= ImGui::DragFloat("Simulation speed", &settings.simulationSpeed, 0.05f, 0.01f, 10.0f);
+        settings.simulationSpeed = std::max(std::min(settings.simulationSpeed, 10.0f), 0.01f);
+
+        changed |= ImGui::DragFloat("Update delta time", &settings.updateDeltaTime, 0.001f, 0.001f, 1.0f);
+        settings.updateDeltaTime = std::max(std::min(settings.updateDeltaTime, 1.0f), 0.001f);
 
         ImGui::Separator();
 

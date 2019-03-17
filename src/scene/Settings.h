@@ -32,6 +32,11 @@ struct Settings {
     float simulationSpeed = 0.25f;
 
     /*
+     * The delta time (in seconds) for one simulation update. 
+     */
+    float updateDeltaTime = 0.005f;
+
+    /*
      * If set marker/modifier points will be rendered.
      */
     bool showMarkers = true;

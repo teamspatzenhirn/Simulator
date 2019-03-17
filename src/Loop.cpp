@@ -107,7 +107,7 @@ void Loop::step(float frameDeltaTime) {
     guiModule.renderRuleWindow(scene.rules);
     guiModule.renderHelpWindow();
 
-    float deltaTime = 0.005f;
+    float deltaTime = settings.updateDeltaTime;
 
     // gui updates 
 
@@ -284,7 +284,7 @@ void Loop::renderFpsView(Scene& scene) {
     renderScene(shaderProgram.id);
 
     // render markers over everything else
-    // thus we clean the depth buffer here
+    // thus we clear the depth buffer here
 
     glClear(GL_DEPTH_BUFFER_BIT);
 

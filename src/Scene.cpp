@@ -158,6 +158,7 @@ void to_json(json& j, const Settings& s) {
 
     j = json({
             {"simulationSpeed", s.simulationSpeed},
+            {"updateDeltaTime", s.updateDeltaTime},
             {"configPath", s.configPath},
             {"showMarkers", s.showMarkers},
             {"showVehiclePath", s.showVehiclePath},
@@ -171,6 +172,7 @@ void to_json(json& j, const Settings& s) {
 void from_json(const json& j, Settings& s) {
 
     tryGet(j, "simulationSpeed", s.simulationSpeed);
+    tryGet(j, "updateDeltaTime", s.updateDeltaTime);
     tryGet(j, "configPath", s.configPath);
     tryGet(j, "showMarkers", s.showMarkers);
     tryGet(j, "showVehiclePath", s.showVehiclePath);
