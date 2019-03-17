@@ -100,20 +100,18 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
     guiModule.renderRuleWindow(scene.rules);
     guiModule.renderHelpWindow();
 
-    float deltaTime = settings.updateDeltaTime;
-
     // gui updates 
 
-    while (scene.displayTimer.updateStep(deltaTime)) {
+    while (scene.displayTimer.updateStep(settings.updateDeltaTime)) {
 
         commModule.receiveVisualization(scene.visualization);
 
-        scene.fpsCamera.update(window, deltaTime);
+        scene.fpsCamera.update(window, settings.updateDeltaTime);
     }
 
     // actual simulation updates
 
-    while (scene.simulationTimer.updateStep(deltaTime)) {
+    while (scene.simulationTimer.updateStep(settings.updateDeltaTime)) {
 
         // TODO: Doing receive in such a way is not really correct!
         // Likely the vesc value will not actually change n-times
@@ -124,20 +122,20 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
         commModule.receiveVesc(scene.car.vesc);
         commModule.transmitCar(scene.car, scene.paused, scene.simulationTime);
 
-        update(scene, deltaTime);
+        update(scene, settings.updateDeltaTime);
+
+        ruleModule.update(
+                scene.simulationTime,
+                scene.rules,
+                scene.car,
+                scene.tracks,
+                scene.items,
+                collisionModule);
 
         if (!scene.paused) {
-            scene.simulationTime += deltaTime;
+            scene.simulationTime += settings.updateDeltaTime;
         }
     }
-
-    ruleModule.update(
-            scene.simulationTime,
-            scene.rules,
-            scene.car,
-            scene.tracks,
-            scene.items,
-            collisionModule);
 
     for(KeyEvent& e : getKeyEvents()) {
         if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
@@ -160,7 +158,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     Scene preRenderScene = scene;
 
-    scene.fpsCamera.update(window, deltaTime);
+    scene.fpsCamera.update(window, settings.updateDeltaTime);
     update(scene, scene.simulationTimer.accumulator);
 
     renderFpsView(scene);
