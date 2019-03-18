@@ -94,9 +94,6 @@ Editor::Editor() {
     genTrackLineMarkerVertices(*markerTrackLine);
     genActiveMarkerMaterial(*markerTrackLine);
     markerTrackLine->upload();
-
-    // track
-    //intersectionModel = genTrackIntersectionModel(tracks);
 }
 
 void Editor::updateInput(Camera& camera, Tracks& tracks, float groundSize) {

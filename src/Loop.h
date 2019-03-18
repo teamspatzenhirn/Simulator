@@ -44,7 +44,7 @@ class Loop {
         Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
         Shader("shaders/DepthPointsFragmentShader.glsl", GL_FRAGMENT_SHADER)};
 
-    ModelStore modelStore;
+    ModelStore modelStore{"./"};
 
     FrameBuffer frameBuffer;
     ScreenQuad screenQuad;

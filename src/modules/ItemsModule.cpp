@@ -126,6 +126,6 @@ void ItemsModule::render(
     
     for (Scene::Item& i : items) {
         glm::mat4 modelMat = i.pose.getMatrix();
-        modelStore.itemModels[i.type].render(shaderProgramId, modelMat);
+        modelStore.items[i.type].render(shaderProgramId, modelMat);
     }
 }

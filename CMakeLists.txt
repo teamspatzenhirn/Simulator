@@ -114,6 +114,7 @@ set(HEADER_FILES
     ./src/scene/Tracks.h
     ./src/scene/Settings.h
     ./src/scene/Car.h
+    ./src/scene/ModelStore.h
    )
 
 # Build the library/program.

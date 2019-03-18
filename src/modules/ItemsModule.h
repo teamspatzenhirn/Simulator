@@ -4,6 +4,8 @@
 #include <map>
 #include <algorithm>
 
+#include "scene/ModelStore.h"
+
 #include "Scene.h"
 #include "helpers/Helpers.h"
 

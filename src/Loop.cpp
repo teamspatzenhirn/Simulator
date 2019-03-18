@@ -207,19 +207,19 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
 void Loop::update(Scene& scene, float deltaTime) {
 
-    collisionModule.add(scene.car.modelPose, car.carModel);
+    collisionModule.add(scene.car.modelPose, modelStore.car);
 
     for (auto& i : scene.items) {
         if (i.type == OBSTACLE) {
-            collisionModule.add(i.pose, modelStore.itemModels[OBSTACLE]);
+            collisionModule.add(i.pose, modelStore.items[OBSTACLE]);
         } else if (i.type == DYNAMIC_OBSTACLE) {
-            collisionModule.add(i.pose, modelStore.itemModels[DYNAMIC_OBSTACLE]);
+            collisionModule.add(i.pose, modelStore.items[DYNAMIC_OBSTACLE]);
         } else if (i.type == PEDESTRIAN) {
-            collisionModule.add(i.pose, modelStore.itemModels[PEDESTRIAN]);
+            collisionModule.add(i.pose, modelStore.items[PEDESTRIAN]);
         } else if (i.type == DYNAMIC_PEDESTRIAN_RIGHT) {
-            collisionModule.add(i.pose, modelStore.itemModels[PEDESTRIAN]);
+            collisionModule.add(i.pose, modelStore.items[PEDESTRIAN]);
         } else if (i.type == DYNAMIC_PEDESTRIAN_LEFT) {
-            collisionModule.add(i.pose, modelStore.itemModels[PEDESTRIAN]);
+            collisionModule.add(i.pose, modelStore.items[PEDESTRIAN]);
         }
     }
 
@@ -246,7 +246,7 @@ void Loop::renderScene(Scene& scene, GLuint shaderProgramId) {
 
     light.render(shaderProgramId);
 
-    car.render(shaderProgramId, scene.car);
+    car.render(shaderProgramId, scene.car, modelStore);
 
     itemsModule.render(shaderProgramId, modelStore, scene.items);
 
