@@ -15,7 +15,7 @@ int main (int argc, char* argv[]) {
         std::exit(-1);
     }
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 1);
 
     GLFWwindow* window = glfwCreateWindow(
         800, 600, "Spatz Simulator", nullptr, nullptr);
@@ -28,6 +28,8 @@ int main (int argc, char* argv[]) {
     }
 
     // OpenGL and GLFW settings
+    
+    glEnable(GL_MULTISAMPLE);
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
 

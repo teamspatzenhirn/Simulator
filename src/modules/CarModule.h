@@ -32,8 +32,8 @@ public:
     Camera depthCamera;
 
     FrameBuffer frameBuffer{1, 1};
-    FrameBuffer bayerFrameBuffer{1, 1, GL_RED, GL_RED};
-    FrameBuffer depthCameraFrameBuffer{1, 1, GL_RGB32F, GL_RGB};
+    FrameBuffer bayerFrameBuffer{1, 1, 1, GL_RED, GL_RED};
+    FrameBuffer depthCameraFrameBuffer{1, 1, 1, GL_RGB32F, GL_RGB};
 
     CarModule();
 

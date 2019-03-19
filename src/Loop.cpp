@@ -169,7 +169,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     // render on screen filling quad
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
     if (MAIN_CAMERA == selectedCamera) {
         renderToScreen(
@@ -188,6 +188,13 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 true, 
                 car.depthCameraFrameBuffer.colorTextureId);
     } else { // FPS_CAMERA
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBuffer.id);
+        glDrawBuffer(GL_BACK);
+        glBlitFramebuffer(
+                0, 0, windowWidth, windowHeight, 
+                0, 0, windowWidth, windowHeight,
+                GL_COLOR_BUFFER_BIT, GL_NEAREST);
+        /*
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -195,6 +202,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 1, 
                 false, 
                 frameBuffer.colorTextureId);
+                */
     }
 
     commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);

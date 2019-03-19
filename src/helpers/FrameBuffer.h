@@ -33,10 +33,15 @@ public:
     GLenum formatColor;
 
     FrameBuffer(GLsizei width, GLsizei height);
-    FrameBuffer(GLsizei width, GLsizei height, GLint internalFormatColor, GLenum formatColor);
+    FrameBuffer(
+            GLsizei width,
+            GLsizei height, 
+            GLsizei samples, 
+            GLint internalFormatColor, 
+            GLenum formatColor);
     ~FrameBuffer();
 
-    void resize(GLsizei newWidth, GLsizei newHeight);
+    void resize(GLsizei newWidth, GLsizei newHeight, GLsizei samples = 1);
 };
 
 #endif

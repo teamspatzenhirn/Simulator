@@ -1,10 +1,15 @@
 #include "FrameBuffer.h"
 
 FrameBuffer::FrameBuffer(GLsizei width, GLsizei height) 
-    : FrameBuffer(width, height, GL_RGBA, GL_RGBA) {
+    : FrameBuffer(width, height, 1, GL_RGBA, GL_RGBA) {
 }
 
-FrameBuffer::FrameBuffer(GLsizei width, GLsizei height, GLint internalFormatColor, GLenum formatColor) {
+FrameBuffer::FrameBuffer(
+        GLsizei width, 
+        GLsizei height, 
+        GLsizei samples, 
+        GLint internalFormatColor, 
+        GLenum formatColor) {
 
     this->internalFormatColor = internalFormatColor;
     this->formatColor = formatColor;
@@ -15,44 +20,42 @@ FrameBuffer::FrameBuffer(GLsizei width, GLsizei height, GLint internalFormatColo
     // color texture
 
     glGenTextures(1, &colorTextureId);
-    glBindTexture(GL_TEXTURE_2D, colorTextureId);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTextureId);
 
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
+    glTexImage2DMultisample(
+                 GL_TEXTURE_2D_MULTISAMPLE,
+                 1,
                  internalFormatColor,
                  width,
                  height,
-                 0,
-                 formatColor,
-                 GL_UNSIGNED_BYTE,
-                 0);
+                 false);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    glFramebufferTexture(
-            GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorTextureId, 0);
+    glFramebufferTexture2D(
+            GL_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_2D_MULTISAMPLE,
+            colorTextureId,
+            0);
 
     // depth texture
 
     glGenTextures(1, &depthTextureId);
-    glBindTexture(GL_TEXTURE_2D, depthTextureId);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, depthTextureId);
 
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
+    glTexImage2DMultisample(
+                 GL_TEXTURE_2D_MULTISAMPLE,
+                 1,
                  GL_DEPTH_COMPONENT,
                  width,
                  height,
-                 0,
-                 GL_DEPTH_COMPONENT,
-                 GL_FLOAT,
-                 0);
+                 false);
 
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-
-    glFramebufferTexture(
-            GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextureId, 0);
+    glFramebufferTexture2D(
+            GL_FRAMEBUFFER,
+            GL_DEPTH_ATTACHMENT,
+            GL_TEXTURE_2D_MULTISAMPLE,
+            depthTextureId,
+            0);
 
     GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
     glDrawBuffers(1, drawBuffers);
@@ -62,7 +65,7 @@ FrameBuffer::FrameBuffer(GLsizei width, GLsizei height, GLint internalFormatColo
         std::exit(-1);
     }
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     this->width = width;
@@ -76,35 +79,31 @@ FrameBuffer::~FrameBuffer() {
     glDeleteTextures(1, &depthTextureId);
 }
 
-void FrameBuffer::resize(GLsizei newWidth, GLsizei newHeight) {
+void FrameBuffer::resize(GLsizei newWidth, GLsizei newHeight, GLsizei samples) {
 
-    glBindTexture(GL_TEXTURE_2D, colorTextureId);
+    width = newWidth;
+    height = newHeight;
 
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTextureId);
+
+    glTexImage2DMultisample(
+                 GL_TEXTURE_2D_MULTISAMPLE,
+                 samples,
                  internalFormatColor,
-                 newWidth,
-                 newHeight,
-                 0,
-                 formatColor,
-                 GL_UNSIGNED_BYTE,
-                 0);
+                 width,
+                 height,
+                 false);
 
-    glBindTexture(GL_TEXTURE_2D, depthTextureId);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, depthTextureId);
 
-    glTexImage2D(GL_TEXTURE_2D,
-                 0,
-                 GL_DEPTH_COMPONENT24,
-                 newWidth,
-                 newHeight,
-                 0,
+    glTexImage2DMultisample(
+                 GL_TEXTURE_2D_MULTISAMPLE,
+                 samples,
                  GL_DEPTH_COMPONENT,
-                 GL_FLOAT,
-                 0);
+                 width,
+                 height,
+                 false);
 
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    this->width = newWidth;
-    this->height = newHeight;
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
 }
 
