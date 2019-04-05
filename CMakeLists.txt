@@ -1,9 +1,14 @@
-cmake_minimum_required(VERSION 2.8)
-project(CaroloSimulator)
+cmake_minimum_required(VERSION 3.0)
+project(SpatzSim)
+
+# This prevents that we link against any static libs,
+# which is scary (apparently).
 
 set(BUILD_SHARED_LIBS 1)
 
 # ---[ Check for OpenGL (mandatory) ]---
+
+set(OpenGL_GL_PREFERENCE "GLVND")
 
 find_package(OpenGL QUIET)
 if(OPENGL_FOUND)
@@ -13,20 +18,13 @@ else(OPENGL_FOUND)
   message(FATAL_ERROR "${ColourBoldRed}OpenGL missing.${ColourReset}")
 endif()
 
-# ---[ Check for GLEW (mandatory) ]---
-
-find_package(GLEW QUIET)
-if(GLEW_FOUND)
-  message(STATUS "Found GLEW: " ${GLEW_LIBRARIES})
-  message(STATUS "            " ${GLEW_INCLUDE_DIRS})
-else(GLEW_FOUND)
-  message(FATAL_ERROR "${ColourBoldRed}GLEW missing.${ColourReset}")
-endif()
-
 # --- [ External libs ]---
 
 # Order matters here!
-# Because imgui depends of glfw, glfw must be added first.
+# Because imgui depends on glfw, glfw must be added first.
+
+message(STATUS "External lib: extern/Perlmint_glew-cmake")
+add_subdirectory(extern/Perlmint_glew-cmake)
 
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -123,7 +121,7 @@ add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
                       ${OPENGL_LIBRARIES}
-                      ${GLEW_LIBRARIES}
+                      libglew_shared
                       glm
                       glfw
                       imgui
@@ -132,8 +130,7 @@ target_link_libraries(${PROJECT_NAME}
 
 target_include_directories(${PROJECT_NAME}
                            PUBLIC src/
-                           PUBLIC ${OPENGL_INCLUDE_DIR}
-                           PUBLIC ${GLEW_INCLUDE_DIRS})
+                           PUBLIC ${OPENGL_INCLUDE_DIR})
 
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wextra)
@@ -159,8 +156,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_custom_target(run
     COMMAND if [ \"$ENV{VNCDESKTOP}\" ]\;
-        # this make the simulator run via VNC for reasons i do not comprehend
-        # otherwise crashes occur
+        # this make the simulator run via VNC by using gl from display :0
         then vglrun -d :0 ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
         else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
     fi
