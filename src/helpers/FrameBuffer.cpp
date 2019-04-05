@@ -24,7 +24,7 @@ FrameBuffer::FrameBuffer(
 
     glTexImage2DMultisample(
                  GL_TEXTURE_2D_MULTISAMPLE,
-                 1,
+                 samples,
                  internalFormatColor,
                  width,
                  height,
@@ -44,7 +44,7 @@ FrameBuffer::FrameBuffer(
 
     glTexImage2DMultisample(
                  GL_TEXTURE_2D_MULTISAMPLE,
-                 1,
+                 samples,
                  GL_DEPTH_COMPONENT,
                  width,
                  height,
