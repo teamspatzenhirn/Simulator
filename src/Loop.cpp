@@ -147,6 +147,8 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
     }
 
     if (FPS_CAMERA == selectedCamera) {
+        scene.fpsCamera.aspectRatio = (float)windowWidth / (float)windowHeight;
+        scene.fpsCamera.update(window, settings.updateDeltaTime);
         if (settings.showMarkers) {
             markerModule.update(window, scene.fpsCamera, scene.selection);
             editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
@@ -158,7 +160,6 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     Scene preRenderScene = scene;
 
-    scene.fpsCamera.update(window, settings.updateDeltaTime);
     update(scene, scene.simulationTimer.accumulator);
 
     renderFpsView(scene);
@@ -270,7 +271,6 @@ void Loop::renderFpsView(Scene& scene) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    scene.fpsCamera.aspectRatio = (float)windowWidth / (float)windowHeight;
     scene.fpsCamera.render(shaderProgram.id);
 
     renderScene(scene, shaderProgram.id);
