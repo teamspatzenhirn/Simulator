@@ -672,8 +672,7 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
         ImGui::End();
 
         if (changed) {
-            // TODO: make saving work again!
-            // settings.save();
+            settings.save();
         }
     }
 }
@@ -786,8 +785,7 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
                 openedFilename = selectedFilename;
 
                 settings.configPath = currentDirectory + selectedFilename;
-                // TODO: make saving work again!
-                // settings.save();
+                settings.save();
 
                 Scene::history.clear();
 
@@ -860,7 +858,6 @@ void GuiModule::renderDirectoryListing() {
     DIR* dir = opendir(currentDirectory.c_str());
 
     std::vector<dirent> entries;
-
 
     if (dir) {
        dirent* e;

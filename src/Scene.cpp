@@ -151,38 +151,6 @@ void from_json(const json& j, FpsCamera& o) {
 }
 
 /*
- * Settings
- */
-
-void to_json(json& j, const Settings& s) {
-
-    j = json({
-            {"simulationSpeed", s.simulationSpeed},
-            {"updateDeltaTime", s.updateDeltaTime},
-            {"configPath", s.configPath},
-            {"showMarkers", s.showMarkers},
-            {"showVehiclePath", s.showVehiclePath},
-            {"fancyVehiclePath", s.fancyVehiclePath},
-            {"showVehicleTrajectory", s.showVehicleTrajectory},
-            {"showLaserSensor", s.showLaserSensor},
-            {"showBinaryLightSensor", s.showBinaryLightSensor}
-        });
-}
-
-void from_json(const json& j, Settings& s) {
-
-    tryGet(j, "simulationSpeed", s.simulationSpeed);
-    tryGet(j, "updateDeltaTime", s.updateDeltaTime);
-    tryGet(j, "configPath", s.configPath);
-    tryGet(j, "showMarkers", s.showMarkers);
-    tryGet(j, "showVehiclePath", s.showVehiclePath);
-    tryGet(j, "fancyVehiclePath", s.fancyVehiclePath);
-    tryGet(j, "showVehicleTrajectory", s.showVehicleTrajectory);
-    tryGet(j, "showLaserSensor", s.showLaserSensor);
-    tryGet(j, "showBinaryLightSensor", s.showBinaryLightSensor);
-}
-
-/*
  * Car::SystemParams
  */
 

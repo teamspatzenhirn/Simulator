@@ -68,6 +68,16 @@ struct Settings {
      * If set the ray sent out by the back binary light sensor will be draw.
      */
     bool showBinaryLightSensor = true;
+
+    /*
+     * This saves the settings to ~/.spatzsim
+     */
+    bool save();
+
+    /*
+     * This tries to loads the settings from ~/.spatzsim
+     */
+    bool load();
 };
 
 #endif

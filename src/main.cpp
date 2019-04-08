@@ -40,8 +40,7 @@ int main (int argc, char* argv[]) {
     // loop setup
     
     Settings settings;
-    // TODO: make load work again!
-    // settings.load();
+    settings.load();
     
     if (argc > 1) {
         settings.configPath = std::string(argv[1]);

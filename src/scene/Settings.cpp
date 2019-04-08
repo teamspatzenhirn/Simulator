@@ -1,5 +1,58 @@
 #include "Settings.h"
 
+#include <fstream>
+#include <iostream>
+
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
+template <typename T>
+bool tryGet(const json& j, std::string name, T& variable) {
+
+    try {
+        variable = j.at(name).get<T>();
+    } catch(std::exception& e) {
+        json err(variable);
+        std::cout << "Property \""
+            << name
+            << "\" not found. Using default: "
+            << err.dump(4)
+            << std::endl;
+        return false;
+    }
+
+    return true;
+}
+
+void to_json(json& j, const Settings& s) {
+
+    j = json({
+            {"simulationSpeed", s.simulationSpeed},
+            {"resourcePath", s.resourcePath},
+            {"configPath", s.configPath},
+            {"showMarkers", s.showMarkers},
+            {"showVehiclePath", s.showVehiclePath},
+            {"fancyVehiclePath", s.fancyVehiclePath},
+            {"showVehicleTrajectory", s.showVehicleTrajectory},
+            {"showLaserSensor", s.showLaserSensor},
+            {"showBinaryLightSensor", s.showBinaryLightSensor}
+        });
+}
+
+void from_json(const json& j, Settings& s) {
+
+    tryGet(j, "simulationSpeed", s.simulationSpeed);
+    tryGet(j, "resourcePath", s.resourcePath);
+    tryGet(j, "configPath", s.configPath);
+    tryGet(j, "showMarkers", s.showMarkers);
+    tryGet(j, "showVehiclePath", s.showVehiclePath);
+    tryGet(j, "fancyVehiclePath", s.fancyVehiclePath);
+    tryGet(j, "showVehicleTrajectory", s.showVehicleTrajectory);
+    tryGet(j, "showLaserSensor", s.showLaserSensor);
+    tryGet(j, "showBinaryLightSensor", s.showBinaryLightSensor);
+}
+
 Settings::Settings() {
 
     std::string strHomePath(".");
@@ -17,4 +70,40 @@ Settings::Settings() {
     settingsFilePath = strHomePath + "/.spatzsim";
 
     resourcePath = "../";
+}
+
+bool Settings::save() {
+
+    std::ofstream out(settingsFilePath);
+
+    if (!out) {
+        return false;
+    }
+
+    out << json(*this).dump(4);
+    out.close();
+
+    return true;
+}
+
+bool Settings::load() {
+
+    std::ifstream in(settingsFilePath);
+
+    if (!in) {
+        return false;
+    }
+
+    try {
+        json j;
+        in >> j;
+        *this = j;
+    } catch (std::exception& e) {
+        std::cout << e.what() << std::endl;
+        return false;
+    }
+
+    in.close();
+
+    return true;
 }
