@@ -12,18 +12,17 @@ struct ModelStore {
 
     Model car;
 
-    Model ground;
+    Model rect;
 
     Model ring;
     Model marker;
-    Model line;
     Model arrow;
 
     Model items[49];
 
     ModelStore (std::string resPath) : 
         car{resPath + "models/spatz.obj"},
-        ground{resPath + "models/ground.obj"},
+        rect{resPath + "models/ground.obj"},
         ring{resPath + "models/ring.obj"},
         marker{resPath + "models/marker.obj"},
         arrow{resPath + "models/arrow.obj"},

@@ -111,8 +111,31 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
         scene.fpsCamera.update(window, settings.updateDeltaTime);
     }
 
-    // actual simulation updates
+    for(KeyEvent& e : getKeyEvents()) {
+        if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
+            selectedCamera = (SelectedCamera)((((int)selectedCamera) + 1) % 3);
+        }
+        if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
+            scene.paused = !scene.paused;
+        }
+    }
 
+    if (FPS_CAMERA == selectedCamera) {
+
+        scene.fpsCamera.aspectRatio = (float)windowWidth / (float)windowHeight;
+
+        if (settings.showMarkers) {
+            markerModule.update(window, scene.fpsCamera, scene.selection);
+            editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
+        }
+
+        itemsModule.update(scene.items, scene.selection.pose);
+
+        renderFpsView(scene);
+    }
+
+    // actual simulation updates
+    
     while (scene.simulationTimer.updateStep(settings.updateDeltaTime)) {
 
         // TODO: Doing receive in such a way is not really correct!
@@ -134,36 +157,16 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 scene.items,
                 collisionModule);
 
-        renderCarView(scene);
-        renderDepthView(scene);
-
-        commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
-        commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
-
         if (!scene.paused) {
             scene.simulationTime += settings.updateDeltaTime;
         }
     }
 
-    for(KeyEvent& e : getKeyEvents()) {
-        if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
-            selectedCamera = (SelectedCamera)((((int)selectedCamera) + 1) % 3);
-        }
-        if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
-            scene.paused = !scene.paused;
-        }
-    }
+    renderCarView(scene);
+    renderDepthView(scene);
 
-    if (FPS_CAMERA == selectedCamera) {
-        scene.fpsCamera.aspectRatio = (float)windowWidth / (float)windowHeight;
-
-        if (settings.showMarkers) {
-            markerModule.update(window, scene.fpsCamera, scene.selection);
-            editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
-        }
-
-        itemsModule.update(scene.items, scene.selection.pose);
-    }
+    commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
+    commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
     // render camera images
 
@@ -175,7 +178,6 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
     // render on screen filling quad
 
     if (MAIN_CAMERA == selectedCamera) {
-        renderCarView(scene);
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -184,7 +186,6 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 true, 
                 car.frameBuffer.colorTextureId);
     } else if (DEPTH_CAMERA == selectedCamera) {
-        renderDepthView(scene);
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -193,7 +194,6 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 true, 
                 car.depthCameraFrameBuffer.colorTextureId);
     } else { // FPS_CAMERA
-        renderFpsView(scene);
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -208,6 +208,23 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
     guiModule.end();
 
     glfwSwapBuffers(window);
+
+    // check if lock request if yes ->
+    //
+
+    /*
+
+    sim = SpatzSim()
+
+    with Scene(sim) as scene:
+        scene.settings.asdf
+        scene.load("config")
+        scene.get_previous_frame()
+        scene.step(0.05) // simulator should advance 0.05 seconds
+
+    sim.run()
+
+    */
 }
 
 void Loop::update(Scene& scene, float deltaTime) {
@@ -310,22 +327,28 @@ void Loop::renderFpsView(Scene& scene) {
     if (settings.showVehiclePath) {
         visModule.renderPositionTrace(
                 shaderProgram.id,
+                modelStore.marker,
                 scene.simulationTime,
                 settings.fancyVehiclePath);
     }
 
     visModule.renderSensors(
             shaderProgram.id,
+            modelStore.rect,
+            modelStore.marker,
             scene.car,
             settings);
 
     visModule.renderDynamicItems(
             shaderProgram.id,
+            modelStore.arrow,
             scene.simulationTime,
             scene.items);
 
     visModule.renderVisualization(
             shaderProgram.id,
+            modelStore.rect,
+            modelStore.marker,
             scene.visualization, settings);
 }
 
