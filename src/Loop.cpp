@@ -29,6 +29,8 @@ void renderToScreen (
         bool keepAspectRatio,
         GLuint textureId) {
 
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
     if (keepAspectRatio) {
         float fwidth = (float)windowWidth;
         float fheight = (float)windowHeight;
@@ -132,6 +134,12 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 scene.items,
                 collisionModule);
 
+        renderCarView(scene);
+        renderDepthView(scene);
+
+        commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
+        commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
+
         if (!scene.paused) {
             scene.simulationTime += settings.updateDeltaTime;
         }
@@ -148,11 +156,12 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     if (FPS_CAMERA == selectedCamera) {
         scene.fpsCamera.aspectRatio = (float)windowWidth / (float)windowHeight;
-        scene.fpsCamera.update(window, settings.updateDeltaTime);
+
         if (settings.showMarkers) {
             markerModule.update(window, scene.fpsCamera, scene.selection);
             editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
         }
+
         itemsModule.update(scene.items, scene.selection.pose);
     }
 
@@ -160,19 +169,13 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     Scene preRenderScene = scene;
 
+    scene.fpsCamera.update(window, scene.displayTimer.accumulator);
     update(scene, scene.simulationTimer.accumulator);
-
-    renderFpsView(scene);
-    renderCarView(scene);
-    renderDepthView(scene);
-
-    scene = preRenderScene;
 
     // render on screen filling quad
 
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
     if (MAIN_CAMERA == selectedCamera) {
+        renderCarView(scene);
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -181,6 +184,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 true, 
                 car.frameBuffer.colorTextureId);
     } else if (DEPTH_CAMERA == selectedCamera) {
+        renderDepthView(scene);
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -189,6 +193,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 true, 
                 car.depthCameraFrameBuffer.colorTextureId);
     } else { // FPS_CAMERA
+        renderFpsView(scene);
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -198,8 +203,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 frameBuffer.colorTextureId);
     }
 
-    commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
-    commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
+    scene = preRenderScene;
 
     guiModule.end();
 
