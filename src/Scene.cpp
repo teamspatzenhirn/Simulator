@@ -757,7 +757,7 @@ void Scene::addToHistory() {
     history.push_back(*this);
 
     if (history.size() > 0) {
-        if (simulationTime - history.front().simulationTime > 10000) {
+        if (simulationClock.time - history.front().simulationClock.time > 10000) {
             history.pop_front();
         }
     }
@@ -765,12 +765,12 @@ void Scene::addToHistory() {
 
 Scene& Scene::getFromHistory(float simulationTimePoint) {
 
-    if (simulationTimePoint < history.front().simulationTime) {
+    if (simulationTimePoint < history.front().simulationClock.time) {
         return history.front();
     }   
 
     for (auto it = history.crbegin(); it != history.crend(); ++it) {
-        if ((*it).simulationTime <= simulationTimePoint) {
+        if ((*it).simulationClock.time <= simulationTimePoint) {
             return (Scene&)(*it);
         }
     }

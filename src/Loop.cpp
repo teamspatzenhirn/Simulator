@@ -74,7 +74,9 @@ void Loop::loop(Scene& scene, Settings& settings) {
         time = now;
 
         scene.displayClock.windup(frameDeltaTime); 
-        scene.simulationClock.windup(frameDeltaTime * settings.simulationSpeed); 
+        if (!scene.paused) {
+            scene.simulationClock.windup(frameDeltaTime * settings.simulationSpeed); 
+        }
 
         step(scene, settings, frameDeltaTime);
     }
@@ -128,8 +130,6 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
         }
 
         itemsModule.update(scene.items, scene.selection.pose);
-
-        renderFpsView(scene);
     }
 
     // actual simulation updates
@@ -143,28 +143,22 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
         // queue in the shared memory is actually used.
 
         commModule.receiveVesc(scene.car.vesc);
-        commModule.transmitCar(scene.car, scene.paused, scene.simulationTime);
 
         update(scene, settings.updateDeltaTime);
 
         ruleModule.update(
-                scene.simulationTime,
+                scene.simulationClock.time,
                 scene.rules,
                 scene.car,
                 scene.tracks,
                 scene.items,
                 collisionModule);
 
-        if (!scene.paused) {
-            scene.simulationTime += settings.updateDeltaTime;
-        }
+        commModule.transmitCar(
+                scene.car, 
+                scene.paused, 
+                scene.simulationClock.time);
     }
-
-    renderCarView(scene);
-    renderDepthView(scene);
-
-    commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
-    commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
     // render camera images
     
@@ -174,6 +168,10 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     scene.fpsCamera.update(window, scene.displayClock.accumulator);
     update(scene, scene.simulationClock.accumulator);
+
+    renderCarView(scene);
+    renderDepthView(scene);
+    renderFpsView(scene);
 
     // render on screen filling quad
 
@@ -206,6 +204,9 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
     scene = preRenderScene;
 
     guiModule.end();
+
+    commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
+    commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
     glfwSwapBuffers(window);
 
@@ -257,7 +258,9 @@ void Loop::update(Scene& scene, float deltaTime) {
             scene.dynamicItemSettings,
             scene.items);
 
-    visModule.addPositionTrace(scene.car.modelPose.position, scene.simulationTime);
+    visModule.addPositionTrace(
+            scene.car.modelPose.position, 
+            scene.simulationClock.time);
 
     car.updateMainCamera(scene.car.mainCamera, scene.car.modelPose);
     car.updateDepthCamera(scene.car.depthCamera, scene.car.modelPose);
@@ -280,7 +283,7 @@ void Loop::renderFpsView(Scene& scene) {
     glUseProgram(shaderProgram.id);
 
     GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
-    glUniform1f(timeLocation, (float)scene.simulationTime * 1000);
+    glUniform1f(timeLocation, (float)scene.simulationClock.time * 1000);
 
     GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
     glUniform1f(noiseLocation, 0.0f);
@@ -328,7 +331,7 @@ void Loop::renderFpsView(Scene& scene) {
         visModule.renderPositionTrace(
                 shaderProgram.id,
                 modelStore.marker,
-                scene.simulationTime,
+                scene.simulationClock.time,
                 settings.fancyVehiclePath);
     }
 
@@ -342,7 +345,7 @@ void Loop::renderFpsView(Scene& scene) {
     visModule.renderDynamicItems(
             shaderProgram.id,
             modelStore.arrow,
-            scene.simulationTime,
+            scene.simulationClock.time,
             scene.items);
 
     visModule.renderVisualization(
@@ -358,7 +361,7 @@ void Loop::renderCarView(Scene& scene) {
 
     GLint carShaderTimeLocation = 
         glGetUniformLocation(carShaderProgram.id, "time");
-    glUniform1f(carShaderTimeLocation, (float)scene.simulationTime * 1000);
+    glUniform1f(carShaderTimeLocation, (float)scene.simulationClock.time * 1000);
 
     GLint carShaderNoiseLocation = 
         glGetUniformLocation(carShaderProgram.id, "noise");
@@ -382,7 +385,7 @@ void Loop::renderCarView(Scene& scene) {
     glUseProgram(shaderProgram.id);
 
     GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
-    glUniform1f(timeLocation, (float)scene.simulationTime * 1000);
+    glUniform1f(timeLocation, (float)scene.simulationClock.time * 1000);
 
     GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
     glUniform1f(noiseLocation, scene.car.mainCamera.noise);

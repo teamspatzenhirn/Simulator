@@ -101,7 +101,7 @@ struct Scene {
     unsigned int version = VERSION;
     
     /*
-     * If set the simulation will be paused.
+     * If set the simulation clock will not be wind up each frame.
      */
     bool paused = false;
 
@@ -114,11 +114,6 @@ struct Scene {
      * This clock controls the simulation updates.
      */
     Clock simulationClock;
-
-    /*
-     * The current time of the simulation in seconds.
-     */
-    double simulationTime = 0;
 
     /*
      * This is the free camera that is used in the editor.

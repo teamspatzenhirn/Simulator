@@ -130,7 +130,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
     }
     ImGui::Text("%s", msg.c_str());
 
-    ImGui::Text("Simulation time: %.2f seconds", (double)scene.simulationTime);
+    ImGui::Text("Simulation time: %.2f seconds", (double)scene.simulationClock.time);
 
     if (scene.paused) {
         ImGui::Text("PAUSED");
@@ -148,11 +148,11 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
             if (!openedFilename.empty()) {
 
-                double savedSimulationTime = scene.simulationTime;
+                double savedSimulationTime = scene.simulationClock.time;
 
                 if (scene.load(openedPath + openedFilename)) {
                     Scene::history.clear();
-                    scene.simulationTime = savedSimulationTime;
+                    scene.simulationClock.time = savedSimulationTime;
                 } else {
                     errorMessage = "Could not open " + selectedFilename + "!";
                 }
