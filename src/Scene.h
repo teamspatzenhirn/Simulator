@@ -106,14 +106,14 @@ struct Scene {
     bool paused = false;
 
     /*
-     * This timer controls the updates of the non-simulation logic.
+     * This clock controls the updates of the non-simulation logic.
      */
-    Timer displayTimer;
+    Clock displayClock;
 
     /*
-     * This timer controls the simulation updates.
+     * This clock controls the simulation updates.
      */
-    Timer simulationTimer;
+    Clock simulationClock;
 
     /*
      * The current time of the simulation in seconds.
@@ -147,7 +147,7 @@ struct Scene {
     /*
      * The size of the ground plate on which tracks can be placed.
      */
-    float groundSize = 10.0f;
+    float groundSize = 40.0f;
 
     /*
      * Manager objects for the tracks (the track graph).

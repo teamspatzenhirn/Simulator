@@ -73,16 +73,14 @@ void Loop::loop(Scene& scene, Settings& settings) {
                     now - time).count() / 1000000.0f;
         time = now;
 
+        scene.displayClock.windup(frameDeltaTime); 
+        scene.simulationClock.windup(frameDeltaTime * settings.simulationSpeed); 
+
         step(scene, settings, frameDeltaTime);
     }
 }
 
 void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
-
-    scene.addToHistory();
-
-    scene.displayTimer.frameStep(frameDeltaTime); 
-    scene.simulationTimer.frameStep(frameDeltaTime * settings.simulationSpeed); 
 
     updateInput();
 
@@ -104,7 +102,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     // gui updates 
 
-    while (scene.displayTimer.updateStep(settings.updateDeltaTime)) {
+    while (scene.displayClock.step(settings.updateDeltaTime)) {
 
         commModule.receiveVisualization(scene.visualization);
 
@@ -136,7 +134,7 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
 
     // actual simulation updates
     
-    while (scene.simulationTimer.updateStep(settings.updateDeltaTime)) {
+    while (scene.simulationClock.step(settings.updateDeltaTime)) {
 
         // TODO: Doing receive in such a way is not really correct!
         // Likely the vesc value will not actually change n-times
@@ -169,11 +167,13 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
     commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
 
     // render camera images
+    
+    scene.addToHistory();
 
     Scene preRenderScene = scene;
 
-    scene.fpsCamera.update(window, scene.displayTimer.accumulator);
-    update(scene, scene.simulationTimer.accumulator);
+    scene.fpsCamera.update(window, scene.displayClock.accumulator);
+    update(scene, scene.simulationClock.accumulator);
 
     // render on screen filling quad
 

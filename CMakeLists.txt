@@ -61,7 +61,7 @@ set(SOURCE_FILES
    ./src/helpers/ShaderProgram.cpp
    ./src/helpers/FpsCamera.cpp
    ./src/helpers/FrameBuffer.cpp
-   ./src/helpers/Timer.cpp
+   ./src/helpers/Clock.cpp
    ./src/helpers/Id.cpp
    ./src/helpers/Pose.cpp
    ./src/helpers/PointLight.cpp
@@ -96,7 +96,7 @@ set(HEADER_FILES
     ./src/helpers/PointLight.h
     ./src/helpers/Pose.h
     ./src/helpers/FrameBuffer.h
-    ./src/helpers/Timer.h
+    ./src/helpers/Clock.h
     ./src/helpers/Id.h
     ./src/helpers/Shader.h
     ./src/Scene.h
