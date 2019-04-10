@@ -17,6 +17,7 @@ struct ModelStore {
     Model ring;
     Model marker;
     Model arrow;
+    Model scaleArrow;
 
     Model items[49];
 
@@ -26,6 +27,7 @@ struct ModelStore {
         ring{resPath + "models/ring.obj"},
         marker{resPath + "models/marker.obj"},
         arrow{resPath + "models/arrow.obj"},
+        scaleArrow{resPath + "models/scale_arrow.obj"},
         items{ 
             Model{},
             Model{resPath + "models/obstacle.obj"},

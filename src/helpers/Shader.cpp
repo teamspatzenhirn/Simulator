@@ -15,7 +15,7 @@ Shader::Shader(std::string sourcePath, GLenum shaderType) {
 	}
 
 	// read in shader file
-
+    
 	std::ifstream file = std::ifstream(sourcePath, std::ios::in);
 
     if (!file) {

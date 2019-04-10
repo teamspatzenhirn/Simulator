@@ -45,6 +45,14 @@ ShaderProgram::ShaderProgram(Shader vertexShader, Shader fragShader)
     : ShaderProgram(vertexShader.id, fragShader.id) {
 }
 
+ShaderProgram::ShaderProgram(
+        std::string vertexShaderPath, 
+        std::string fragShaderPath)
+    : ShaderProgram(
+            Shader(vertexShaderPath, GL_VERTEX_SHADER), 
+            Shader(fragShaderPath, GL_FRAGMENT_SHADER)) {
+}
+
 ShaderProgram::~ShaderProgram() {
 
     glDeleteProgram(id);

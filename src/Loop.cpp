@@ -10,10 +10,22 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
     : window{window}
     , windowWidth{windowWidth}
     , windowHeight{windowHeight}
-    , settings{settings}
     , frameBuffer{windowWidth, windowHeight}
-    , screenQuad{"shaders/ScreenQuadFragment.glsl"}
-    , guiModule{window, settings.configPath} {
+    , settings{settings}
+    , screenQuad{
+        settings.resourcePath + "shaders/ScreenQuadVertex.glsl",
+        settings.resourcePath + "shaders/ScreenQuadFragment.glsl"}
+    , guiModule{window, settings.configPath}
+    , fpsShaderProgram{
+        settings.resourcePath + "shaders/VertexShader.glsl", 
+        settings.resourcePath + "shaders/FragmentShader.glsl"}
+    , carShaderProgram{
+        settings.resourcePath + "shaders/BayerVertexShader.glsl", 
+        settings.resourcePath + "shaders/BayerFragmentShader.glsl"}
+    , depthCameraShaderProgram{
+        settings.resourcePath + "shaders/BayerVertexShader.glsl", 
+        settings.resourcePath + "shaders/DepthPointsFragmentShader.glsl"}
+    , modelStore{settings.resourcePath} {
 
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, setFramebufferSizeCallback);
@@ -275,17 +287,17 @@ void Loop::renderScene(Scene& scene, GLuint shaderProgramId) {
 
     itemsModule.render(shaderProgramId, modelStore, scene.items);
 
-    editor.renderScene(shaderProgramId, scene.tracks, scene.groundSize);
+    editor.renderScene(shaderProgramId, modelStore.rect, scene.tracks, scene.groundSize);
 }
 
 void Loop::renderFpsView(Scene& scene) {
 
-    glUseProgram(shaderProgram.id);
+    glUseProgram(fpsShaderProgram.id);
 
-    GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
+    GLint timeLocation = glGetUniformLocation(fpsShaderProgram.id, "time");
     glUniform1f(timeLocation, (float)scene.simulationClock.time * 1000);
 
-    GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
+    GLint noiseLocation = glGetUniformLocation(fpsShaderProgram.id, "noise");
     glUniform1f(noiseLocation, 0.0f);
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
@@ -295,9 +307,9 @@ void Loop::renderFpsView(Scene& scene) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    scene.fpsCamera.render(shaderProgram.id);
+    scene.fpsCamera.render(fpsShaderProgram.id);
 
-    renderScene(scene, shaderProgram.id);
+    renderScene(scene, fpsShaderProgram.id);
 
     // render markers over everything else
     // thus we clear the depth buffer here
@@ -306,7 +318,7 @@ void Loop::renderFpsView(Scene& scene) {
 
     if (settings.showMarkers) {
         editor.renderMarkers(
-                shaderProgram.id,
+                fpsShaderProgram.id,
                 scene.tracks,
                 scene.fpsCamera.pose.position);
 
@@ -324,32 +336,36 @@ void Loop::renderFpsView(Scene& scene) {
                     | MarkerModule::ROTATE_Y);
         }
 
-        markerModule.render(shaderProgram.id, scene.fpsCamera, scene.selection);
+        markerModule.render(
+                fpsShaderProgram.id, 
+                modelStore, 
+                scene.fpsCamera, 
+                scene.selection);
     }
 
     if (settings.showVehiclePath) {
         visModule.renderPositionTrace(
-                shaderProgram.id,
+                fpsShaderProgram.id,
                 modelStore.marker,
                 scene.simulationClock.time,
                 settings.fancyVehiclePath);
     }
 
     visModule.renderSensors(
-            shaderProgram.id,
+            fpsShaderProgram.id,
             modelStore.rect,
             modelStore.marker,
             scene.car,
             settings);
 
     visModule.renderDynamicItems(
-            shaderProgram.id,
+            fpsShaderProgram.id,
             modelStore.arrow,
             scene.simulationClock.time,
             scene.items);
 
     visModule.renderVisualization(
-            shaderProgram.id,
+            fpsShaderProgram.id,
             modelStore.rect,
             modelStore.marker,
             scene.visualization, settings);
@@ -382,12 +398,12 @@ void Loop::renderCarView(Scene& scene) {
 
     // main camera image in color
 
-    glUseProgram(shaderProgram.id);
+    glUseProgram(fpsShaderProgram.id);
 
-    GLint timeLocation = glGetUniformLocation(shaderProgram.id, "time");
+    GLint timeLocation = glGetUniformLocation(fpsShaderProgram.id, "time");
     glUniform1f(timeLocation, (float)scene.simulationClock.time * 1000);
 
-    GLint noiseLocation = glGetUniformLocation(shaderProgram.id, "noise");
+    GLint noiseLocation = glGetUniformLocation(fpsShaderProgram.id, "noise");
     glUniform1f(noiseLocation, scene.car.mainCamera.noise);
 
     glBindFramebuffer(GL_FRAMEBUFFER, car.frameBuffer.id);

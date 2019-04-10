@@ -45,9 +45,6 @@ private:
     static std::vector<Model::Vertex> pointVertices;
     static std::vector<Model::Vertex> trackLineVertices;
 
-    // ground
-    Model ground{"models/ground.obj"};
-
     // markers
     static constexpr float markerYOffset{0.005f};
 
@@ -106,7 +103,7 @@ public:
     void setTrackMode(TrackMode trackMode, const Tracks& tracks);
     void setAutoAlign(bool autoAlign, const Tracks& tracks);
 
-    void renderScene(GLuint shaderProgramId, const Tracks& tracks, float groundSize);
+    void renderScene(GLuint shaderProgramId, Model& groundModel, const Tracks& tracks, float groundSize);
     void renderMarkers(GLuint shaderProgramId, const Tracks& tracks, const glm::vec3 cameraPosition);
 
 private:

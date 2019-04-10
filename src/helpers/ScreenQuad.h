@@ -3,9 +3,12 @@
 
 #include <memory>
 #include <iostream>
+#include <functional>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
 
 #include "Shader.h"
 #include "ShaderProgram.h"
@@ -19,8 +22,14 @@ public:
 
     std::shared_ptr<ShaderProgram> shaderProgram;
 
-    ScreenQuad(std::string fragmentShaderPath);
-    ScreenQuad(Shader fragmentShader);
+    ScreenQuad(
+            std::string vertexShaderPath, 
+            std::string fragmentShaderPath);
+
+    ScreenQuad(
+            Shader vertexShader, 
+            Shader fragmentShader);
+
     ~ScreenQuad();
 
     /*
@@ -35,6 +44,8 @@ public:
      * Actually draws the geometry of the screen quad.
      */
     void end();
+
+    void render(std::function<void(GLuint)> renderFunction);
 };
 
 #endif

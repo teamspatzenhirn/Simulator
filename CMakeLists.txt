@@ -160,5 +160,4 @@ add_custom_target(run
         then vglrun -d :0 ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
         else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
     fi
-    DEPENDS ${PROJECT_NAME}
-    WORKING_DIRECTORY ../${CMAKE_PROJECT_DIR})
+    DEPENDS ${PROJECT_NAME})

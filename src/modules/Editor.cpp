@@ -286,13 +286,19 @@ void Editor::setAutoAlign(bool autoAlign, const Tracks& tracks) {
     updateMarkers(tracks);
 }
 
-void Editor::renderScene(GLuint shaderProgramId, const Tracks& tracks, float groundSize) {
+void Editor::renderScene(GLuint shaderProgramId, Model& groundModel, const Tracks& tracks, float groundSize) {
 
     // render ground
     glm::mat4 groundModelMat(1.0f);
     groundModelMat = glm::scale(groundModelMat, glm::vec3(groundSize, 1.0f, groundSize));
 
-    ground.render(shaderProgramId, groundModelMat);
+    glm::vec3 groundColor{0.05, 0.05, 0.05};
+
+    groundModel.material.ka = groundColor;
+    groundModel.material.kd = groundColor;
+    groundModel.material.ks = groundColor;
+
+    groundModel.render(shaderProgramId, groundModelMat);
 
     // render tracks
     std::set<std::shared_ptr<TrackBase>> ts;

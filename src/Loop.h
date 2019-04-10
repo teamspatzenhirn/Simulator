@@ -24,30 +24,23 @@ class Loop {
     GLsizei windowWidth;
     GLsizei windowHeight;
 
+    FrameBuffer frameBuffer;
+
     Settings settings;
+
+    ScreenQuad screenQuad;
+
+    ShaderProgram fpsShaderProgram;
+    ShaderProgram carShaderProgram;
+    ShaderProgram depthCameraShaderProgram;
+
+    ModelStore modelStore{settings.resourcePath};
 
     enum SelectedCamera {
         FPS_CAMERA,
         MAIN_CAMERA,
         DEPTH_CAMERA
     } selectedCamera = FPS_CAMERA;
-
-    ShaderProgram shaderProgram{
-        Shader("shaders/VertexShader.glsl", GL_VERTEX_SHADER),
-        Shader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER)};
-
-    ShaderProgram carShaderProgram{
-        Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
-        Shader("shaders/BayerFragmentShader.glsl", GL_FRAGMENT_SHADER)};
-
-    ShaderProgram depthCameraShaderProgram{
-        Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
-        Shader("shaders/DepthPointsFragmentShader.glsl", GL_FRAGMENT_SHADER)};
-
-    ModelStore modelStore{"./"};
-
-    FrameBuffer frameBuffer;
-    ScreenQuad screenQuad;
 
     CommModule commModule;
     MarkerModule markerModule;
