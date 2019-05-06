@@ -11,6 +11,7 @@ compile:
     - make -j8
   artifacts:
     paths:
+      - lib/libglew.so
       - SpatzSim
       - models
       - shaders
