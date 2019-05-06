@@ -116,7 +116,7 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, Model& pointModel, d
 
     for (StampedPosition& pos : tracedPositions) {
 
-        float t = (float)(simulationTime - pos.time) * 0.01f;
+        float t = (float)(simulationTime - pos.time) * 10.0f;
 
         float scale = 0.05f;
         glm::vec3 color(0.0f, 1.0f, 0.0f);

@@ -15,7 +15,6 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
     , screenQuad{
         settings.resourcePath + "shaders/ScreenQuadVertex.glsl",
         settings.resourcePath + "shaders/ScreenQuadFragment.glsl"}
-    , guiModule{window, settings.configPath}
     , fpsShaderProgram{
         settings.resourcePath + "shaders/VertexShader.glsl", 
         settings.resourcePath + "shaders/FragmentShader.glsl"}
@@ -25,7 +24,8 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
     , depthCameraShaderProgram{
         settings.resourcePath + "shaders/BayerVertexShader.glsl", 
         settings.resourcePath + "shaders/DepthPointsFragmentShader.glsl"}
-    , modelStore{settings.resourcePath} {
+    , modelStore{settings.resourcePath}
+    , guiModule{window, settings.configPath} {
 
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, setFramebufferSizeCallback);
@@ -72,7 +72,7 @@ void renderToScreen (
     screenQuad.end();
 }
 
-void Loop::loop(Scene& scene, Settings& settings) {
+void Loop::loop(Scene& scene) {
 
     auto time = std::chrono::steady_clock::now();
 
@@ -90,11 +90,11 @@ void Loop::loop(Scene& scene, Settings& settings) {
             scene.simulationClock.windup(frameDeltaTime * settings.simulationSpeed); 
         }
 
-        step(scene, settings, frameDeltaTime);
+        step(scene, frameDeltaTime);
     }
 }
 
-void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
+void Loop::step(Scene& scene, float frameDeltaTime) {
 
     updateInput();
 

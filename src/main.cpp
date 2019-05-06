@@ -51,7 +51,7 @@ int main (int argc, char* argv[]) {
 
     // entering main loop
     Loop loop(window, windowWidth, windowHeight, settings);
-    loop.loop(scene, settings);
+    loop.loop(scene);
 
     glfwDestroyWindow(window);
     glfwTerminate();

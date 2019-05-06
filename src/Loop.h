@@ -65,8 +65,8 @@ public:
 
     Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
 
-    void loop(Scene& scene, Settings& settings);
-    void step(Scene& scene, Settings& settings, float frameDeltaTime);
+    void loop(Scene& scene);
+    void step(Scene& scene, float frameDeltaTime);
 
     void setFramebufferSize(GLFWwindow* window, int width, int height);
 };
