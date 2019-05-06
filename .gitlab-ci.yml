@@ -11,7 +11,7 @@ compile:
     - make -j8
   artifacts:
     paths:
-      - CaroloSimulator
+      - SpatzSim
       - models
       - shaders
     when: on_success
