@@ -38,8 +38,9 @@ class Loop {
 
     enum SelectedCamera {
         FPS_CAMERA,
+        FOLLOW_CAMERA,
         MAIN_CAMERA,
-        DEPTH_CAMERA
+        DEPTH_CAMERA,
     } selectedCamera = FPS_CAMERA;
 
     CommModule commModule;

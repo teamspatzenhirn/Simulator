@@ -120,6 +120,11 @@ struct Scene {
      */
     FpsCamera fpsCamera{{0, 1, 1.5}, 0.5, 0, (float)M_PI * 0.3f, 4.0f/3.0f};
 
+    /*
+     * This is a top view camera that is following the car.
+     */
+    FollowCamera followCamera;
+
     struct Selection {
 
         /*

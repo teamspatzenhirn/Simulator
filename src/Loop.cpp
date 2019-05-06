@@ -120,7 +120,12 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
         commModule.receiveVisualization(scene.visualization);
 
-        scene.fpsCamera.update(window, settings.updateDeltaTime);
+        if (FPS_CAMERA == selectedCamera) {
+            scene.fpsCamera.update(window, settings.updateDeltaTime);
+        } else if (FOLLOW_CAMERA == selectedCamera) {
+            scene.followCamera.update(window, settings.updateDeltaTime, 
+                    scene.car.modelPose);
+        }
     }
 
     for(KeyEvent& e : getKeyEvents()) {
@@ -178,8 +183,14 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
     Scene preRenderScene = scene;
 
-    scene.fpsCamera.update(window, scene.displayClock.accumulator);
     update(scene, scene.simulationClock.accumulator);
+
+    if (FPS_CAMERA == selectedCamera) {
+        scene.fpsCamera.update(window, scene.displayClock.accumulator);
+    } else if (FOLLOW_CAMERA == selectedCamera) {
+        scene.followCamera.update(window, scene.displayClock.accumulator, 
+                scene.car.modelPose);
+    }
 
     renderCarView(scene);
     renderDepthView(scene);
@@ -203,7 +214,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 scene.car.depthCamera.getDepthAspectRatio(), 
                 true, 
                 car.depthCameraFrameBuffer.colorTextureId);
-    } else { // FPS_CAMERA
+    } else { // FPS_CAMERA or FOLLOW_CAMERA
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
@@ -307,7 +318,11 @@ void Loop::renderFpsView(Scene& scene) {
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    scene.fpsCamera.render(fpsShaderProgram.id);
+    if (selectedCamera == FPS_CAMERA) {
+        scene.fpsCamera.render(fpsShaderProgram.id);
+    } else if (selectedCamera == FOLLOW_CAMERA) {
+        scene.followCamera.render(fpsShaderProgram.id);
+    }
 
     renderScene(scene, fpsShaderProgram.id);
 
