@@ -20,6 +20,10 @@ endif()
 
 # --- [ External libs ]---
 
+# Collect all shared object files into one directory.
+
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
+
 # Order matters here!
 # Because imgui depends on glfw, glfw must be added first.
 
@@ -150,13 +154,13 @@ else()
   target_compile_options(${PROJECT_NAME} PUBLIC -mfpmath=sse)
 endif()
 
-# Exports compile commands to .json file for YouCompleteMe support.
+# Exports compile commands to .json file for vim YouCompleteMe support.
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 add_custom_target(run
     COMMAND if [ \"$ENV{VNCDESKTOP}\" ]\;
-        # this make the simulator run via VNC by using gl from display :0
+        # This make the simulator run via VNC by using gl from display :0
         then vglrun -d :0 ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
         else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
     fi
