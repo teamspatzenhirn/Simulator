@@ -7,7 +7,7 @@
       dest: "{{ item.dest }}"
       mode: 0777
     with_items:
-      - { src: '../lib', dest: '/opt/Simulator/lib/' }
+      - { src: '../lib', dest: '/opt/Simulator/' }
       - { src: '../SpatzSim', dest: '/opt/Simulator/' }
       - { src: '../models', dest: '/opt/Simulator/' }
       - { src: '../shaders', dest: '/opt/Simulator/' }
