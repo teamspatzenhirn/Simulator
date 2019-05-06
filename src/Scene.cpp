@@ -492,11 +492,12 @@ void from_json(const json& j, Tracks& t) {
         std::string type = jsonTrack.at("type").get<std::string>();
 
         if ("intersection" == type) {
-            std::shared_ptr<ControlPoint>& center = controlPoints.at(jsonTrack.at("center").get<int>());
-            std::shared_ptr<ControlPoint>& link1 = controlPoints.at(jsonTrack.at("link1").get<int>());
-            std::shared_ptr<ControlPoint>& link2 = controlPoints.at(jsonTrack.at("link2").get<int>());
-            std::shared_ptr<ControlPoint>& link3 = controlPoints.at(jsonTrack.at("link3").get<int>());
-            std::shared_ptr<ControlPoint>& link4 = controlPoints.at(jsonTrack.at("link4").get<int>());
+
+            std::shared_ptr<ControlPoint>& center = controlPoints.at(jsonTrack.at("center").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link1 = controlPoints.at(jsonTrack.at("link1").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link2 = controlPoints.at(jsonTrack.at("link2").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link3 = controlPoints.at(jsonTrack.at("link3").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link4 = controlPoints.at(jsonTrack.at("link4").get<unsigned long>());
 
             t.addTrackIntersection(center, link1, link2, link3, link4);
 
@@ -504,9 +505,9 @@ void from_json(const json& j, Tracks& t) {
         }
 
         std::shared_ptr<ControlPoint> start =
-            controlPoints.at(jsonTrack.at("start").get<int>());
+            controlPoints.at(jsonTrack.at("start").get<unsigned long>());
         std::shared_ptr<ControlPoint> end =
-            controlPoints.at(jsonTrack.at("end").get<int>());
+            controlPoints.at(jsonTrack.at("end").get<unsigned long>());
 
         if ("arc" == type) {
             glm::vec2 center = jsonTrack.at("center").get<glm::vec2>();

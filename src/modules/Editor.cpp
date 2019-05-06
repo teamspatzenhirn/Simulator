@@ -351,6 +351,10 @@ void Editor::renderScene(GLuint shaderProgramId, Model& groundModel, const Track
             } else {
                 std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
 
+                if (intersectionModel->vertices.size() == 0) {
+                    intersectionModel = genTrackIntersectionModel(tracks);
+                }
+
                 trackModels[track] = intersectionModel;
 
                 const glm::vec2& center = intersection->center.lock()->coords;
