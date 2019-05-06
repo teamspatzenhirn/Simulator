@@ -70,6 +70,11 @@ Settings::Settings() {
     settingsFilePath = strHomePath + "/.spatzsim";
 
     resourcePath = "../";
+    char* envResPath = std::getenv("SPATZSIM_RESOURCE_PATH");
+
+    if (envResPath) {
+        resourcePath = std::string(envResPath);
+    }
 }
 
 bool Settings::save() {
