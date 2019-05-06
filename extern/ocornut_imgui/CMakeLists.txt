@@ -3,7 +3,7 @@
 
 # This builds the glew + glfw + opengl3 version of imgui.
 
-cmake_minimum_required(VERSION 3.8)
+cmake_minimum_required(VERSION 3.6)
 
 project(imgui)
 
