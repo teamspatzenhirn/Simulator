@@ -85,16 +85,16 @@ void Loop::loop(Scene& scene) {
                     now - time).count() / 1000000.0f;
         time = now;
 
-        scene.displayClock.windup(frameDeltaTime); 
-        if (!scene.paused) {
-            scene.simulationClock.windup(frameDeltaTime * settings.simulationSpeed); 
-        }
-
         step(scene, frameDeltaTime);
     }
 }
 
 void Loop::step(Scene& scene, float frameDeltaTime) {
+
+    scene.displayClock.windup(frameDeltaTime); 
+    if (!scene.paused) {
+        scene.simulationClock.windup(frameDeltaTime * settings.simulationSpeed); 
+    }
 
     updateInput();
 
