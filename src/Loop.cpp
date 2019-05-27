@@ -108,12 +108,6 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
     guiModule.begin();
 
-    guiModule.renderRootWindow(scene, settings);
-    guiModule.renderSceneWindow(scene);
-    guiModule.renderSettingsWindow(settings);
-    guiModule.renderRuleWindow(scene.rules);
-    guiModule.renderHelpWindow();
-
     // gui updates 
 
     while (scene.displayClock.step(settings.updateDeltaTime)) {
@@ -225,6 +219,12 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     }
 
     scene = preRenderScene;
+
+    guiModule.renderRootWindow(scene, settings);
+    guiModule.renderSceneWindow(scene);
+    guiModule.renderSettingsWindow(settings);
+    guiModule.renderRuleWindow(scene.rules);
+    guiModule.renderHelpWindow();
 
     guiModule.end();
 
