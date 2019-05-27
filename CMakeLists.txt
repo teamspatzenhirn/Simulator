@@ -169,3 +169,5 @@ add_custom_target(run
         else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
     fi
     DEPENDS ${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME} DESTINATION lib)
