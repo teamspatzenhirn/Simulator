@@ -29,9 +29,9 @@ target_compile_definitions(${PROJECT_NAME}
 )
 
 target_include_directories(${PROJECT_NAME}
-    PUBLIC ${CMAKE_SOURCE_DIR}/extern/
-    PRIVATE ${CMAKE_SOURCE_DIR}/extern/ocornut_imgui
-    PRIVATE ${CMAKE_SOURCE_DIR}/extern/ocornut_imgui/examples
+    PUBLIC ${SPATZSIM_PROJECT_DIR}/extern/
+    PRIVATE ${SPATZSIM_PROJECT_DIR}/extern/ocornut_imgui
+    PRIVATE ${SPATZSIM_PROJECT_DIR}/extern/ocornut_imgui/examples
 )
 
 target_link_libraries(${PROJECT_NAME} glfw)

@@ -19,6 +19,8 @@
 
 class Loop {
 
+public:
+
     GLFWwindow* window;
 
     GLsizei windowWidth;
@@ -55,16 +57,14 @@ class Loop {
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
+    Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
+
     void update(Scene& scene, float deltaTime);
 
     void renderScene(Scene& scene, GLuint shaderProgramId);
     void renderFpsView(Scene& scene);
     void renderCarView(Scene& scene);
     void renderDepthView(Scene& scene);
-
-public:
-
-    Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
 
     void loop(Scene& scene);
     void step(Scene& scene, float frameDeltaTime);

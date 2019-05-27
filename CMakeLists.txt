@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(SpatzSim)
 
+set(SPATZSIM_PROJECT_DIR ${PROJECT_SOURCE_DIR})
+
 # This prevents that we link against any static libs,
 # which is scary (apparently).
 
