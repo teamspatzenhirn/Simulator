@@ -6,8 +6,30 @@ void setFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
     loop.setFramebufferSize(window, width, height);
 }
 
-Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings)
-    : window{window}
+GLFWwindow* setupGlfw(GLsizei windowWidth, GLsizei windowHeight) {
+
+    if (!glfwInit()) {
+        std::cout << "Could not initialize GLFW!" << std::endl;
+        std::exit(-1);
+    }
+
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
+    GLFWwindow* window = glfwCreateWindow(
+        windowWidth, windowHeight, "Spatz Simulator", nullptr, nullptr);
+
+    glfwMakeContextCurrent(window);
+
+    if (GLEW_OK != glewInit()) {
+        std::cout << "GL Extension Wrangler initialization failed!" << std::endl;
+        std::exit(-1);
+    }
+
+    return window;
+}
+
+Loop::Loop(GLsizei windowWidth, GLsizei windowHeight, Settings settings)
+    : window{setupGlfw(windowWidth, windowHeight)}
     , windowWidth{windowWidth}
     , windowHeight{windowHeight}
     , frameBuffer{windowWidth, windowHeight}
@@ -27,10 +49,21 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
     , modelStore{settings.resourcePath}
     , guiModule{window, settings.configPath} {
 
+    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+
+    glfwSwapInterval(0);
     glfwSetWindowUserPointer(window, this);
     glfwSetFramebufferSizeCallback(window, setFramebufferSizeCallback);
 
     initInput(window);
+}
+
+Loop::~Loop() {
+
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
 
 void renderToScreen (

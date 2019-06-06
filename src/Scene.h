@@ -76,7 +76,6 @@ enum ItemType {
     SIGN_NO_PASSING_END = 48,
 };
 
-
 /*
  * In order to make simulation state propagation and retention
  * as simple as possible the complete simulation state should be

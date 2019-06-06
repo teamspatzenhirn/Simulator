@@ -57,7 +57,8 @@ public:
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
-    Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
+    Loop(GLsizei windowWidth, GLsizei windowHeight, Settings settings);
+    ~Loop();
 
     void update(Scene& scene, float deltaTime);
 

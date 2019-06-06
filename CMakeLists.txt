@@ -37,6 +37,8 @@ endif()
 set(GLM_TEST_ENABLE OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/g-truc_glm)
 
+add_subdirectory(extern/pybind_pybind11)
+
 # Collect files.
 
 set(SOURCE_FILES
@@ -113,7 +115,8 @@ set(HEADER_FILES
 
 # Build the library/program.
 
-add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
+#add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_library(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
                       ${OPENGL_LIBRARIES}
@@ -129,7 +132,7 @@ target_include_directories(${PROJECT_NAME}
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wextra)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wpedantic)
-target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
+#target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wunreachable-code)
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++11)
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
@@ -160,4 +163,12 @@ add_custom_target(run
     fi
     DEPENDS ${PROJECT_NAME})
 
-install(TARGETS ${PROJECT_NAME} DESTINATION lib)
+# Builds the python bindings module.
+
+pybind11_add_module(pyspatzsim MODULE
+                     python/bindings.cpp)
+
+target_link_libraries(pyspatzsim PUBLIC 
+                        pybind11::module 
+                        pybind11::embed 
+                        spatzsim)
