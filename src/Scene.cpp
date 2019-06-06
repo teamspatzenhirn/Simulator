@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 
-#include <nlohmann/json.hpp>
+#include "nlohmann_json/json.hpp"
 
 /*
  * JSON (de-)serialization functions comin' up here!

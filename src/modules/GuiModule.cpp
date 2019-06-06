@@ -6,8 +6,8 @@
 #include <algorithm>
 
 #include "ocornut_imgui/imgui.h"
-#include "ocornut_imgui/examples/imgui_impl_glfw.h"
-#include "ocornut_imgui/examples/imgui_impl_opengl3.h"
+#include "ocornut_imgui/imgui_impl_glfw.h"
+#include "ocornut_imgui/imgui_impl_opengl3.h"
 
 GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 

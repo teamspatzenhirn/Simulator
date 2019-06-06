@@ -1,6 +1,6 @@
 #include "Model.h"
 
-#include "bly7_obj-loader/Source/OBJ_Loader.h"
+#include "bly7_obj-loader/OBJ_Loader.h"
 
 void convertMaterial(objl::Material& meshMat, Model::Material& mat) {
 
