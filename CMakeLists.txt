@@ -1,12 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-project(SpatzSim)
-
-set(SPATZSIM_PROJECT_DIR ${PROJECT_SOURCE_DIR})
-
-# This prevents that we link against any static libs,
-# which is scary (apparently).
-
-set(BUILD_SHARED_LIBS 1)
+project(spatzsim)
 
 # ---[ Check for OpenGL (mandatory) ]---
 
@@ -14,78 +7,73 @@ set(OpenGL_GL_PREFERENCE "GLVND")
 
 find_package(OpenGL QUIET)
 if(OPENGL_FOUND)
-  message(STATUS "Found OpenGL: " ${OPENGL_LIBRARIES})
-  message(STATUS "              " ${OPENGL_INCLUDE_DIR})
+    message(STATUS "Found OpenGL: " ${OPENGL_LIBRARIES})
+    message(STATUS "              " ${OPENGL_INCLUDE_DIR})
 else(OPENGL_FOUND)
-  message(FATAL_ERROR "${ColourBoldRed}OpenGL missing.${ColourReset}")
+    message(FATAL_ERROR "${ColourBoldRed}OpenGL missing.${ColourReset}")
+endif()
+
+# ---[ Check for GLEW (mandatory) ]---
+
+find_package(GLEW QUIET)
+if(GLEW_FOUND)
+    message(STATUS "Found GLEW: " ${GLEW_LIBRARIES})
+    message(STATUS "            " ${GLEW_INCLUDE_DIR})
+else(GLEW_FOUND)
+    message(FATAL_ERROR "${ColourBoldRed}GLEW missing.${ColourReset}")
+endif()
+
+# ---[ Check for GLFW3 (mandatory) ]---
+
+find_package(glfw3 QUIET)
+if(glfw3_FOUND)
+    message(STATUS "Found GLFW3")
+else(glfw3_FOUND)
+    message(FATAL_ERROR "${ColourBoldRed}GLFW3 missing.${ColourReset}")
 endif()
 
 # --- [ External libs ]---
 
-# Collect all shared object files into one directory.
-
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
-
-# Order matters here!
-# Because imgui depends on glfw, glfw must be added first.
-
-message(STATUS "External lib: extern/Perlmint_glew-cmake")
-add_subdirectory(extern/Perlmint_glew-cmake)
-
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-
-message(STATUS "External lib: extern/glfw_glfw")
-add_subdirectory(extern/glfw_glfw)
-
 set(GLM_TEST_ENABLE OFF CACHE BOOL "" FORCE)
-
-message(STATUS "External lib: extern/g-truc_glm")
 add_subdirectory(extern/g-truc_glm)
-
-set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
-
-message(STATUS "External lib: extern/nlohmann_json")
-add_subdirectory(extern/nlohmann_json)
-
-message(STATUS "External lib: extern/bly7_obj-loader")
-add_subdirectory(extern/bly7_obj-loader)
-
-message(STATUS "External lib: extern/ocornut_imgui")
-add_subdirectory(extern/ocornut_imgui)
 
 # Collect files.
 
 set(SOURCE_FILES
-   ./src/sharedmem/shmcomm.cpp
-   ./src/helpers/Capture.cpp
-   ./src/helpers/Input.cpp
-   ./src/helpers/Shader.cpp
-   ./src/helpers/Model.cpp
-   ./src/helpers/Camera.cpp
-   ./src/helpers/ShaderProgram.cpp
-   ./src/helpers/FollowCamera.cpp
-   ./src/helpers/FpsCamera.cpp
-   ./src/helpers/FrameBuffer.cpp
-   ./src/helpers/Clock.cpp
-   ./src/helpers/Id.cpp
-   ./src/helpers/Pose.cpp
-   ./src/helpers/PointLight.cpp
-   ./src/helpers/ScreenQuad.cpp
-   ./src/Scene.cpp
-   ./src/Loop.cpp
-   ./src/modules/Editor.cpp
-   ./src/modules/CommModule.cpp
-   ./src/modules/GuiModule.cpp
-   ./src/modules/ItemsModule.cpp
-   ./src/modules/CarModule.cpp
-   ./src/modules/CollisionModule.cpp
-   ./src/modules/MarkerModule.cpp
-   ./src/modules/RuleModule.cpp
-   ./src/modules/VisModule.cpp
-   ./src/scene/Tracks.cpp
-   ./src/scene/Settings.cpp
+    ./extern/ocornut_imgui/imgui.cpp
+    ./extern/ocornut_imgui/imgui_draw.cpp
+    ./extern/ocornut_imgui/imgui_impl_glfw.cpp
+    ./extern/ocornut_imgui/imgui_widgets.cpp
+    ./extern/ocornut_imgui/imgui_impl_opengl3.cpp
+    ./extern/ocornut_imgui/imgui_stdlib.cpp
+    ./src/sharedmem/shmcomm.cpp
+    ./src/helpers/Capture.cpp
+    ./src/helpers/Input.cpp
+    ./src/helpers/Shader.cpp
+    ./src/helpers/Model.cpp
+    ./src/helpers/Camera.cpp
+    ./src/helpers/ShaderProgram.cpp
+    ./src/helpers/FollowCamera.cpp
+    ./src/helpers/FpsCamera.cpp
+    ./src/helpers/FrameBuffer.cpp
+    ./src/helpers/Clock.cpp
+    ./src/helpers/Id.cpp
+    ./src/helpers/Pose.cpp
+    ./src/helpers/PointLight.cpp
+    ./src/helpers/ScreenQuad.cpp
+    ./src/Scene.cpp
+    ./src/Loop.cpp
+    ./src/modules/Editor.cpp
+    ./src/modules/CommModule.cpp
+    ./src/modules/GuiModule.cpp
+    ./src/modules/ItemsModule.cpp
+    ./src/modules/CarModule.cpp
+    ./src/modules/CollisionModule.cpp
+    ./src/modules/MarkerModule.cpp
+    ./src/modules/RuleModule.cpp
+    ./src/modules/VisModule.cpp
+    ./src/scene/Tracks.cpp
+    ./src/scene/Settings.cpp
    )
 
 set(HEADER_FILES
@@ -129,15 +117,13 @@ add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
 
 target_link_libraries(${PROJECT_NAME}
                       ${OPENGL_LIBRARIES}
-                      libglew_shared
+                      ${GLEW_LIBRARIES}
                       glm
-                      glfw
-                      imgui
-                      objloader
-                      nlohmann_json)
+                      glfw)
 
 target_include_directories(${PROJECT_NAME}
                            PUBLIC src/
+                           PUBLIC extern/
                            PUBLIC ${OPENGL_INCLUDE_DIR})
 
 target_compile_options(${PROJECT_NAME} PUBLIC -Wall)
@@ -147,6 +133,10 @@ target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
 target_compile_options(${PROJECT_NAME} PUBLIC -Wunreachable-code)
 target_compile_options(${PROJECT_NAME} PUBLIC -std=c++11)
 target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
+
+target_compile_definitions(${PROJECT_NAME}
+    PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_GLEW
+)
 
 # Compile type dependent (release or debug) flags.
 
