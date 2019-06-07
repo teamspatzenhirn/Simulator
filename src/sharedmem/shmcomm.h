@@ -32,7 +32,6 @@ class SHMCommPrivate
 public:
     SHMCommPrivate(Role role, int key,size_t bufsize);
 
-
     void detach();
     bool destroy();
     bool _attach();
@@ -42,7 +41,6 @@ public:
     ~SHMCommPrivate();
 private:
 
-    bool initialized;
     void * shmPtr;
     int shmId;
     int key;

@@ -7,6 +7,8 @@ class Clock {
 
 public:
 
+    Clock();
+
     double time;
     float accumulator;
 

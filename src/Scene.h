@@ -167,7 +167,7 @@ struct Scene {
         Item () {
         }
         
-        Item (ItemType type) : type(type) {
+        explicit Item (ItemType type) : type(type) {
         }
 
         Item (ItemType type, std::string name) : type(type), name(name) {

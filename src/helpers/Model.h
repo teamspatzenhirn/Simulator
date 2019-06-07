@@ -22,8 +22,8 @@ public:
 
     Model();
     Model(const Model& model);
-    Model(GLenum storageType);
-    Model(std::string path);
+    explicit Model(GLenum storageType);
+    explicit Model(std::string path);
     Model(std::string path, GLenum storageType);
     ~Model();
 

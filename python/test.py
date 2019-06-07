@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import threading
+import numpy as np
 
 sys.path.append(os.path.join(os.path.abspath(
     os.path.dirname(__file__)), '../build/',))
@@ -25,9 +26,26 @@ def main():
 
     time.sleep(1)
 
+    a = np.array([3, 2, 1])
+    b = a
+
+    b[0] = 4
+
+    print(b)
+    print(a)
+
+    d = scene.car.pose.position.copy()
+
+    scene.car.pose.position[0] = 3
+
+    print(d)
+
+    print(scene.car.pose.position)
+
     loop.step(scene, 0.5)
 
     time.sleep(10)
+
 
 if __name__ == "__main__":
 
