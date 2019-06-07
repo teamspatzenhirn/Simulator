@@ -150,8 +150,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
         if (FPS_CAMERA == selectedCamera) {
             scene.fpsCamera.update(window, settings.updateDeltaTime);
         } else if (FOLLOW_CAMERA == selectedCamera) {
-            scene.followCamera.update(window, settings.updateDeltaTime, 
-                    scene.car.modelPose);
+            scene.followCamera.update(scene.car.modelPose);
         }
     }
 
@@ -215,8 +214,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     if (FPS_CAMERA == selectedCamera) {
         scene.fpsCamera.update(window, scene.displayClock.accumulator);
     } else if (FOLLOW_CAMERA == selectedCamera) {
-        scene.followCamera.update(window, scene.displayClock.accumulator, 
-                scene.car.modelPose);
+        scene.followCamera.update(scene.car.modelPose);
     }
 
     renderCarView(scene);

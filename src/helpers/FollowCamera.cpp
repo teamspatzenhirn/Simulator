@@ -2,11 +2,9 @@
 
 #include <iostream>
 
-void FollowCamera::update(GLFWwindow* window, float dt, Pose& followPose) {
+void FollowCamera::update(Pose& followPose) {
 
     for (ScrollEvent& scrollEvent : getScrollEvents()) {
-
-        std::cout << scrollEvent.yoffset << std::endl;
 
         if (scrollEvent.yoffset < 0) { 
             height = std::min(20.0f, height * 1.2f);

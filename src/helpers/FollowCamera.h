@@ -14,7 +14,7 @@ public:
 
     float height = 5.0f;
 
-    void update(GLFWwindow* window, float dt, Pose& followPose);
+    void update(Pose& followPose);
 };
 
 #endif

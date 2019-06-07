@@ -30,20 +30,20 @@ void RuleModule::update(
      */
 
     // TODO: the on-track-check is still buggy
-    
+
     std::vector<std::shared_ptr<TrackBase>> trackSegments;
 
     for (const std::shared_ptr<ControlPoint>& p : tracks.getTracks()) {
         for (std::shared_ptr<TrackBase>& t : p->tracks) {
-            if (trackSegments.end() == 
+            if (trackSegments.end() ==
                     std::find(trackSegments.begin(), trackSegments.end(), t)) {
                 trackSegments.push_back(t);
             }
         }
     }
-    
+
     glm::vec2 carPosition(
-            car.modelPose.position.x, 
+            car.modelPose.position.x,
             car.modelPose.position.z);
 
     rules.onTrack = false;
@@ -132,7 +132,7 @@ void RuleModule::update(
                 }
             }
 
-            if (inSection) { 
+            if (inSection) {
                 float dist = glm::length(carVec);
                 if (dist > ta.radius - 0.4 && dist < ta.radius + 0.4) {
                     rules.onTrack = true;
@@ -147,7 +147,7 @@ void RuleModule::update(
         if (TRAFFIC_ISLAND == i.type) {
 
             // base part of traffic island
-            
+
             glm::vec4 startInModelCoords(0, 0, 1.9, 1);
             glm::vec4 endInModelCoords(0, 0, -1.9, 1);
 
@@ -277,19 +277,20 @@ void RuleModule::update(
         bool isReallyClose = d < 0.15;
 
         switch (i.type) {
-
             case CROSSWALK:
-                isReallyClose = d < 0.3;
             case CROSSWALK_SMALL:
             case STOP_LINE:
             case GIVE_WAY_LINE:
+                if (CROSSWALK == i.type) {
+                    isReallyClose = d < 0.3;
+                }
                 if (!rules.lineId) {
                     if (d < 0.5) {
                         rules.lineId = i.id;
                         rules.lineTime = simulationTime;
                         rules.linePassed = false;
                     }
-                } else if (rules.lineId == i.id) { 
+                } else if (rules.lineId == i.id) {
                     if (isReallyClose && rules.linePassed == false) {
                         double delta = simulationTime - rules.lineTime;
                         double deltaLimit = 0;
@@ -308,7 +309,7 @@ void RuleModule::update(
                                 if((j.type == DYNAMIC_PEDESTRIAN_LEFT
                                         || j.type == DYNAMIC_PEDESTRIAN_RIGHT)
                                         && glm::length(j.pose.position - i.pose.position) < 1) {
-                                   pedestrianNearby = true; 
+                                   pedestrianNearby = true;
                                    break;
                                 }
                             }
@@ -332,7 +333,7 @@ void RuleModule::update(
                                               << "s"
                                               << std::endl;
                                     std::exit(-1);
-                                } 
+                                }
                             }
                             if (i.type == STOP_LINE) {
                                 rules.stopLineIgnored = true;
@@ -426,7 +427,7 @@ void RuleModule::update(
                     glm::vec3 carArrowCoords = glm::vec3(
                             i.pose.getInverseMatrix() * carWorldCoords);
 
-                    if (carArrowCoords.x < -0.5 
+                    if (carArrowCoords.x < -0.5
                             || carArrowCoords.z < -1.5
                             || carArrowCoords.z > 0.3) {
 
@@ -514,7 +515,7 @@ void RuleModule::update(
 
     if (allCheckpointsPassed
             && checkpointCounter != 0
-            && rules.exitIfAllCheckpointsPassed) { 
+            && rules.exitIfAllCheckpointsPassed) {
         std::exit(0);
     }
 

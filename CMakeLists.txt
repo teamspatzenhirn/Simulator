@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 project(spatzsim)
 
+set(EXE_TARGET_NAME "${PROJECT_NAME}")
+set(LIB_TARGET_NAME "lib${PROJECT_NAME}")
+set(PY_TARGET_NAME "py${PROJECT_NAME}")
+
 # ---[ Check for OpenGL (mandatory) ]---
 
 set(OpenGL_GL_PREFERENCE "GLVND")
@@ -34,9 +38,11 @@ endif()
 
 # --- [ External libs ]---
 
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+set(BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
 set(GLM_TEST_ENABLE OFF CACHE BOOL "" FORCE)
-add_subdirectory(extern/g-truc_glm)
 
+add_subdirectory(extern/g-truc_glm)
 add_subdirectory(extern/pybind_pybind11)
 
 # Collect files.
@@ -113,47 +119,66 @@ set(HEADER_FILES
     ./src/scene/ModelStore.h
    )
 
-# Build the library/program.
+# Build the library.
 
-#add_executable(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
-add_library(${PROJECT_NAME} src/main.cpp ${SOURCE_FILES} ${HEADER_FILES})
+add_library(${LIB_TARGET_NAME} STATIC ${SOURCE_FILES} ${HEADER_FILES})
 
-target_link_libraries(${PROJECT_NAME}
+set_target_properties(${LIB_TARGET_NAME} PROPERTIES PREFIX "")
+
+target_link_libraries(${LIB_TARGET_NAME}
                       ${OPENGL_LIBRARIES}
                       ${GLEW_LIBRARIES}
                       glm
                       glfw)
 
-target_include_directories(${PROJECT_NAME}
+target_include_directories(${LIB_TARGET_NAME}
                            PUBLIC src/
                            PUBLIC extern/
                            PUBLIC ${OPENGL_INCLUDE_DIR})
 
-target_compile_options(${PROJECT_NAME} PUBLIC -Wall)
-target_compile_options(${PROJECT_NAME} PUBLIC -Wextra)
-target_compile_options(${PROJECT_NAME} PUBLIC -Wpedantic)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wall)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wextra)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wpedantic)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wunreachable-code)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -std=c++11)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -fPIC)
 #target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
-target_compile_options(${PROJECT_NAME} PUBLIC -Wunreachable-code)
-target_compile_options(${PROJECT_NAME} PUBLIC -std=c++11)
-target_compile_options(${PROJECT_NAME} PUBLIC -fPIC)
 
-target_compile_definitions(${PROJECT_NAME}
+target_compile_definitions(${LIB_TARGET_NAME}
     PRIVATE -DIMGUI_IMPL_OPENGL_LOADER_GLEW
 )
 
 # Compile type dependent (release or debug) flags.
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  target_compile_options(${PROJECT_NAME} PUBLIC -g)
-  target_compile_options(${PROJECT_NAME} PUBLIC -O0)
+    target_compile_options(${LIB_TARGET_NAME} PUBLIC -g)
+    target_compile_options(${LIB_TARGET_NAME} PUBLIC -O0)
 else()
-  target_compile_options(${PROJECT_NAME} PUBLIC -O3)
-  target_compile_options(${PROJECT_NAME} PUBLIC -mfpmath=sse)
+    target_compile_options(${LIB_TARGET_NAME} PUBLIC -O3)
+    target_compile_options(${LIB_TARGET_NAME} PUBLIC -mfpmath=sse)
 endif()
+
+# Builds the python bindings module.
+
+pybind11_add_module(${PY_TARGET_NAME} MODULE
+                     python/bindings.cpp)
+
+target_link_libraries(${PY_TARGET_NAME} PUBLIC
+                        pybind11::module
+                        pybind11::embed
+                        ${LIB_TARGET_NAME})
+
+# Builds the actual executable.
+
+add_executable(${EXE_TARGET_NAME} src/main.cpp)
+
+target_link_libraries(${EXE_TARGET_NAME} ${LIB_TARGET_NAME})
 
 # Exports compile commands to .json file for vim YouCompleteMe support.
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Convenience target for build & execute.
 
 add_custom_target(run
     COMMAND if [ \"$ENV{VNCDESKTOP}\" ]\;
@@ -161,14 +186,4 @@ add_custom_target(run
         then vglrun -d :0 ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
         else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
     fi
-    DEPENDS ${PROJECT_NAME})
-
-# Builds the python bindings module.
-
-pybind11_add_module(pyspatzsim MODULE
-                     python/bindings.cpp)
-
-target_link_libraries(pyspatzsim PUBLIC 
-                        pybind11::module 
-                        pybind11::embed 
-                        spatzsim)
+    DEPENDS ${EXE_TARGET_NAME})
