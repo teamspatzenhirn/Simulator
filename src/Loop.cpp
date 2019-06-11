@@ -256,6 +256,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     guiModule.renderSettingsWindow(settings);
     guiModule.renderRuleWindow(scene.rules);
     guiModule.renderHelpWindow();
+    guiModule.renderAboutWindow();
 
     guiModule.end();
 

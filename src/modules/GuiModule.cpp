@@ -108,6 +108,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
             ImGui::MenuItem("Settings", NULL, &showSettingsWindow);
             ImGui::MenuItem("Rules", NULL, &showRuleWindow);
             ImGui::MenuItem("Help", NULL, &showHelpWindow);
+            ImGui::MenuItem("About", NULL, &showAboutWindow);
 
             ImGui::EndMenu();
         }
@@ -763,6 +764,25 @@ void GuiModule::renderHelpWindow() {
         ImGui::Text("Click again to cycle tranformation modes");
         ImGui::Text("Press ESC or click anywhere to deselect");
         ImGui::Text("Press h to toggle marker visibility");
+
+        ImGui::End();
+    }
+}
+
+void GuiModule::renderAboutWindow() {
+
+    if (showAboutWindow) { 
+
+        ImGui::Begin("About", &showAboutWindow,
+                ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::Text("SpatzSim 1.3");
+        ImGui::Text("");
+        ImGui::Text("Initiated in fall 2018 by");
+        ImGui::Text("");
+        ImGui::Text("Gilberto Rossi");
+        ImGui::Text("Johannes Herschel");
+        ImGui::Text("Jona Ruof");
 
         ImGui::End();
     }
