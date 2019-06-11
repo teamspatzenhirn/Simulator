@@ -55,7 +55,7 @@ void from_json(const json& j, Settings& s) {
     tryGet(j, "showBinaryLightSensor", s.showBinaryLightSensor);
 }
 
-Settings::Settings() {
+Settings::Settings(bool loadFromDotfile) {
 
     std::string strHomePath(".");
     char* homePath = std::getenv("HOME");
@@ -77,8 +77,10 @@ Settings::Settings() {
     if (envResPath) {
         resourcePath = std::string(envResPath);
     }
-
-    load();
+    
+    if (loadFromDotfile) {
+        load();
+    }
 }
 
 bool Settings::save() {

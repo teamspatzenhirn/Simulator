@@ -61,7 +61,7 @@ public:
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
-    Loop(Settings settings = {});
+    Loop(Settings settings = {true});
     ~Loop();
 
     void update(Scene& scene, float deltaTime);

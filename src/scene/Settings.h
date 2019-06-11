@@ -9,7 +9,7 @@
  */
 struct Settings {
 
-    Settings();
+    Settings(bool loadFromDotfile = false);
 
     /*
      * The path where the global settings file is stored.
