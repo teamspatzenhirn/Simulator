@@ -1,11 +1,14 @@
 import os
 import sys
 import time
+import math
 import threading
 import numpy as np
 
-sys.path.append(os.path.join(os.path.abspath(
-    os.path.dirname(__file__)), '../build/',))
+SCRIPT_DIR = os.path.abspath(os.path.dirname(__file__))
+CONFIG_DIR = os.path.join(SCRIPT_DIR, "bindings_test_track.json")
+
+sys.path.append(os.path.join(SCRIPT_DIR, '../build/'))
 
 import pyspatzsim as ps
 
@@ -14,12 +17,12 @@ def main():
     settings = ps.Settings()
     settings.load()
 
-    scene = ps.Scene('/home/ruof/Projects/SpatzSim/tests/barred_area.json')
+    scene = ps.Scene(CONFIG_DIR)
     scene.paused = False
     scene.car.vesc.velocity = 1.0
     scene.car.vesc.steering_angle = 0.4
     scene.car.main_camera.image_width = 256
-    scene.car.main_camera.image_height = 256
+    scene.car.main_camera.image_height = 20
 
     loop = ps.Loop(800, 600, settings)
     loop.step(scene, 0.1)
@@ -31,20 +34,20 @@ def main():
 
     b[0] = 4
 
-    print(b)
-    print(a)
-
-    d = scene.car.pose.position.copy()
-
-    scene.car.pose.position[0] = 3
-
-    print(d)
-
-    print(scene.car.pose.position)
+    scene.car.pose.scale *= 1
 
     loop.step(scene, 0.5)
 
-    time.sleep(10)
+    scene.car.main_camera.fov = math.pi / 2 * 1.3
+
+    while True:
+
+        scene.car.vesc.velocity = 1.0
+        scene.car.vesc.steering_angle = 0.4
+
+        loop.step(scene, 0.05)
+
+        time.sleep(0.1)
 
 
 if __name__ == "__main__":
