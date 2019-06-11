@@ -17,7 +17,8 @@ PYBIND11_MODULE(pyspatzsim, m) {
 
     pybind11::class_<Settings>(m, "Settings")
         .def(pybind11::init())
-        .def("load", &Settings::load);
+        .def("load", &Settings::load)
+        .def_readwrite("resource_path", &Settings::resourcePath);
 
     pybind11::class_<Loop>(m, "Loop")
         .def(pybind11::init<Settings>(), pybind11::arg("settings") = Settings())
