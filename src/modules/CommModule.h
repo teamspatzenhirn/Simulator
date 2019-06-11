@@ -80,9 +80,6 @@ class CommModule {
 
     int vescFailCounter = 0;
 
-    Capture mainCameraCapture;
-    Capture depthCameraCapture;
-
     DepthCameraImage* lastDepthObj = nullptr;
 
     SimulatorSHM::SHMComm<MainCameraImage> txMainCamera; 
@@ -99,8 +96,16 @@ public:
     CommModule();
     ~CommModule();
 
-    void transmitMainCamera(Car& car, GLuint mainCameraFramebufferId);
-    void transmitDepthCamera(Car& car, GLuint depthCameraFramebufferId);
+    void transmitMainCamera(
+            Car& car, 
+            Capture& mainCameraCapture, 
+            GLuint mainCameraFramebufferId);
+
+    void transmitDepthCamera(
+            Car& car, 
+            Capture& depthCameraCapture, 
+            GLuint depthCameraFramebufferId);
+
     void transmitCar(Car& car, bool paused, double simulationTime);
     void receiveVesc(Car::Vesc& car);
     void receiveVisualization(Scene::Visualization& vis);

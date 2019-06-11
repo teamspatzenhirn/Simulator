@@ -27,6 +27,12 @@ struct Settings {
     std::string configPath;
 
     /*
+     * Dimensions of the main window.
+     */
+    int windowWidth = 800;
+    int windowHeight = 600;
+
+    /*
      * The speed of the simulation given as fraction of real time.
      */
     float simulationSpeed = 0.25f;

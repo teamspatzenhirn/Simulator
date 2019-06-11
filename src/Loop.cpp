@@ -16,7 +16,7 @@ GLFWwindow* setupGlfw(GLsizei windowWidth, GLsizei windowHeight) {
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     GLFWwindow* window = glfwCreateWindow(
-        windowWidth, windowHeight, "Spatz Simulator", nullptr, nullptr);
+        windowWidth, windowHeight, "SpatzSim", nullptr, nullptr);
 
     glfwMakeContextCurrent(window);
 
@@ -28,11 +28,11 @@ GLFWwindow* setupGlfw(GLsizei windowWidth, GLsizei windowHeight) {
     return window;
 }
 
-Loop::Loop(GLsizei windowWidth, GLsizei windowHeight, Settings settings)
-    : window{setupGlfw(windowWidth, windowHeight)}
-    , windowWidth{windowWidth}
-    , windowHeight{windowHeight}
-    , frameBuffer{windowWidth, windowHeight}
+Loop::Loop(Settings settings)
+    : window{setupGlfw(settings.windowWidth, settings.windowHeight)}
+    , windowWidth{settings.windowWidth}
+    , windowHeight{settings.windowHeight}
+    , frameBuffer{settings.windowWidth, settings.windowHeight}
     , settings{settings}
     , screenQuad{
         settings.resourcePath + "shaders/ScreenQuadVertex.glsl",
@@ -169,6 +169,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
         if (settings.showMarkers) {
             markerModule.update(window, scene.fpsCamera, scene.selection);
+    //
             editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
         }
 
@@ -259,25 +260,30 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
     guiModule.end();
 
-    commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
-    commModule.transmitDepthCamera(scene.car, car.depthCameraFrameBuffer.id);
+    commModule.transmitMainCamera(
+            scene.car, 
+            mainCameraCapture, 
+            car.bayerFrameBuffer.id);
+
+    commModule.transmitDepthCamera(
+            scene.car, 
+            depthCameraCapture, 
+            car.depthCameraFrameBuffer.id);
 
     glfwSwapBuffers(window);
 
-    // check if lock request if yes ->
-    //
+    // check if lock request
+    // if yes ->
 
     /*
 
     sim = SpatzSim()
 
     with Scene(sim) as scene:
-        scene.settings.asdf
+        scene.settings.asdf = "blub"
         scene.load("config")
         scene.get_previous_frame()
         scene.step(0.05) // simulator should advance 0.05 seconds
-
-    sim.run()
 
     */
 }

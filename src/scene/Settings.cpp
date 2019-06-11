@@ -28,6 +28,8 @@ bool tryGet(const json& j, std::string name, T& variable) {
 void to_json(json& j, const Settings& s) {
 
     j = json({
+            {"windowWidth", s.windowWidth},
+            {"windowHeight", s.windowHeight},
             {"simulationSpeed", s.simulationSpeed},
             {"configPath", s.configPath},
             {"showMarkers", s.showMarkers},
@@ -41,6 +43,8 @@ void to_json(json& j, const Settings& s) {
 
 void from_json(const json& j, Settings& s) {
 
+    tryGet(j, "windowWidth", s.windowWidth);
+    tryGet(j, "windowHeight", s.windowHeight);
     tryGet(j, "simulationSpeed", s.simulationSpeed);
     tryGet(j, "configPath", s.configPath);
     tryGet(j, "showMarkers", s.showMarkers);
@@ -73,6 +77,8 @@ Settings::Settings() {
     if (envResPath) {
         resourcePath = std::string(envResPath);
     }
+
+    load();
 }
 
 bool Settings::save() {

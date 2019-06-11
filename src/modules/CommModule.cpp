@@ -27,7 +27,10 @@ void CommModule::initSharedMemory(SimulatorSHM::SHMComm<T>& mem) {
     }
 }
 
-void CommModule::transmitMainCamera(Car& car, GLuint mainCameraFramebufferId) {
+void CommModule::transmitMainCamera(
+        Car& car, 
+        Capture& mainCameraCapture, 
+        GLuint mainCameraFramebufferId) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, mainCameraFramebufferId);
 
@@ -54,7 +57,10 @@ void CommModule::transmitMainCamera(Car& car, GLuint mainCameraFramebufferId) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void CommModule::transmitDepthCamera(Car& car, GLuint depthCameraFramebufferId) {
+void CommModule::transmitDepthCamera(
+        Car& car, 
+        Capture& depthCameraCapture, 
+        GLuint depthCameraFramebufferId) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, depthCameraFramebufferId);
 

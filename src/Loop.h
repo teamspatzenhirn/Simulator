@@ -36,6 +36,10 @@ public:
     ShaderProgram carShaderProgram;
     ShaderProgram depthCameraShaderProgram;
 
+    Capture pythonMainCameraCapture;
+    Capture mainCameraCapture;
+    Capture depthCameraCapture;
+
     ModelStore modelStore{settings.resourcePath};
 
     enum SelectedCamera {
@@ -57,7 +61,7 @@ public:
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
-    Loop(GLsizei windowWidth, GLsizei windowHeight, Settings settings);
+    Loop(Settings settings = {});
     ~Loop();
 
     void update(Scene& scene, float deltaTime);
