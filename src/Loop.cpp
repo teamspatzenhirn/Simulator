@@ -169,7 +169,6 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
         if (settings.showMarkers) {
             markerModule.update(window, scene.fpsCamera, scene.selection);
-    //
             editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
         }
 
@@ -271,21 +270,6 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
             car.depthCameraFrameBuffer.id);
 
     glfwSwapBuffers(window);
-
-    // check if lock request
-    // if yes ->
-
-    /*
-
-    sim = SpatzSim()
-
-    with Scene(sim) as scene:
-        scene.settings.asdf = "blub"
-        scene.load("config")
-        scene.get_previous_frame()
-        scene.step(0.05) // simulator should advance 0.05 seconds
-
-    */
 }
 
 void Loop::update(Scene& scene, float deltaTime) {

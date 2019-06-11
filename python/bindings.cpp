@@ -64,6 +64,7 @@ PYBIND11_MODULE(pyspatzsim, m) {
         .def_readwrite("car", &Scene::car)
         .def("get_path_through_track", 
             [](Scene& scene, float distBetweenPoints) {
+
                 std::shared_ptr<ControlPoint> cp = scene.tracks.getTracks().front();
 
                 for (const std::shared_ptr<ControlPoint>& c : scene.tracks.getTracks()) {
@@ -121,8 +122,7 @@ PYBIND11_MODULE(pyspatzsim, m) {
                           TrackArc& t = (TrackArc&)*track;
 
                           std::shared_ptr<ControlPoint> other = t.end.lock();
-                          if(other == cp)
-                          {
+                          if(other == cp) {
                             other = t.start.lock();
                           }
 
@@ -134,13 +134,11 @@ PYBIND11_MODULE(pyspatzsim, m) {
                           float baseAngle = 0;
                           float angle = 0;
 
-                          if (t.rightArc) 
-                          {
+                          if (t.rightArc) {
                             baseAngle = angleStart;
                             angle = angleEnd - angleStart;
                           }
-                          else
-                          {
+                          else {
                             baseAngle = angleEnd;
                             angle = angleStart - angleEnd;
                           }
@@ -152,8 +150,7 @@ PYBIND11_MODULE(pyspatzsim, m) {
 
                           std::vector<glm::vec2> points;
 
-                          for(float i = 0; i < pointRatio; i += 1)
-                          {
+                          for(float i = 0; i < pointRatio; i += 1) {
                             const float currentAngle = baseAngle + i * angle / pointRatio;
 
                             glm::vec2 point{
@@ -172,27 +169,19 @@ PYBIND11_MODULE(pyspatzsim, m) {
                           }
 
                           cp = other;
-                        }
-                        else if (nullptr != dynamic_cast<TrackIntersection*>(track.get())) {
+                        } else if (nullptr != dynamic_cast<TrackIntersection*>(track.get())) {
 
                           TrackIntersection& t = (TrackIntersection&)*track;
 
                           std::shared_ptr<ControlPoint> other = t.link1.lock();
 
-                          if(t.link1.lock() == cp)
-                          {
+                          if(t.link1.lock() == cp) {
                             other = t.link3.lock();
-                          }
-                          else if (t.link2.lock() == cp)
-                          {
+                          } else if (t.link2.lock() == cp) {
                             other = t.link4.lock();
-                          }
-                          else if (t.link3.lock() == cp)
-                          {
+                          } else if (t.link3.lock() == cp) {
                             other = t.link1.lock();
-                          }
-                          else if (t.link4.lock() == cp)
-                          {
+                          } else if (t.link4.lock() == cp) {
                             other = t.link2.lock();
                           }
 
@@ -202,8 +191,8 @@ PYBIND11_MODULE(pyspatzsim, m) {
                         }
 
                         break;
-                        }
                     }
+                }
 
                 std::vector<pybind11::tuple> tupelPathPoints;
 
@@ -212,7 +201,8 @@ PYBIND11_MODULE(pyspatzsim, m) {
                 }
                 
                 return tupelPathPoints;
-            });
+            }
+        );
 
     pybind11::class_<Pose>(m, "Pose")
         .def(pybind11::init())
