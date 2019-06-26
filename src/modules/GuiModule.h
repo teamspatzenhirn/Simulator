@@ -14,6 +14,8 @@ class GuiModule {
     bool showHelpWindow = false;
     bool showAboutWindow = false;
 
+    std::string homePath;
+    std::string imguiIniPath;
     std::string openedPath;
     std::string openedFilename;
     std::string currentDirectory;

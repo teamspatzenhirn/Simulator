@@ -662,46 +662,6 @@ void from_json(const json& j, Scene& s) {
 }
 
 /*
- * Settings comin right up, mate!
-
-bool Settings::save() {
-
-    std::ofstream out(settingsFilePath);
-
-    if (!out) {
-        return false;
-    } 
-
-    out << json(*this).dump(4);
-    out.close();
-
-    return true;
-}
-
-bool Settings::load() {
-
-    std::ifstream in(settingsFilePath);
-
-    if (!in) {
-        return false;
-    }
-
-    try {
-        json j;
-        in >> j;
-        *this = j;
-    } catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
-        return false;
-    }
-
-    in.close();
-
-    return true;
-}
-*/
-
-/*
  * Now that's the actual Scene implementation, fellas!
  */
 
