@@ -163,6 +163,9 @@ endif()
 pybind11_add_module(${PY_TARGET_NAME} MODULE
                      python/bindings.cpp)
 
+set_target_properties(${PY_TARGET_NAME} PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/python/build")
+
 target_link_libraries(${PY_TARGET_NAME} PUBLIC
                         pybind11::module
                         pybind11::embed
