@@ -128,6 +128,7 @@ set_target_properties(${LIB_TARGET_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${LIB_TARGET_NAME}
                       ${OPENGL_LIBRARIES}
                       ${GLEW_LIBRARIES}
+                      stdc++fs
                       glm
                       glfw)
 
@@ -140,8 +141,9 @@ target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wall)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wextra)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wpedantic)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wunreachable-code)
-target_compile_options(${LIB_TARGET_NAME} PUBLIC -std=c++11)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -std=c++17)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -fPIC)
+# For the really paranoid.
 #target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
 
 target_compile_definitions(${LIB_TARGET_NAME}

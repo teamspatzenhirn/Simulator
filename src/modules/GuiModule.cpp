@@ -4,14 +4,19 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <experimental/filesystem>
 
 #include "ocornut_imgui/imgui.h"
 #include "ocornut_imgui/imgui_impl_glfw.h"
 #include "ocornut_imgui/imgui_impl_opengl3.h"
 
+namespace fs = std::experimental::filesystem;
+
 GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     this->window = window;
+
+    fs::create_directories("./spatzsim_test");
 
     unsigned long separatorIndex = scenePath.find_last_of("\\/");
 

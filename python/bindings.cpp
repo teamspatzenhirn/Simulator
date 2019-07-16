@@ -52,6 +52,7 @@ PYBIND11_MODULE(pyspatzsim, m) {
 
                 // Because the images are downloaded inverted into memory
                 // the resulting numpy array must be flipped.
+                // Which is done here by calling the flip numpy function.
                 pybind11::object np = pybind11::module::import("numpy");
                 frame = np.attr("flip")(frame, 0);
 
