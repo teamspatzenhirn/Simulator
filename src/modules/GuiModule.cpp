@@ -20,25 +20,30 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     unsigned long separatorIndex = scenePath.find_last_of("\\/");
 
+    homePath = "/";
+    char* charHomePath = getenv("HOME");
+
+    if (charHomePath) {
+        homePath = std::string(charHomePath);
+    } else {
+        charHomePath = getenv("HOMEPATH");
+        if (charHomePath) {
+            homePath = std::string(charHomePath);
+        }
+    }
+
+    if ("/" == homePath) {
+        imguiIniPath = "./imgui.ini";
+    } else {
+        imguiIniPath = homePath + "/.spatzsim_imgui";
+    }
+
     if (separatorIndex > 0) { 
         openedPath = scenePath.substr(0, separatorIndex+1);
         openedFilename = scenePath.substr(
                 separatorIndex+1, scenePath.size());
     } else {
-
-        std::string strHomePath("/");
-        char* homePath = getenv("HOME");
-
-        if (homePath) {
-            strHomePath = std::string(homePath);
-        } else {
-            homePath = getenv("HOMEPATH");
-            if (homePath) {
-                strHomePath = std::string(homePath);
-            }
-        }
-
-        openedPath = strHomePath;
+        openedPath = homePath;
         openedFilename = scenePath;
     }
 
@@ -782,9 +787,9 @@ void GuiModule::renderAboutWindow() {
                 ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::Text("SpatzSim 1.3");
-        ImGui::Text("");
+        ImGui::Text(" ");
         ImGui::Text("Initiated in fall 2018 by");
-        ImGui::Text("");
+        ImGui::Text(" ");
         ImGui::Text("Gilberto Rossi");
         ImGui::Text("Johannes Herschel");
         ImGui::Text("Jona Ruof");
@@ -1010,6 +1015,7 @@ void GuiModule::begin() {
     }
 
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = imguiIniPath.c_str();
 
     if (io.WantCaptureMouse) {
         clearMouseInput();

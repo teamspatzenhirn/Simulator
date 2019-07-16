@@ -353,7 +353,7 @@ void Loop::renderFpsView(Scene& scene) {
 
     glClear(GL_DEPTH_BUFFER_BIT);
 
-    if (settings.showMarkers) {
+    if (selectedCamera == FPS_CAMERA && settings.showMarkers) {
         editor.renderMarkers(
                 fpsShaderProgram.id,
                 scene.tracks,

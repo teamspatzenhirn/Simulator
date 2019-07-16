@@ -50,8 +50,8 @@ def test_driving():
     # By settings the motor controller velocity and steering_angle
     # in the scene object the car can be moved.
 
-    scene.car.vesc.velocity = 1.0
-    scene.car.vesc.steering_angle = 0.4
+    scene.car.velocity = 1.0
+    scene.car.steer_angle = 0.4
 
     loop.loop(scene)
 
@@ -60,7 +60,10 @@ def test_step():
     Shows how the simulation can be advanced in steps.
     """
 
-    loop = ps.Loop()
+    settings = ps.Settings(True)
+    settings.simulation_speed = 1.0
+
+    loop = ps.Loop(settings)
     scene = ps.Scene(SCENE_PATH)
 
     # Because the loop.loop() function only returns after the
@@ -83,7 +86,7 @@ def test_step():
 
     input("Press any key to advance simulation by 1s ")
 
-    scene.car.vesc.velocity = 1.0
+    scene.car.velocity = 1.0
 
     loop.step(scene, 1.0)
 
@@ -99,11 +102,15 @@ def test_fast_frame_retrieval():
     amount of time.
     """
 
-    loop = ps.Loop()
+    settings = ps.Settings(True)
+    settings.simulation_speed = 1.0
+
+    loop = ps.Loop(settings)
 
     scene = ps.Scene(SCENE_PATH)
     scene.car.main_camera.image_width = 400
     scene.car.main_camera.image_height = 300
+    scene.car.main_camera.noise = 0.0
 
     # The first frame retrieved from the simulator will
     # always be black, as get_previous_frame() returns the
@@ -123,8 +130,8 @@ def test_fast_frame_retrieval():
 
         # Lets the simulated car drive in a circle
         # (counter-clockwise) with a speed of 1 m/s.
-        scene.car.vesc.velocity = 1.0
-        scene.car.vesc.steering_angle = 0.3
+        scene.car.velocity = 1.0
+        scene.car.steer_angle = 0.3
 
         loop.step(scene, 1/60)
 
@@ -157,7 +164,7 @@ def test_track_retrieval():
     # Using the scene.get_path_through_track(...) function a track can
     # be sampled as discrete 2d points at a given interval (0.5).
 
-    track_points = scene.get_path_through_track(0.5)
+    track_points = scene.tracks.get_path(0.5)
 
     # Track points are returned as a list of tuples:
     # track_points = [(x, y), ...]
@@ -167,18 +174,18 @@ def test_track_retrieval():
     xs, ys = list(zip(*track_points))
 
     plt.plot(xs, ys, "-o")
+    plt.title("Track Points")
 
     for i, p in enumerate(track_points):
         plt.gca().annotate(str(i), p)
 
-    #plt.axis([-10, 10, -10, 10])
     plt.gca().set_aspect('equal', adjustable='box')
     plt.show()
-        
+
 if __name__ == "__main__":
 
-    #test_loop()
+    test_loop()
     #test_driving()
     #test_step()
     #test_fast_frame_retrieval()
-    test_track_retrieval()
+    #test_track_retrieval()

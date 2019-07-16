@@ -210,3 +210,135 @@ bool Tracks::isConnected(const std::shared_ptr<ControlPoint>& controlPoint, cons
                 || controlPoint == intersection->link4.lock();
     }
 }
+
+std::vector<glm::vec2> Tracks::getPath(float distBetweenPoints) {
+
+    std::shared_ptr<ControlPoint> cp = getTracks().front();
+
+    for (const std::shared_ptr<ControlPoint>& c : getTracks()) {
+        if (c->tracks.size() == 1) {
+            cp = c;
+            break;
+        }
+    }
+
+    std::vector<std::shared_ptr<ControlPoint>> visitedCps;
+    std::vector<std::shared_ptr<TrackBase>> visitedTracks;
+
+    std::vector<glm::vec2> pathPoints;
+
+    auto sampleLine = [&](glm::vec2 start, glm::vec2 end) {
+        float len = glm::length(end - start);
+        glm::vec2 dir = glm::normalize(end - start);
+
+        for(float i = 0; i < len; i += distBetweenPoints) {
+            glm::vec2 point = start + i * dir;
+            pathPoints.push_back(point);
+        }
+    };
+
+    while (std::find(visitedCps.begin(), visitedCps.end(), cp) == visitedCps.end()) {
+        visitedCps.push_back(cp);
+
+        if (cp->tracks.size() == 0) {
+          break;
+        }
+
+        for (std::shared_ptr<TrackBase>& track : cp->tracks) {
+
+            if (std::find(visitedTracks.begin(), visitedTracks.end(), track)
+                    != visitedTracks.end()) {
+                continue; 
+            }
+
+            visitedTracks.push_back(track);
+
+            if(nullptr != dynamic_cast<TrackLine*>(track.get())) {
+              TrackLine& t = (TrackLine&)*track;
+
+              std::shared_ptr<ControlPoint> other = t.end.lock();
+              if(t.end.lock() == cp) {
+                other = t.start.lock();
+              }
+
+              sampleLine(cp->coords, other->coords);
+
+              cp = other;
+            } else if (nullptr != dynamic_cast<TrackArc*>(track.get())) {
+              TrackArc& t = (TrackArc&)*track;
+
+              std::shared_ptr<ControlPoint> other = t.end.lock();
+              if(other == cp) {
+                other = t.start.lock();
+              }
+
+              glm::vec2 start = t.start.lock()->coords;
+              glm::vec2 end = t.end.lock()->coords;
+
+              float angleStart = std::atan2(start.y - t.center.y, start.x - t.center.x);
+              float angleEnd = std::atan2(end.y - t.center.y, end.x - t.center.x);
+              float baseAngle = 0;
+              float angle = 0;
+
+              if (t.rightArc) {
+                baseAngle = angleStart;
+                angle = angleEnd - angleStart;
+              }
+              else {
+                baseAngle = angleEnd;
+                angle = angleStart - angleEnd;
+              }
+              if (angle < 0) {
+                angle += (float)(2 * M_PI);
+              }
+
+              float pointRatio = t.radius * angle / distBetweenPoints;
+
+              std::vector<glm::vec2> points;
+
+              for(float i = 0; i < pointRatio; i += 1) {
+                const float currentAngle = baseAngle + i * angle / pointRatio;
+
+                glm::vec2 point{
+                    t.center.x + std::cos(currentAngle) * t.radius,
+                    t.center.y + std::sin(currentAngle) * t.radius };
+
+                points.push_back(point);
+              }
+              
+              if (other == t.end.lock() && !t.rightArc) {
+                std::reverse(points.begin(), points.end());
+              }
+
+              for (glm::vec2& p : points) { 
+                  pathPoints.push_back(p);
+              }
+
+              cp = other;
+            } else if (nullptr != dynamic_cast<TrackIntersection*>(track.get())) {
+
+              TrackIntersection& t = (TrackIntersection&)*track;
+
+              std::shared_ptr<ControlPoint> other = t.link1.lock();
+
+              if(t.link1.lock() == cp) {
+                other = t.link3.lock();
+              } else if (t.link2.lock() == cp) {
+                other = t.link4.lock();
+              } else if (t.link3.lock() == cp) {
+                other = t.link1.lock();
+              } else if (t.link4.lock() == cp) {
+                other = t.link2.lock();
+              }
+
+              sampleLine(cp->coords, other->coords);
+
+              cp = other;
+            }
+
+            break;
+        }
+    }
+
+    return pathPoints;
+}

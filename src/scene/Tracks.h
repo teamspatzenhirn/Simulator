@@ -112,6 +112,7 @@ public:
 
     static bool isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const std::shared_ptr<TrackBase>& track);
 
+    std::vector<glm::vec2> getPath(float distBetweenPoints);
 };
 
 #endif

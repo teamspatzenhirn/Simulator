@@ -1,6 +1,25 @@
 #include "Editor.h"
 
-Model::Material Editor::markerDefaultMaterial = []{
+void appendQuad(std::vector<Model::Vertex>& vertices, const glm::vec3& vec0,
+        const glm::vec3& vec1, const glm::vec3& vec2, const glm::vec3& vec3) {
+
+    glm::vec3 normalVector(0.0f, 1.0f, 0.0f);
+    glm::vec2 texCoords(0.0f, 0.0f);
+
+    Model::Vertex v0{vec0, normalVector, texCoords};
+    Model::Vertex v1{vec1, normalVector, texCoords};
+    Model::Vertex v2{vec2, normalVector, texCoords};
+    Model::Vertex v3{vec3, normalVector, texCoords};
+
+    vertices.push_back(v0);
+    vertices.push_back(v1);
+    vertices.push_back(v2);
+    vertices.push_back(v0);
+    vertices.push_back(v2);
+    vertices.push_back(v3);
+}
+
+Model::Material makeMarkerDefaultMaterial() {
 
     Model::Material material;
 
@@ -10,9 +29,9 @@ Model::Material Editor::markerDefaultMaterial = []{
     material.ns = 10.0f;
 
     return material;
-}();
+}
 
-Model::Material Editor::markerActiveMaterial = []{
+Model::Material makeMarkerActiveMaterial() {
 
     Model::Material material;
 
@@ -22,9 +41,10 @@ Model::Material Editor::markerActiveMaterial = []{
     material.ns = 10.0f;
 
     return material;
-}();
+}
 
-Model::Material Editor::trackMaterial = []{
+
+Model::Material makeTrackMaterial() {
 
     Model::Material material;
 
@@ -34,9 +54,9 @@ Model::Material Editor::trackMaterial = []{
     material.ns = 10.0f;
 
     return material;
-}();
+}
 
-std::vector<Model::Vertex> Editor::pointVertices = []{
+std::vector<Model::Vertex> makePointVertices() { 
 
     std::vector<Model::Vertex> vertices;
 
@@ -63,9 +83,9 @@ std::vector<Model::Vertex> Editor::pointVertices = []{
     }
 
     return vertices;
-}();
+}
 
-std::vector<Model::Vertex> Editor::trackLineVertices = []{
+std::vector<Model::Vertex> makeTrackLineVertices() {
 
     std::vector<Model::Vertex> vertices;
 
@@ -77,9 +97,14 @@ std::vector<Model::Vertex> Editor::trackLineVertices = []{
     appendQuad(vertices, vec0, vec1, vec2, vec3);
 
     return vertices;
-}();
+}
 
-Editor::Editor() {
+Editor::Editor() : 
+    markerDefaultMaterial{makeMarkerDefaultMaterial()},
+    markerActiveMaterial{makeMarkerActiveMaterial()},
+    trackMaterial{makeTrackMaterial()},
+    pointVertices{makePointVertices()},
+    trackLineVertices{makeTrackLineVertices()} {
 
     // create markers
     genPointVertices(defaultMarker);
@@ -1666,25 +1691,6 @@ glm::mat4 Editor::genTrackLineMarkerMatrix(const glm::vec2& start,
     modelMat = glm::scale(modelMat, glm::vec3(sqrt(dx * dx + dy * dy) / 2, 1.0f, tracks.trackWidth / 2)); // division by 2 because model has size 2x2
 
     return modelMat;
-}
-
-void Editor::appendQuad(std::vector<Model::Vertex>& vertices, const glm::vec3& vec0,
-        const glm::vec3& vec1, const glm::vec3& vec2, const glm::vec3& vec3) {
-
-    glm::vec3 normalVector(0.0f, 1.0f, 0.0f);
-    glm::vec2 texCoords(0.0f, 0.0f);
-
-    Model::Vertex v0{vec0, normalVector, texCoords};
-    Model::Vertex v1{vec1, normalVector, texCoords};
-    Model::Vertex v2{vec2, normalVector, texCoords};
-    Model::Vertex v3{vec3, normalVector, texCoords};
-
-    vertices.push_back(v0);
-    vertices.push_back(v1);
-    vertices.push_back(v2);
-    vertices.push_back(v0);
-    vertices.push_back(v2);
-    vertices.push_back(v3);
 }
 
 void Editor::getArcVertexParams(const glm::vec2& start, const glm::vec2& end,

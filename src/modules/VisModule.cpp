@@ -93,9 +93,10 @@ void VisModule::drawArrow(
 
 void VisModule::addPositionTrace(glm::vec3 position, double simulationTime) {
 
-    if (simulationTime - lastTraceTime > 0.050) {
+    if (simulationTime - lastTraceTime > 0.050 
+            || simulationTime < lastTraceTime) {
 
-        if (tracedPositions.size() > 200) {
+        if (tracedPositions.size() > 2000) {
             tracedPositions.pop_front();
         }
 
