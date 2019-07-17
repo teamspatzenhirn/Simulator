@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <cstring>
 
-#include "Scene.h"
+#include "scene/Scene.h"
 #include "helpers/Capture.h"
 #include "sharedmem/shmcomm.h"
 

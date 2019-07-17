@@ -13,7 +13,7 @@
 #include <glm/gtx/io.hpp>
 
 #include "helpers/Helpers.h"
-#include "Scene.h"
+#include "scene/Scene.h"
 
 class VisModule {
 

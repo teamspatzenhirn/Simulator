@@ -69,7 +69,8 @@ set(SOURCE_FILES
     ./src/helpers/Pose.cpp
     ./src/helpers/PointLight.cpp
     ./src/helpers/ScreenQuad.cpp
-    ./src/Scene.cpp
+    ./src/scene/Scene.cpp
+    ./src/Store.cpp
     ./src/Loop.cpp
     ./src/modules/Editor.cpp
     ./src/modules/CommModule.cpp
@@ -103,7 +104,8 @@ set(HEADER_FILES
     ./src/helpers/Clock.h
     ./src/helpers/Id.h
     ./src/helpers/Shader.h
-    ./src/Scene.h
+    ./src/scene/Scene.h
+    ./src/Store.h
     ./src/modules/Editor.h
     ./src/modules/GuiModule.h
     ./src/modules/MarkerModule.h
@@ -128,6 +130,7 @@ set_target_properties(${LIB_TARGET_NAME} PROPERTIES PREFIX "")
 target_link_libraries(${LIB_TARGET_NAME}
                       ${OPENGL_LIBRARIES}
                       ${GLEW_LIBRARIES}
+                      stdc++fs
                       glm
                       glfw)
 
@@ -140,7 +143,7 @@ target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wall)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wextra)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wpedantic)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -Wunreachable-code)
-target_compile_options(${LIB_TARGET_NAME} PUBLIC -std=c++11)
+target_compile_options(${LIB_TARGET_NAME} PUBLIC -std=c++17)
 target_compile_options(${LIB_TARGET_NAME} PUBLIC -fPIC)
 #target_compile_options(${PROJECT_NAME} PUBLIC -Wconversion)
 

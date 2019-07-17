@@ -1,5 +1,7 @@
 #include "GuiModule.h"
 
+#include "Store.h"
+
 #include <string>
 #include <sstream>
 #include <vector>
@@ -15,23 +17,9 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     unsigned long separatorIndex = scenePath.find_last_of("\\/");
 
-    homePath = "/";
-    char* charHomePath = getenv("HOME");
+    fs::path homePath = getResourcePath();
 
-    if (charHomePath) {
-        homePath = std::string(charHomePath);
-    } else {
-        charHomePath = getenv("HOMEPATH");
-        if (charHomePath) {
-            homePath = std::string(charHomePath);
-        }
-    }
-
-    if ("/" == homePath) {
-        imguiIniPath = "./imgui.ini";
-    } else {
-        imguiIniPath = homePath + "/.spatzsim_imgui";
-    }
+    imguiIniPath = homePath / "imgui.ini";
 
     if (separatorIndex > 0) { 
         openedPath = scenePath.substr(0, separatorIndex+1);
@@ -156,7 +144,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
                 double savedSimulationTime = scene.simulationClock.time;
 
-                if (scene.load(openedPath + openedFilename)) {
+                if (load(scene, openedPath + openedFilename)) {
                     Scene::history.clear();
                     scene.simulationClock.time = savedSimulationTime;
                 } else {
@@ -678,7 +666,7 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
         ImGui::End();
 
         if (changed) {
-            settings.save();
+            save(settings);
         }
     }
 }
@@ -805,12 +793,12 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
 
-            if (scene.load(currentDirectory + selectedFilename)) {
+            if (load(scene, currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
 
                 settings.configPath = currentDirectory + selectedFilename;
-                settings.save();
+                save(settings);
 
                 Scene::history.clear();
 
@@ -837,7 +825,7 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
     if (!openedFilename.empty() && !showSaveAs && show) {
-        scene.save(openedPath + openedFilename);
+        save(scene, openedPath + openedFilename);
         return;
     }
 
@@ -850,7 +838,7 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
         renderDirectoryListing();
 
         if (ImGui::Button("Save", ImVec2(120, 0))) {
-            if (scene.save(currentDirectory + selectedFilename)) {
+            if (save(scene, currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
                 ImGui::CloseCurrentPopup();
