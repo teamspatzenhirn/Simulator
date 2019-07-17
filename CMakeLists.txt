@@ -69,7 +69,8 @@ set(SOURCE_FILES
     ./src/helpers/Pose.cpp
     ./src/helpers/PointLight.cpp
     ./src/helpers/ScreenQuad.cpp
-    ./src/Scene.cpp
+    ./src/scene/Scene.cpp
+    ./src/Store.cpp
     ./src/Loop.cpp
     ./src/modules/Editor.cpp
     ./src/modules/CommModule.cpp
@@ -103,7 +104,8 @@ set(HEADER_FILES
     ./src/helpers/Clock.h
     ./src/helpers/Id.h
     ./src/helpers/Shader.h
-    ./src/Scene.h
+    ./src/scene/Scene.h
+    ./src/Store.h
     ./src/modules/Editor.h
     ./src/modules/GuiModule.h
     ./src/modules/MarkerModule.h

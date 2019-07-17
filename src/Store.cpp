@@ -1,9 +1,41 @@
-#include "Scene.h"
+#include <experimental/filesystem>
 
-#include <iostream>
-#include <fstream>
-
+#include "Store.h"
 #include "nlohmann_json/json.hpp"
+
+namespace fs = std::experimental::filesystem;
+
+std::string getResourcePath() {
+
+    fs::path resourcePath("./");
+
+    char* charResourcePath = getenv("HOME");
+    if (charResourcePath) {
+        resourcePath = fs::path(charResourcePath);
+    } else {
+        charResourcePath = getenv("HOMEPATH");
+        if (charResourcePath) {
+            resourcePath = fs::path(charResourcePath);
+        }
+    }
+
+    if (fs::path("./") != resourcePath) {
+        resourcePath /= ".config/spatzsim/";
+    }
+
+    return resourcePath;
+}
+
+bool createResourcePath() {
+
+    fs::path resourcePath = getResourcePath();
+
+    if (!fs::exists(resourcePath)) {
+        return fs::create_directories(resourcePath);
+    }
+
+    return true;
+}
 
 /*
  * JSON (de-)serialization functions comin' up here!
@@ -23,7 +55,7 @@ bool tryGet(const json& j, std::string name, T& variable) {
         variable = j.at(name).get<T>();
     } catch(std::exception& e) {
         json err(variable);
-        std::cout << "Property \""
+        std::cerr << "Property \""
             << name
             << "\" not found. Using default: "
             << err.dump(4)
@@ -109,6 +141,10 @@ namespace glm {
     }
 }
 
+/*
+ * Pose
+ */
+
 void to_json(json& j, const Pose& p) {
 
     j = json({
@@ -124,7 +160,6 @@ void from_json(const json& j, Pose& p) {
     p.rotation = j.at("rotation").get<glm::quat>();
     p.scale = j.at("scale").get<glm::vec3>();
 }
-
 
 /*
  * FpsCamera
@@ -235,6 +270,7 @@ void to_json(json& j, const Car::Wheels& o) {
     
     j = json({
             {"usePacejkaModel", o.usePacejkaModel},
+
             {"bFront", o.B_front},
             {"bRear", o.B_rear},
             {"cFront", o.C_front},
@@ -353,7 +389,6 @@ void from_json(const json& j, Car& o) {
  * Tracks
  */
 
-
 void to_json(json& j, const Tracks& t) {
 
     json jsonControlPoints;
@@ -375,16 +410,24 @@ void to_json(json& j, const Tracks& t) {
 
     for (const std::shared_ptr<TrackBase>& track : ts) {
 
-        if (const std::shared_ptr<TrackIntersection>& intersection = std::dynamic_pointer_cast<TrackIntersection>(track)) {
+        if (const std::shared_ptr<TrackIntersection>& intersection = 
+                std::dynamic_pointer_cast<TrackIntersection>(track)) {
+
             json jsonTrack;
 
             jsonTrack["type"] = "intersection";
 
-            jsonTrack["center"] = std::find(tracks.begin(), tracks.end(), intersection->center.lock()) - tracks.begin();
-            jsonTrack["link1"] = std::find(tracks.begin(), tracks.end(), intersection->link1.lock()) - tracks.begin();
-            jsonTrack["link2"] = std::find(tracks.begin(), tracks.end(), intersection->link2.lock()) - tracks.begin();
-            jsonTrack["link3"] = std::find(tracks.begin(), tracks.end(), intersection->link3.lock()) - tracks.begin();
-            jsonTrack["link4"] = std::find(tracks.begin(), tracks.end(), intersection->link4.lock()) - tracks.begin();
+            jsonTrack["center"] = std::find(tracks.begin(), tracks.end(), 
+                    intersection->center.lock()) - tracks.begin();
+            jsonTrack["link1"] = std::find(tracks.begin(), tracks.end(), 
+                    intersection->link1.lock()) - tracks.begin();
+            jsonTrack["link2"] = std::find(tracks.begin(), tracks.end(), 
+                    intersection->link2.lock()) - tracks.begin();
+            jsonTrack["link3"] = std::find(tracks.begin(), tracks.end(), 
+
+                    intersection->link3.lock()) - tracks.begin();
+            jsonTrack["link4"] = std::find(tracks.begin(), tracks.end(), 
+                    intersection->link4.lock()) - tracks.begin();
 
             jsonTracks.push_back(jsonTrack);
 
@@ -493,11 +536,16 @@ void from_json(const json& j, Tracks& t) {
 
         if ("intersection" == type) {
 
-            std::shared_ptr<ControlPoint>& center = controlPoints.at(jsonTrack.at("center").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link1 = controlPoints.at(jsonTrack.at("link1").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link2 = controlPoints.at(jsonTrack.at("link2").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link3 = controlPoints.at(jsonTrack.at("link3").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link4 = controlPoints.at(jsonTrack.at("link4").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& center = controlPoints.at(
+                    jsonTrack.at("center").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link1 = controlPoints.at(
+                    jsonTrack.at("link1").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link2 = controlPoints.at(
+                    jsonTrack.at("link2").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link3 = controlPoints.at(
+                    jsonTrack.at("link3").get<unsigned long>());
+            std::shared_ptr<ControlPoint>& link4 = controlPoints.at(
+                    jsonTrack.at("link4").get<unsigned long>());
 
             t.addTrackIntersection(center, link1, link2, link3, link4);
 
@@ -581,6 +629,7 @@ void from_json(const json& j, std::vector<Scene::Item>& is) {
 /*
  * DynamicItemSettings
  */
+
 void to_json(json& j, const Scene::DynamicItemSettings& dis) {
 
     j = json({
@@ -662,34 +711,44 @@ void from_json(const json& j, Scene& s) {
 }
 
 /*
- * Now that's the actual Scene implementation, fellas!
+ * Settings
  */
 
-Scene::Scene() : version{VERSION} {
+void to_json(json& j, const Settings& s) {
+
+    j = json({
+            {"windowWidth", s.windowWidth},
+            {"windowHeight", s.windowHeight},
+            {"simulationSpeed", s.simulationSpeed},
+            {"configPath", s.configPath},
+            {"showMarkers", s.showMarkers},
+            {"showVehiclePath", s.showVehiclePath},
+            {"fancyVehiclePath", s.fancyVehiclePath},
+            {"showVehicleTrajectory", s.showVehicleTrajectory},
+            {"showLaserSensor", s.showLaserSensor},
+            {"showBinaryLightSensor", s.showBinaryLightSensor}
+        });
 }
 
-Scene::Scene(std::string path) : version{VERSION} {
-    load(path);
+void from_json(const json& j, Settings& s) {
+
+    tryGet(j, "windowWidth", s.windowWidth);
+    tryGet(j, "windowHeight", s.windowHeight);
+    tryGet(j, "simulationSpeed", s.simulationSpeed);
+    tryGet(j, "configPath", s.configPath);
+    tryGet(j, "showMarkers", s.showMarkers);
+    tryGet(j, "showVehiclePath", s.showVehiclePath);
+    tryGet(j, "fancyVehiclePath", s.fancyVehiclePath);
+    tryGet(j, "showVehicleTrajectory", s.showVehicleTrajectory);
+    tryGet(j, "showLaserSensor", s.showLaserSensor);
+    tryGet(j, "showBinaryLightSensor", s.showBinaryLightSensor);
 }
 
-Scene::~Scene() {
-}
+/*
+ * Minimal json load/save functions
+ */
 
-bool Scene::save(std::string path) { 
-
-    std::ofstream out(path);
-
-    if (!out) {
-        return false;
-    } 
-
-    out << json(*this).dump(4);
-    out.close();
-
-    return true;
-}
-
-bool Scene::load(std::string path) {
+bool loadJson(json& j, std::string path) {
 
     std::ifstream in(path);
 
@@ -698,11 +757,9 @@ bool Scene::load(std::string path) {
     }
 
     try {
-        json j;
         in >> j;
-        *this = j;
     } catch (std::exception& e) {
-        std::cout << e.what() << std::endl;
+        std::cerr << e.what() << std::endl;
         return false;
     }
 
@@ -711,41 +768,85 @@ bool Scene::load(std::string path) {
     return true;
 }
 
-std::deque<Scene> Scene::history;
+bool saveJson(json j, std::string path) {
 
-void Scene::addToHistory() {
-    
-    history.push_back(*this);
+    std::ofstream out(path);
 
-    if (history.size() > 0) {
-        if (simulationClock.time - history.front().simulationClock.time > 10000) {
-            history.pop_front();
-        }
-    }
-}
-
-Scene& Scene::getFromHistory(float simulationTimePoint) {
-
-    if (simulationTimePoint < history.front().simulationClock.time) {
-        return history.front();
-    }   
-
-    for (auto it = history.crbegin(); it != history.crend(); ++it) {
-        if ((*it).simulationClock.time <= simulationTimePoint) {
-            return (Scene&)(*it);
-        }
+    if (!out) {
+        return false;
     }
 
-    return history.back();
+    out << j.dump(4);
+    out.close();
+
+    return true;
 }
 
-Scene& Scene::getHistoryBackStep(size_t step) {
-    
-    if (step >= history.size()) {
-        return history.front();
-    } 
+/*
+ * Generic json load/save functions
+ */
 
-    size_t index = history.size() - step - 1;
+template <typename T>
+bool load(T& t, std::string path) {
 
-    return history[index];
+    json j;
+    bool ok = loadJson(j, path);
+    if (ok) {
+        t = j;
+    }
+    return ok;
+}
+
+template <typename T>
+bool save(T& t, std::string path) {
+
+    return saveJson(t, path);
+}
+
+/*
+ * Template instantiations/specializations for json load/save functions
+ */
+
+template <>
+bool load<Settings>(Settings& settings, std::string path) {
+
+    json j;
+    bool ok = loadJson(j, path);
+    if (ok) {
+        settings = j;
+        settings.settingsFilePath = path; 
+        settings.resourcePath = getResourcePath(); 
+    }
+
+    return ok;
+}
+
+template bool save<Settings>(Settings& t, std::string path);
+
+template bool load<Scene>(Scene& t, std::string path);
+template bool save<Scene>(Scene& t, std::string path);
+
+/*
+ * Additional non-generic overloads
+ */
+
+bool load(Settings& settings) {
+
+    fs::path resourcePath = getResourcePath();
+    fs::path settingsFilePath = resourcePath / "settings.json";
+
+    json j;
+    bool ok = loadJson(j, settingsFilePath);
+    if (ok) {
+        settings = j;
+        settings.settingsFilePath = settingsFilePath;
+        settings.resourcePath = resourcePath;
+    }
+
+    return ok;
+}
+
+bool save(Settings& settings) {
+
+    return saveJson(settings, settings.settingsFilePath);
 }

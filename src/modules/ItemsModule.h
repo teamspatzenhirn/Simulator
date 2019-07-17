@@ -6,7 +6,7 @@
 
 #include "scene/ModelStore.h"
 
-#include "Scene.h"
+#include "scene/Scene.h"
 #include "helpers/Helpers.h"
 
 class ItemsModule {

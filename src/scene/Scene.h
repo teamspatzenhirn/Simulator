@@ -242,9 +242,6 @@ struct Scene {
 
     ~Scene();
 
-    bool save(std::string path);
-    bool load(std::string path);
-
     /*
      * Contains the last 10 simulated seconds of Scene objects.
      */

@@ -1,9 +1,13 @@
 #include "Loop.h"
 
+#include "Store.h"
+
 int main (int argc, char* argv[]) {
 
+    createResourcePath();
+
     Settings settings;
-    settings.load();
+    load(settings);
 
     if (argc > 1) {
         settings.configPath = std::string(argv[1]);

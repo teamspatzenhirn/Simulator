@@ -15,7 +15,7 @@
 
 #include "scene/ModelStore.h"
 
-#include "Scene.h"
+#include "scene/Scene.h"
 
 class MarkerModule {
 
