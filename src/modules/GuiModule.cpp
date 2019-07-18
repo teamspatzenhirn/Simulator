@@ -1,12 +1,12 @@
 #include "GuiModule.h"
 
-#include "Store.h"
-
 #include <string>
 #include <sstream>
 #include <vector>
 #include <algorithm>
 #include <experimental/filesystem>
+
+#include "Storage.h"
 
 #include "ocornut_imgui/imgui.h"
 #include "ocornut_imgui/imgui_impl_glfw.h"

@@ -70,7 +70,7 @@ set(SOURCE_FILES
     ./src/helpers/PointLight.cpp
     ./src/helpers/ScreenQuad.cpp
     ./src/scene/Scene.cpp
-    ./src/Store.cpp
+    ./src/Storage.cpp
     ./src/Loop.cpp
     ./src/modules/Editor.cpp
     ./src/modules/CommModule.cpp
@@ -105,7 +105,7 @@ set(HEADER_FILES
     ./src/helpers/Id.h
     ./src/helpers/Shader.h
     ./src/scene/Scene.h
-    ./src/Store.h
+    ./src/Storage.h
     ./src/modules/Editor.h
     ./src/modules/GuiModule.h
     ./src/modules/MarkerModule.h
