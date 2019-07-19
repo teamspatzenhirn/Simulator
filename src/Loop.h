@@ -46,6 +46,7 @@ class Loop {
 
     ModelStore modelStore;
 
+    FrameBuffer screenFrameBuffer;
     FrameBuffer frameBuffer;
     ScreenQuad screenQuad;
 

@@ -14,7 +14,7 @@
  * deleted whenever the destructor of the object is called.
  *
  * Internally a frame buffer object is created that holds a
- * rgba texture for the color and 24 bit depth texture for the
+ * rgba texture for the color and 24 bit depth texture for 
  * depth information.
  */
 class FrameBuffer {
@@ -25,6 +25,7 @@ public:
 
     GLsizei width;
     GLsizei height;
+    GLsizei samples;
 
     GLuint colorTextureId;
     GLuint depthTextureId;
@@ -39,9 +40,10 @@ public:
             GLsizei samples, 
             GLint internalFormatColor, 
             GLenum formatColor);
+
     ~FrameBuffer();
 
-    void resize(GLsizei newWidth, GLsizei newHeight, GLsizei samples = 1);
+    void resize(GLsizei newWidth, GLsizei newHeight, GLsizei newSamples = -1);
 };
 
 #endif

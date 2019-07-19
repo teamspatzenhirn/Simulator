@@ -11,7 +11,8 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
     , windowWidth{windowWidth}
     , windowHeight{windowHeight}
     , settings{settings}
-    , frameBuffer{windowWidth, windowHeight}
+    , screenFrameBuffer{windowWidth, windowHeight}
+    , frameBuffer{windowWidth, windowHeight, 4, GL_RGBA, GL_RGBA}
     , screenQuad{"shaders/ScreenQuadFragment.glsl"}
     , guiModule{window, settings.configPath} {
 
@@ -21,13 +22,27 @@ Loop::Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settin
     initInput(window);
 }
 
-void renderToScreen (
+void renderToScreen(
         GLsizei windowWidth, 
         GLsizei windowHeight, 
         ScreenQuad& screenQuad, 
-        float aspectRatio, 
+        float aspectRatio,
         bool keepAspectRatio,
-        GLuint textureId) {
+        FrameBuffer& srcFrameBuffer,
+        FrameBuffer& dstFrameBuffer) {
+
+    dstFrameBuffer.resize(
+            srcFrameBuffer.width, srcFrameBuffer.height);
+
+    // breaks down multisampled framebuffer to single sample texture
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, srcFrameBuffer.id);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, dstFrameBuffer.id);
+
+    glBlitFramebuffer(
+            0, 0, srcFrameBuffer.width, srcFrameBuffer.height, 
+            0, 0, srcFrameBuffer.width, srcFrameBuffer.height, 
+            GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
     if (keepAspectRatio) {
         float fwidth = (float)windowWidth;
@@ -44,6 +59,8 @@ void renderToScreen (
         glViewport(0, 0, windowWidth, windowHeight);
     }
 
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+
     GLuint shaderProgramId = screenQuad.start();
 
     glUseProgram(shaderProgramId);
@@ -52,7 +69,7 @@ void renderToScreen (
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, textureId);
+    glBindTexture(GL_TEXTURE_2D, dstFrameBuffer.colorTextureId);
     glUniform1i(glGetUniformLocation(shaderProgramId, "tex"), 0);
 
     screenQuad.end();
@@ -178,7 +195,8 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 screenQuad, 
                 scene.car.mainCamera.getAspectRatio(), 
                 true, 
-                car.frameBuffer.colorTextureId);
+                car.frameBuffer,
+                screenFrameBuffer);
     } else if (DEPTH_CAMERA == selectedCamera) {
         renderToScreen(
                 windowWidth, 
@@ -186,23 +204,17 @@ void Loop::step(Scene& scene, Settings& settings, float frameDeltaTime) {
                 screenQuad, 
                 scene.car.depthCamera.getDepthAspectRatio(), 
                 true, 
-                car.depthCameraFrameBuffer.colorTextureId);
+                car.depthCameraFrameBuffer,
+                screenFrameBuffer);
     } else { // FPS_CAMERA
-        glBindFramebuffer(GL_READ_FRAMEBUFFER, frameBuffer.id);
-        glDrawBuffer(GL_BACK);
-        glBlitFramebuffer(
-                0, 0, windowWidth, windowHeight, 
-                0, 0, windowWidth, windowHeight,
-                GL_COLOR_BUFFER_BIT, GL_NEAREST);
-        /*
         renderToScreen(
                 windowWidth, 
                 windowHeight, 
                 screenQuad, 
                 1, 
                 false, 
-                frameBuffer.colorTextureId);
-                */
+                frameBuffer,
+                screenFrameBuffer);
     }
 
     commModule.transmitMainCamera(scene.car, car.bayerFrameBuffer.id);
