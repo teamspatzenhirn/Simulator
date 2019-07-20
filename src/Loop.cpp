@@ -421,6 +421,6 @@ void Loop::setFramebufferSize(GLFWwindow* window, int width, int height) {
         windowWidth = width;
         windowHeight = height;
 
-        frameBuffer.resize(width, height);
+        frameBuffer.resize(width, height, settings.msaaSamplesEditorView);
     }
 }

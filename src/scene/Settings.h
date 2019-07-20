@@ -37,6 +37,12 @@ struct Settings {
     float updateDeltaTime = 0.005f;
 
     /*
+     * The amount of samples used for multi sampling antialiasing in the editor
+     * view. Must be > 0 and <= to what your GPU can handle.
+     */
+    int msaaSamplesEditorView = 4;
+
+    /*
      * If set marker/modifier points will be rendered.
      */
     bool showMarkers = true;

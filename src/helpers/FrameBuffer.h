@@ -21,17 +21,17 @@ class FrameBuffer {
 
 public:
 
-    GLuint id;
+    GLuint id = 0;
 
-    GLsizei width;
-    GLsizei height;
-    GLsizei samples;
+    GLsizei width = 0;
+    GLsizei height = 0;
+    GLsizei samples = 1;
 
-    GLuint colorTextureId;
-    GLuint depthTextureId;
+    GLuint colorTextureId = 0;
+    GLuint depthTextureId = 0;
 
-    GLint internalFormatColor;
-    GLenum formatColor;
+    GLint internalFormatColor = GL_RGBA;
+    GLenum formatColor = GL_RGBA;
 
     FrameBuffer(GLsizei width, GLsizei height);
     FrameBuffer(
@@ -43,7 +43,11 @@ public:
 
     ~FrameBuffer();
 
-    void resize(GLsizei newWidth, GLsizei newHeight, GLsizei newSamples = -1);
+    void resize(GLsizei width, 
+            GLsizei height, 
+            GLsizei samples = -1, 
+            GLint internalFormatColor = GL_RGBA,
+            GLenum formatColor = GL_RGBA);
 };
 
 #endif

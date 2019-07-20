@@ -11,15 +11,54 @@ FrameBuffer::FrameBuffer(
         GLint internalFormatColor, 
         GLenum formatColor) {
 
-    this->internalFormatColor = internalFormatColor;
-    this->formatColor = formatColor;
-
     glGenFramebuffers(1, &id);
+
+    resize(width, height, samples, internalFormatColor, formatColor);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, id);
+
+    GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
+    glDrawBuffers(1, drawBuffers);
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        std::cout << "A framebuffer was not completly initialized!" << std::endl;
+        std::exit(-1);
+    }
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+FrameBuffer::~FrameBuffer() {
+
+    glDeleteFramebuffers(1, &id);
+    glDeleteTextures(1, &colorTextureId);
+    glDeleteTextures(1, &depthTextureId);
+}
+
+void FrameBuffer::resize(
+        GLsizei width, 
+        GLsizei height, 
+        GLsizei samples, 
+        GLint internalFormatColor,
+        GLenum formatColor) {
+
+    if (samples < 1) {
+        samples = this->samples;
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, id);
 
     // color texture
 
-    glGenTextures(1, &colorTextureId);
+    if (samples != this->samples
+            || internalFormatColor != this->internalFormatColor
+            || formatColor != this-> formatColor
+            || colorTextureId == 0) { 
+        if (colorTextureId != 0) {
+            glDeleteTextures(1, &colorTextureId);
+        } 
+        glGenTextures(1, &colorTextureId);
+    }
 
     if (samples > 1) {
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTextureId);
@@ -59,9 +98,15 @@ FrameBuffer::FrameBuffer(
     }
 
     // depth texture
-    
-    if (samples > 1) {
+
+    if (samples != this->samples || depthTextureId == 0) { 
+        if (depthTextureId != 0) {
+            glDeleteTextures(1, &depthTextureId);
+        }
         glGenTextures(1, &depthTextureId);
+    }
+
+    if (samples > 1) {
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, depthTextureId);
 
         glTexImage2DMultisample(
@@ -79,7 +124,6 @@ FrameBuffer::FrameBuffer(
                 depthTextureId,
                 0);
     } else {
-        glGenTextures(1, &depthTextureId);
         glBindTexture(GL_TEXTURE_2D, depthTextureId);
 
         glTexImage2D(GL_TEXTURE_2D,
@@ -99,88 +143,14 @@ FrameBuffer::FrameBuffer(
                 GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTextureId, 0);
     }
 
-    GLenum drawBuffers[1] = { GL_COLOR_ATTACHMENT0 };
-    glDrawBuffers(1, drawBuffers);
-
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        std::cout << "A framebuffer was not completly initialized!" << std::endl;
-        std::exit(-1);
-    }
-
-    glBindTexture(GL_TEXTURE_2D, 0);
     glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     this->width = width;
     this->height = height;
     this->samples = samples;
-}
-
-FrameBuffer::~FrameBuffer() {
-
-    glDeleteFramebuffers(1, &id);
-    glDeleteTextures(1, &colorTextureId);
-    glDeleteTextures(1, &depthTextureId);
-}
-
-void FrameBuffer::resize(GLsizei newWidth, GLsizei newHeight, GLsizei newSamples) {
-
-    if (newSamples < 0) {
-        newSamples = this->samples;
-    }
-
-    if (newSamples > 1) {
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTextureId);
-
-        glTexImage2DMultisample(
-                     GL_TEXTURE_2D_MULTISAMPLE,
-                     newSamples,
-                     internalFormatColor,
-                     newWidth,
-                     newHeight,
-                     false);
-
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, depthTextureId);
-
-        glTexImage2DMultisample(
-                     GL_TEXTURE_2D_MULTISAMPLE,
-                     newSamples,
-                     GL_DEPTH_COMPONENT,
-                     newWidth,
-                     newHeight,
-                     false);
-
-        glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-    } else {
-        glBindTexture(GL_TEXTURE_2D, colorTextureId);
-
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     internalFormatColor,
-                     newWidth,
-                     newHeight,
-                     0,
-                     formatColor,
-                     GL_UNSIGNED_BYTE,
-                     0);
-
-        glBindTexture(GL_TEXTURE_2D, depthTextureId);
-
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_DEPTH_COMPONENT24,
-                     newWidth,
-                     newHeight,
-                     0,
-                     GL_DEPTH_COMPONENT,
-                     GL_FLOAT,
-                     0);
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    width = newWidth;
-    height = newHeight;
-    samples = newSamples;
+    this->internalFormatColor = internalFormatColor;
+    this->formatColor = formatColor;
 }
 
