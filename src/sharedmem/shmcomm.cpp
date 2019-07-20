@@ -17,6 +17,7 @@ SHMCommPrivate::SHMCommPrivate(Role role, int key, size_t bufsize)
     this->shmId = -1;
     this->shmPtr = nullptr;
     this->gWriteId = 0;
+    this->shmsize = 0;
 }
 
 size_t align(size_t sz) {

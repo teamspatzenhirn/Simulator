@@ -14,23 +14,22 @@ class Model {
     GLuint vaoId;
     GLuint vboId;
 
-    GLenum storageType;
-
     void renderMaterialAndVertices(GLuint shaderProgramId);
 
 public:
 
     Model();
     Model(const Model& model);
-    Model(GLenum storageType);
-    Model(std::string path);
+    explicit Model(GLenum storageType);
+    explicit Model(std::string path);
     Model(std::string path, GLenum storageType);
     ~Model();
+
+    GLenum storageType;
 
     std::vector<Model> subModels;
 
     struct Vertex {
-
         glm::vec3 position;
         glm::vec2 normal;
         glm::vec2 textureCoordinate;
@@ -38,7 +37,6 @@ public:
     std::vector<Vertex> vertices;
 
     struct Material {
-
         std::string name;
         glm::vec3 ka;    
         glm::vec3 kd;
@@ -52,14 +50,11 @@ public:
         std::string mapKs;
         std::string mapD;
         std::string mapBump;
-
     } material;
 
     struct BoundingBox {
-
         glm::vec3 center{0, 0, 0};
         glm::vec3 size{0, 0, 0};
-
     } boundingBox;
 
     void updateBoundingBox();

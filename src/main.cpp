@@ -1,63 +1,21 @@
-#include <iostream>
-
 #include "Loop.h"
-#include "helpers/Input.h"
+#include "Storage.h"
 
 int main (int argc, char* argv[]) {
 
-    int windowWidth = 800;
-    int windowHeight = 600;
+    createResourcePath();
 
-    // initialize OpenGL and GLEW
-
-    if (!glfwInit()) {
-        std::cout << "Could not initialize GLFW!" << std::endl;
-        std::exit(-1);
-    }
-
-    glfwWindowHint(GLFW_SAMPLES, 1);
-
-    GLFWwindow* window = glfwCreateWindow(
-        800, 600, "Spatz Simulator", nullptr, nullptr);
-
-    glfwMakeContextCurrent(window);
-
-    if (GLEW_OK != glewInit()) {
-        std::cout << "GL Extension Wrangler initialization failed!" << std::endl;
-        std::exit(-1);
-    }
-
-    // OpenGL and GLFW settings
-    
-    glEnable(GL_MULTISAMPLE);
-
-    glClearColor(1.0, 1.0, 1.0, 1.0);
-
-    glEnable(GL_DEPTH_TEST);
-
-    glDepthFunc(GL_LEQUAL);
-
-    glfwSwapInterval(0);
-
-    // loop setup
-    
     Settings settings;
-    // TODO: make load work again!
-    // settings.load();
-    
+    load(settings);
+
     if (argc > 1) {
         settings.configPath = std::string(argv[1]);
-        std::cout << settings.configPath << std::endl;
     }
 
     Scene scene(settings.configPath);
 
-    // entering main loop
-    Loop loop(window, windowWidth, windowHeight, settings);
-    loop.loop(scene, settings);
-
-    glfwDestroyWindow(window);
-    glfwTerminate();
+    Loop loop(settings);
+    loop.loop(scene);
 
     return 0;
 }

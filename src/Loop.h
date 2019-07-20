@@ -19,6 +19,8 @@
 
 class Loop {
 
+public:
+
     GLFWwindow* window;
 
     GLsizei windowWidth;
@@ -26,29 +28,26 @@ class Loop {
 
     Settings settings;
 
-    enum SelectedCamera {
-        FPS_CAMERA,
-        MAIN_CAMERA,
-        DEPTH_CAMERA
-    } selectedCamera = FPS_CAMERA;
-
-    ShaderProgram shaderProgram{
-        Shader("shaders/VertexShader.glsl", GL_VERTEX_SHADER),
-        Shader("shaders/FragmentShader.glsl", GL_FRAGMENT_SHADER)};
-
-    ShaderProgram carShaderProgram{
-        Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
-        Shader("shaders/BayerFragmentShader.glsl", GL_FRAGMENT_SHADER)};
-
-    ShaderProgram depthCameraShaderProgram{
-        Shader("shaders/BayerVertexShader.glsl", GL_VERTEX_SHADER),
-        Shader("shaders/DepthPointsFragmentShader.glsl", GL_FRAGMENT_SHADER)};
-
-    ModelStore modelStore;
-
     FrameBuffer screenFrameBuffer;
     FrameBuffer frameBuffer;
     ScreenQuad screenQuad;
+
+    ShaderProgram fpsShaderProgram;
+    ShaderProgram carShaderProgram;
+    ShaderProgram depthCameraShaderProgram;
+
+    Capture pythonMainCameraCapture;
+    Capture mainCameraCapture;
+    Capture depthCameraCapture;
+
+    ModelStore modelStore{settings.resourcePath};
+
+    enum SelectedCamera {
+        FPS_CAMERA,
+        FOLLOW_CAMERA,
+        MAIN_CAMERA,
+        DEPTH_CAMERA,
+    } selectedCamera = FPS_CAMERA;
 
     CommModule commModule;
     MarkerModule markerModule;
@@ -62,6 +61,9 @@ class Loop {
 
     PointLight light{10.0f, 10.0f, 20.0f};
 
+    Loop(Settings settings = {true});
+    ~Loop();
+
     void update(Scene& scene, float deltaTime);
 
     void renderScene(Scene& scene, GLuint shaderProgramId);
@@ -69,12 +71,8 @@ class Loop {
     void renderCarView(Scene& scene);
     void renderDepthView(Scene& scene);
 
-public:
-
-    Loop(GLFWwindow* window, GLsizei windowWidth, GLsizei windowHeight, Settings settings);
-
-    void loop(Scene& scene, Settings& settings);
-    void step(Scene& scene, Settings& settings, float frameDeltaTime);
+    void loop(Scene& scene);
+    void step(Scene& scene, float frameDeltaTime);
 
     void setFramebufferSize(GLFWwindow* window, int width, int height);
 };

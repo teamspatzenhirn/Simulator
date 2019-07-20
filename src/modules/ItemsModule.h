@@ -4,7 +4,9 @@
 #include <map>
 #include <algorithm>
 
-#include "Scene.h"
+#include "scene/ModelStore.h"
+
+#include "scene/Scene.h"
 #include "helpers/Helpers.h"
 
 class ItemsModule {

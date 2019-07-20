@@ -1,7 +1,11 @@
 #ifndef INC_2019_GUIMODULE_H
 #define INC_2019_GUIMODULE_H
 
-#include "Scene.h"
+#include <experimental/filesystem>
+
+#include "scene/Scene.h"
+
+namespace fs = std::experimental::filesystem;
 
 class GuiModule {
 
@@ -12,7 +16,9 @@ class GuiModule {
     bool showSettingsWindow = false;
     bool showRuleWindow = false;
     bool showHelpWindow = false;
+    bool showAboutWindow = false;
 
+    std::string imguiIniPath;
     std::string openedPath;
     std::string openedFilename;
     std::string currentDirectory;
@@ -38,6 +44,7 @@ public:
     void renderSettingsWindow(Settings& settings);
     void renderRuleWindow(const Scene::Rules& rules);
     void renderHelpWindow();
+    void renderAboutWindow();
 
     void begin();
     void end();

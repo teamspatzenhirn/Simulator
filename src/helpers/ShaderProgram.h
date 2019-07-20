@@ -13,6 +13,7 @@ public:
 
     ShaderProgram(GLuint vertexShaderId, GLuint fragShaderId);
     ShaderProgram(Shader vertexShader, Shader fragShader);
+    ShaderProgram(std::string vertexShaderPath, std::string fragShaderPath);
     ~ShaderProgram();
 };
 

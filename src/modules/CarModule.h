@@ -9,7 +9,8 @@
 #include <glm/gtx/intersect.hpp>
 
 #include "scene/Car.h"
-#include "Scene.h"
+#include "scene/ModelStore.h"
+#include "scene/Scene.h"
 
 #include "helpers/Helpers.h"
 
@@ -25,8 +26,6 @@ class CarModule {
             std::vector<Scene::Item>& items);
 
 public:
-
-    Model carModel{"models/spatz.obj"};
 
     Camera mainCamera;
     Camera depthCamera;
@@ -52,7 +51,7 @@ public:
             ModelStore& modelStore,
             std::vector<Scene::Item>& items);
 
-    void render(GLuint shaderProgramId, Car& car);
+    void render(GLuint shaderProgramId, Car& car, ModelStore& store);
 };
 
 #endif

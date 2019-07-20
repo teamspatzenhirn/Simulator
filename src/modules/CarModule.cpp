@@ -15,14 +15,14 @@ float CarModule::calcLaserSensorValue(
     for (Scene::Item& it : items) {
 
         float maxItemSize = std::max(
-            modelStore.itemModels[it.type].boundingBox.size.x * it.pose.scale.x,
-            modelStore.itemModels[it.type].boundingBox.size.z * it.pose.scale.z);
+            modelStore.items[it.type].boundingBox.size.x * it.pose.scale.x,
+            modelStore.items[it.type].boundingBox.size.z * it.pose.scale.z);
 
         if (glm::length(position - it.pose.position) > 2.0 + maxItemSize / 2) {
             continue;
         }
 
-        Model& itemModel = modelStore.itemModels[it.type];
+        Model& itemModel = modelStore.items[it.type];
         glm::mat4 modelMat = it.pose.getMatrix();
 
         for (unsigned int i = 2 ; i < itemModel.vertices.size() ; i += 3) {
@@ -256,7 +256,7 @@ void CarModule::updateLaserSensors(
             items);
 }
 
-void CarModule::render(GLuint shaderProgramId, Car& car) {
+void CarModule::render(GLuint shaderProgramId, Car& car, ModelStore& modelStore) {
 
-    carModel.render(shaderProgramId, car.modelPose.getMatrix());
+    modelStore.car.render(shaderProgramId, car.modelPose.getMatrix());
 }

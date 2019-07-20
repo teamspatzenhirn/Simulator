@@ -50,6 +50,7 @@
             "fov": 1.5707963705062866,
             "imageHeight": 1544,
             "imageWidth": 2064,
+            "noise": 0.20000000298023224,
             "pose": {
                 "position": [
                     0.0,
@@ -116,6 +117,9 @@
             "kRear": 10.0,
             "usePacejkaModel": true
         }
+    },
+    "dynamicItemSettings": {
+        "speed": 0.6000000238418579
     },
     "fpsCamera": {
         "aspectRatio": 1.7158176898956299,
@@ -201,21 +205,10 @@
         "exitOnObstacleCollision": false
     },
     "tracks": {
+        "centerLineGap": 0.019999999552965164,
         "centerLineInterrupt": 0.20000000298023224,
         "centerLineLength": 0.20000000298023224,
         "controlPoints": [
-            {
-                "coords": [
-                    0.03348886966705322,
-                    2.3430495262145996
-                ]
-            },
-            {
-                "coords": [
-                    0.03348886966705322,
-                    -0.19437646865844727
-                ]
-            },
             {
                 "coords": [
                     0.03348886966705322,
@@ -226,6 +219,18 @@
                 "coords": [
                     0.03348886966705322,
                     6.069835662841797
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    2.3430495262145996
+                ]
+            },
+            {
+                "coords": [
+                    0.03348886966705322,
+                    -0.19437646865844727
                 ]
             },
             {
@@ -251,22 +256,24 @@
         "trackWidth": 0.800000011920929,
         "tracks": [
             {
-                "end": 3,
-                "start": 2,
-                "type": "line"
+                "center": 4,
+                "link1": 5,
+                "link2": 0,
+                "link3": 6,
+                "link4": 2,
+                "type": "intersection"
             },
             {
+                "centerLine": "Dashed",
                 "end": 1,
                 "start": 0,
                 "type": "line"
             },
             {
-                "center": 4,
-                "link1": 5,
-                "link2": 2,
-                "link3": 6,
-                "link4": 0,
-                "type": "intersection"
+                "centerLine": "Dashed",
+                "end": 3,
+                "start": 2,
+                "type": "line"
             }
         ]
     },

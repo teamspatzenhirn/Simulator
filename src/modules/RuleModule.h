@@ -6,7 +6,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Scene.h"
+#include "scene/Scene.h"
 #include "helpers/Helpers.h"
 
 #include "modules/CollisionModule.h"

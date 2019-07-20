@@ -13,7 +13,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/io.hpp>
 
-#include "Scene.h"
+#include "scene/ModelStore.h"
+
+#include "scene/Scene.h"
 
 class MarkerModule {
 
@@ -28,11 +30,6 @@ class MarkerModule {
     int selectedTransformRestriction;
 
     std::vector<RestrictedPose> modelPoses;
-
-    std::shared_ptr<Model> markerModel;
-    std::shared_ptr<Model> arrowModel;
-    std::shared_ptr<Model> scaleArrowModel;
-    std::shared_ptr<Model> ringModel;
 
     struct {
         float x;
@@ -83,20 +80,15 @@ class MarkerModule {
 
     void renderMarkers(
             GLuint shaderProgramId,
+            Model& markerModel,
             glm::vec3& cameraPosition,
             Scene::Selection& selection);
 
     void renderModifiers(
             GLuint shaderProgramId,
+            ModelStore& modelStore,
             glm::vec3& cameraPosition,
             Scene::Selection& selection);
-
-    void renderGlyphTriplet(
-            GLuint shaderProgramId,
-            std::shared_ptr<Model>& model,
-            RestrictedPose& restrictedPose,
-            float scale, 
-            float offset);
 
     glm::vec3 intersectLineWithPlane(
             glm::vec3& lineDirection,
@@ -146,6 +138,7 @@ public:
 
     void render(
             GLuint shaderProgramId,
+            ModelStore& modelStore,
             Camera& cameraMatrix,
             Scene::Selection& selection);
 };

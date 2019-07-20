@@ -1,42 +1,6 @@
 #include "Model.h"
 
-#include "bly7_obj-loader/Source/OBJ_Loader.h"
-
-void convertMaterial(objl::Material& meshMat, Model::Material& mat) {
-
-    mat.name = meshMat.name;
-    mat.ka = {meshMat.Ka.X, meshMat.Ka.Y, meshMat.Ka.Z};
-    mat.kd = {meshMat.Kd.X, meshMat.Kd.Y, meshMat.Kd.Z};
-    mat.ks = {meshMat.Ks.X, meshMat.Ks.Y, meshMat.Ks.Z};
-    mat.ns = meshMat.Ns;
-    mat.ni = meshMat.Ni;
-    mat.d = meshMat.d;
-    mat.illum = meshMat.illum;
-    mat.mapKa = meshMat.map_Ka;
-    mat.mapKd = meshMat.map_Kd;
-    mat.mapKs = meshMat.map_Ks;
-    mat.mapD = meshMat.map_d;
-    mat.mapBump = meshMat.map_bump;
-}
-
-void convertVertex(objl::Vertex& meshVtx, Model::Vertex& vertex) {
-
-    vertex.position = {
-        meshVtx.Position.X, 
-        meshVtx.Position.Y, 
-        meshVtx.Position.Z
-    };
-
-    vertex.normal = {
-        meshVtx.Normal.X,
-        meshVtx.Normal.Y
-    };
-
-    vertex.textureCoordinate = {
-        meshVtx.TextureCoordinate.X,
-        meshVtx.TextureCoordinate.Y
-    };
-}
+#include "Storage.h"
 
 Model::Model() : Model(GL_STATIC_DRAW) {
 }
@@ -62,7 +26,6 @@ Model::Model(const Model& model) {
 }
 
 Model::Model(std::string path) : Model(path, GL_STATIC_DRAW) {
-
 }
 
 Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
@@ -70,45 +33,10 @@ Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
     glGenVertexArrays(1, &vaoId);
     glGenBuffers(1, &vboId);
 
-    objl::Loader loader;
-
-    if (!loader.LoadFile(path)) {
-        std::cout << "Model " << path << " could not be loaded!";
+    if (!load(*this, path)) {
+        std::cerr << "Could not load model from " << path << std::endl;
         std::exit(-1);
     }
-
-    if (loader.LoadedMeshes.size() < 1) {
-        std::cout << "Model " << path << " contains no data!";
-        std::exit(-1);
-    }
-
-    if (loader.LoadedMeshes.size() == 1) {
-        objl::Mesh mesh = loader.LoadedMeshes.back();
-
-        convertMaterial(mesh.MeshMaterial, material);
-
-        for (objl::Vertex& v : mesh.Vertices) {
-           vertices.emplace_back();
-           convertVertex(v, vertices.back());
-        }
-    } else {
-        for (objl::Mesh& mesh : loader.LoadedMeshes) {
-
-            subModels.emplace_back(storageType);
-
-            Model& model = subModels.back();
-
-            convertMaterial(mesh.MeshMaterial, model.material);
-
-            for (objl::Vertex& v : mesh.Vertices) {
-               model.vertices.emplace_back();
-               convertVertex(v, model.vertices.back());
-            }
-        }
-    }
-
-    upload();
-    updateBoundingBox();
 }
 
 Model::~Model() {
@@ -181,7 +109,7 @@ void Model::upload(GLuint positionLocation,
     glBindBuffer(GL_ARRAY_BUFFER, vboId);
     glBufferData(
         GL_ARRAY_BUFFER,
-        vertices.size() * sizeof(objl::Vertex),
+        vertices.size() * sizeof(Vertex),
         vertices.data(),
         storageType);
 

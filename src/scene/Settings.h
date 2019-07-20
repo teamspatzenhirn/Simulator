@@ -9,7 +9,7 @@
  */
 struct Settings {
 
-    Settings();
+    Settings(bool loadFromDotfile = false);
 
     /*
      * The path where the global settings file is stored.
@@ -25,6 +25,12 @@ struct Settings {
      * The path to the config file that will be loaded on startup.
      */
     std::string configPath;
+
+    /*
+     * Dimensions of the main window.
+     */
+    int windowWidth = 800;
+    int windowHeight = 600;
 
     /*
      * The speed of the simulation given as fraction of real time.

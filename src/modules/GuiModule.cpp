@@ -4,36 +4,34 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <experimental/filesystem>
+
+#include "Storage.h"
 
 #include "ocornut_imgui/imgui.h"
-#include "ocornut_imgui/examples/imgui_impl_glfw.h"
-#include "ocornut_imgui/examples/imgui_impl_opengl3.h"
+#include "ocornut_imgui/imgui_impl_glfw.h"
+#include "ocornut_imgui/imgui_impl_opengl3.h"
+
+namespace fs = std::experimental::filesystem;
 
 GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     this->window = window;
 
+    fs::create_directories("./spatzsim_test");
+
     unsigned long separatorIndex = scenePath.find_last_of("\\/");
+
+    fs::path homePath = getResourcePath();
+
+    imguiIniPath = homePath / "imgui.ini";
 
     if (separatorIndex > 0) { 
         openedPath = scenePath.substr(0, separatorIndex+1);
         openedFilename = scenePath.substr(
                 separatorIndex+1, scenePath.size());
     } else {
-
-        std::string strHomePath("/");
-        char* homePath = getenv("HOME");
-
-        if (homePath) {
-            strHomePath = std::string(homePath);
-        } else {
-            homePath = getenv("HOMEPATH");
-            if (homePath) {
-                strHomePath = std::string(homePath);
-            }
-        }
-
-        openedPath = strHomePath;
+        openedPath = homePath;
         openedFilename = scenePath;
     }
 
@@ -108,6 +106,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
             ImGui::MenuItem("Settings", NULL, &showSettingsWindow);
             ImGui::MenuItem("Rules", NULL, &showRuleWindow);
             ImGui::MenuItem("Help", NULL, &showHelpWindow);
+            ImGui::MenuItem("About", NULL, &showAboutWindow);
 
             ImGui::EndMenu();
         }
@@ -130,7 +129,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
     }
     ImGui::Text("%s", msg.c_str());
 
-    ImGui::Text("Simulation time: %.2f seconds", (double)scene.simulationTime);
+    ImGui::Text("Simulation time: %.2f seconds", (double)scene.simulationClock.time);
 
     if (scene.paused) {
         ImGui::Text("PAUSED");
@@ -148,11 +147,11 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
             if (!openedFilename.empty()) {
 
-                double savedSimulationTime = scene.simulationTime;
+                double savedSimulationTime = scene.simulationClock.time;
 
-                if (scene.load(openedPath + openedFilename)) {
+                if (load(scene, openedPath + openedFilename)) {
                     Scene::history.clear();
-                    scene.simulationTime = savedSimulationTime;
+                    scene.simulationClock.time = savedSimulationTime;
                 } else {
                     errorMessage = "Could not open " + selectedFilename + "!";
                 }
@@ -672,8 +671,7 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
         ImGui::End();
 
         if (changed) {
-            // TODO: make saving work again!
-            // settings.save();
+            save(settings);
         }
     }
 }
@@ -769,6 +767,25 @@ void GuiModule::renderHelpWindow() {
     }
 }
 
+void GuiModule::renderAboutWindow() {
+
+    if (showAboutWindow) { 
+
+        ImGui::Begin("About", &showAboutWindow,
+                ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::Text("SpatzSim 1.3");
+        ImGui::Text(" ");
+        ImGui::Text("Initiated in fall 2018 by");
+        ImGui::Text(" ");
+        ImGui::Text("Gilberto Rossi");
+        ImGui::Text("Johannes Herschel");
+        ImGui::Text("Jona Ruof");
+
+        ImGui::End();
+    }
+}
+
 void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show) {
 
     if (show) {
@@ -781,13 +798,12 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
 
-            if (scene.load(currentDirectory + selectedFilename)) {
+            if (load(scene, currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
 
                 settings.configPath = currentDirectory + selectedFilename;
-                // TODO: make saving work again!
-                // settings.save();
+                save(settings);
 
                 Scene::history.clear();
 
@@ -814,7 +830,7 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
     if (!openedFilename.empty() && !showSaveAs && show) {
-        scene.save(openedPath + openedFilename);
+        save(scene, openedPath + openedFilename);
         return;
     }
 
@@ -827,7 +843,7 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
         renderDirectoryListing();
 
         if (ImGui::Button("Save", ImVec2(120, 0))) {
-            if (scene.save(currentDirectory + selectedFilename)) {
+            if (save(scene, currentDirectory + selectedFilename)) {
                 openedPath = currentDirectory;
                 openedFilename = selectedFilename;
                 ImGui::CloseCurrentPopup();
@@ -860,7 +876,6 @@ void GuiModule::renderDirectoryListing() {
     DIR* dir = opendir(currentDirectory.c_str());
 
     std::vector<dirent> entries;
-
 
     if (dir) {
        dirent* e;
@@ -988,6 +1003,7 @@ void GuiModule::begin() {
     }
 
     ImGuiIO& io = ImGui::GetIO();
+    io.IniFilename = imguiIniPath.c_str();
 
     if (io.WantCaptureMouse) {
         clearMouseInput();

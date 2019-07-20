@@ -29,7 +29,7 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
 
     glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 
-    float speed = 2 * dt;
+    float speed = 8 * dt;
 
     if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_CONTROL)) {
         speed *= 4;

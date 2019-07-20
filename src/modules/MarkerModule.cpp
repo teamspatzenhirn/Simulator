@@ -1,11 +1,6 @@
 #include "MarkerModule.h"
 
 MarkerModule::MarkerModule() { 
-
-    markerModel = std::make_shared<Model>("models/marker.obj");
-    arrowModel = std::make_shared<Model>("models/arrow.obj");
-    scaleArrowModel = std::make_shared<Model>("models/scale_arrow.obj");
-    ringModel = std::make_shared<Model>("models/ring.obj");
 }
 
 float MarkerModule::getScale(glm::vec3& cameraPosition, glm::vec3& modelPosition) {
@@ -306,7 +301,11 @@ void MarkerModule::updateModifiers(Camera& camera, Scene::Selection& selection) 
     }
 }
 
-void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPosition, Scene::Selection& selection) {
+void MarkerModule::renderMarkers(
+        GLuint shaderProgramId, 
+        Model& markerModel,
+        glm::vec3& cameraPosition, 
+        Scene::Selection& selection) {
 
     GLint billboardLocation =
         glGetUniformLocation(shaderProgramId, "billboard");
@@ -321,40 +320,46 @@ void MarkerModule::renderMarkers(GLuint shaderProgramId, glm::vec3& cameraPositi
         markerMat = glm::scale(markerMat, glm::vec3(scale, scale, scale));
 
         if (selection.pose == pose.pose) {
-            markerModel->material.ka = {1.0f, 1.0f, 0.0f};
-            markerModel->material.kd = {1.0f, 1.0f, 0.0f};
-            markerModel->material.ks = {0.0f, 0.0f, 0.0f};
-            markerModel->render(shaderProgramId, markerMat);
+            markerModel.material.ka = {1.0f, 1.0f, 0.0f};
+            markerModel.material.kd = {1.0f, 1.0f, 0.0f};
+            markerModel.material.ks = {0.0f, 0.0f, 0.0f};
+            markerModel.render(shaderProgramId, markerMat);
         } else {
-            markerModel->material.ka = {0.0f, 1.0f, 0.0f};
-            markerModel->material.kd = {0.0f, 1.0f, 0.0f};
-            markerModel->material.ks = {0.0f, 0.0f, 0.0f};
-            markerModel->render(shaderProgramId, markerMat);
+            markerModel.material.ka = {0.0f, 1.0f, 0.0f};
+            markerModel.material.kd = {0.0f, 1.0f, 0.0f};
+            markerModel.material.ks = {0.0f, 0.0f, 0.0f};
+            markerModel.render(shaderProgramId, markerMat);
         }
     }
 
     glUniform1i(billboardLocation, false);
 }
 
-void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosition, Scene::Selection& selection) {
+void MarkerModule::renderModifiers(
+        GLuint shaderProgramId, 
+        ModelStore& modelStore,
+        glm::vec3& cameraPosition, 
+        Scene::Selection& selection) {
     
     float scale = getScale(cameraPosition, selection.pose->position);
     float offset = 1.0f;
-    std::shared_ptr<Model> model = arrowModel;
+    Model* modelPtr;
 
     switch(selectionMode) {
-        case TRANSLATE:
-            model = arrowModel;
-            break;
         case SCALE: 
-            model = scaleArrowModel;
+            modelPtr = &modelStore.scaleArrow;
             break;
         case ROTATE:
-            model = ringModel;
+            modelPtr = &modelStore.ring;
             scale *= 3;
             offset = 0.0f;
             break;
+        default:
+            modelPtr = &modelStore.arrow;
+            break;
     }
+
+    Model& model = *modelPtr;
 
     if (isTransformAllowed(
                 selectedTransformRestriction,
@@ -366,11 +371,11 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
         upMat = glm::translate(upMat, glm::vec3(0.0f, offset * scale, 0.0f));
         upMat = glm::scale(upMat, glm::vec3(scale, scale, scale));
 
-        model->material.ka = {0.0f, 1.0f, 0.0f};
-        model->material.kd = {0.0f, 1.0f, 0.0f};
-        model->material.ks = {0.0f, 1.0f, 0.0f};
+        model.material.ka = {0.0f, 1.0f, 0.0f};
+        model.material.kd = {0.0f, 1.0f, 0.0f};
+        model.material.ks = {0.0f, 1.0f, 0.0f};
 
-        model->render(shaderProgramId, upMat);
+        model.render(shaderProgramId, upMat);
     }
 
     if (isTransformAllowed(
@@ -378,9 +383,9 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
                 selectionMode,
                 X_AXIS)) {
 
-        model->material.ka = {1.0f, 0.0f, 0.0f};
-        model->material.kd = {1.0f, 0.0f, 0.0f};
-        model->material.ks = {1.0f, 0.0f, 0.0f};
+        model.material.ka = {1.0f, 0.0f, 0.0f};
+        model.material.kd = {1.0f, 0.0f, 0.0f};
+        model.material.ks = {1.0f, 0.0f, 0.0f};
 
         glm::mat4 rightMat = glm::mat4(1.0f);
         rightMat = glm::translate(rightMat, selection.pose->position);
@@ -389,7 +394,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
         rightMat = glm::translate(rightMat, glm::vec3(0.0f, offset * scale, 0.0f));
         rightMat = glm::scale(rightMat, glm::vec3(scale, scale, scale));
 
-        model->render(shaderProgramId, rightMat);
+        model.render(shaderProgramId, rightMat);
     }
 
     if (isTransformAllowed(
@@ -397,9 +402,9 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
                 selectionMode,
                 Z_AXIS)) {
 
-        model->material.ka = {0.0f, 0.0f, 1.0f};
-        model->material.kd = {0.0f, 0.0f, 1.0f};
-        model->material.ks = {0.0f, 0.0f, 1.0f};
+        model.material.ka = {0.0f, 0.0f, 1.0f};
+        model.material.kd = {0.0f, 0.0f, 1.0f};
+        model.material.ks = {0.0f, 0.0f, 1.0f};
 
         glm::mat4 forwardMat = glm::mat4(1.0f);
         forwardMat = glm::translate(forwardMat, selection.pose->position);
@@ -408,7 +413,7 @@ void MarkerModule::renderModifiers(GLuint shaderProgramId, glm::vec3& cameraPosi
         forwardMat = glm::translate(forwardMat, glm::vec3(0.0f, offset * scale, 0.0f));
         forwardMat = glm::scale(forwardMat, glm::vec3(scale, scale, scale));
 
-        model->render(shaderProgramId, forwardMat);
+        model.render(shaderProgramId, forwardMat);
     }
 }
 
@@ -454,6 +459,7 @@ void MarkerModule::update(
 
 void MarkerModule::render(
         GLuint shaderProgramId,
+        ModelStore& modelStore,
         Camera& camera,
         Scene::Selection& selection) {
 
@@ -464,10 +470,18 @@ void MarkerModule::render(
     glm::vec3 cameraPosition = camera.pose.position;
 
     if (hasSelection(selection)) {
-        renderModifiers(shaderProgramId, cameraPosition, selection);
+        renderModifiers(
+                shaderProgramId, 
+                modelStore, 
+                cameraPosition, 
+                selection);
     } 
 
-    renderMarkers(shaderProgramId, cameraPosition, selection);
+    renderMarkers(
+            shaderProgramId, 
+            modelStore.marker, 
+            cameraPosition, 
+            selection);
 
     glUniform1i(lightingLocation, true);
 }

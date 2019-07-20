@@ -1,47 +1,56 @@
 #include "modules/VisModule.h"
 
 VisModule::VisModule() {
-
-    ringModel = std::make_shared<Model>("models/ring.obj");
-    circleModel = std::make_shared<Model>("models/marker.obj");
-    lineModel = std::make_shared<Model>("models/ground.obj");
-    arrowModel = std::make_shared<Model>("models/arrow.obj");
 }
 
-void VisModule::drawRing(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color) {
+void VisModule::drawModel(
+        GLuint shaderProgramId, 
+        Model& model, 
+        glm::vec3 position, 
+        float scale, 
+        glm::vec3 color) {
 
-    // TODO: nearly identical to drawCircle, remove duplication
+    Model::Material savedMaterial = model.material;
 
-    circleModel->material.ka = {color.r, color.g, color.b};
-    circleModel->material.kd = {color.r, color.g, color.b};
-    circleModel->material.ks = {color.r, color.g, color.b};
+    model.material.ka = color;
+    model.material.kd = color;
+    model.material.ks = color;
     
     glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), position);
     modelMat = glm::scale(modelMat, glm::vec3(scale, scale, scale));
-    ringModel->render(shaderProgramId, modelMat);
-}
-
-void VisModule::drawCircle(GLuint shaderProgramId, glm::vec3 position, float scale, glm::vec3 color) {
-
-    circleModel->material.ka = {color.r, color.g, color.b};
-    circleModel->material.kd = {color.r, color.g, color.b};
-    circleModel->material.ks = {color.r, color.g, color.b};
+    model.render(shaderProgramId, modelMat);
     
-    glm::mat4 modelMat = glm::translate(glm::mat4(1.0f), position);
-    modelMat = glm::scale(modelMat, glm::vec3(scale, scale, scale));
-    circleModel->render(shaderProgramId, modelMat);
+    model.material = savedMaterial;
 }
 
-void VisModule::drawLine(GLuint shaderProgramId, glm::vec2 start, glm::vec2 end, float width, glm::vec3 color) {
+void VisModule::drawLine(
+        GLuint shaderProgramId, 
+        Model& model, 
+        glm::vec2 start, 
+        glm::vec2 end, 
+        float width, 
+        glm::vec3 color) {
 
-    drawLine(shaderProgramId, glm::vec3(start.x, 0.005f, start.y), glm::vec3(end.x, 0.005f, end.y), width, color);
+    drawLine(
+            shaderProgramId, 
+            model, 
+            glm::vec3(start.x, 0.005f, start.y), 
+            glm::vec3(end.x, 0.005f, end.y), 
+            width, 
+            color);
 }
 
-void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float width, glm::vec3 color) {
+void VisModule::drawLine(
+        GLuint shaderProgramId, 
+        Model& lineModel, 
+        glm::vec3 start, 
+        glm::vec3 end, 
+        float width, 
+        glm::vec3 color) {
 
-    lineModel->material.ka = {color.r, color.g, color.b};
-    lineModel->material.kd = {color.r, color.g, color.b};
-    lineModel->material.ks = {color.r, color.g, color.b};
+    lineModel.material.ka = color;
+    lineModel.material.kd = color;
+    lineModel.material.ks = color;
 
     glm::vec3 distVec = end - start;
     glm::vec3 middelVec = start + distVec * 0.5f;
@@ -53,14 +62,20 @@ void VisModule::drawLine(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end,
     modelMat = glm::rotate(modelMat, angleY, glm::vec3(0, 1, 0));
     modelMat = glm::rotate(modelMat, angleX, glm::vec3(1, 0, 0));
     modelMat = glm::scale(modelMat, glm::vec3(width, 1.0, glm::length(distVec) * 0.5));
-    lineModel->render(shaderProgramId, modelMat);
+    lineModel.render(shaderProgramId, modelMat);
 }
 
-void VisModule::drawArrow(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end, float scale, glm::vec3 color) {
+void VisModule::drawArrow(
+        GLuint shaderProgramId, 
+        Model& arrowModel, 
+        glm::vec3 start, 
+        glm::vec3 end, 
+        float scale, 
+        glm::vec3 color) {
 
-    arrowModel->material.ka = {color.r, color.g, color.b};
-    arrowModel->material.kd = {color.r, color.g, color.b};
-    arrowModel->material.ks = {color.r, color.g, color.b};
+    arrowModel.material.ka = color;
+    arrowModel.material.kd = color;
+    arrowModel.material.ks = color;
 
     glm::vec3 distVec = end - start;
     glm::lookAt(start, distVec, glm::vec3(0, 1, 0));
@@ -73,14 +88,15 @@ void VisModule::drawArrow(GLuint shaderProgramId, glm::vec3 start, glm::vec3 end
     modelMat = glm::rotate(modelMat, (float) M_PI/2, glm::vec3(1, 0, 0));
     modelMat = glm::rotate(modelMat, angleZ, glm::vec3(0, 0, 1));
     modelMat = glm::scale(modelMat, glm::vec3(scale, glm::length(end - start) * 0.5, scale));
-    arrowModel->render(shaderProgramId, modelMat);
+    arrowModel.render(shaderProgramId, modelMat);
 }
 
 void VisModule::addPositionTrace(glm::vec3 position, double simulationTime) {
 
-    if (simulationTime - lastTraceTime > 0.050) {
+    if (simulationTime - lastTraceTime > 0.050 
+            || simulationTime < lastTraceTime) {
 
-        if (tracedPositions.size() > 200) {
+        if (tracedPositions.size() > 2000) {
             tracedPositions.pop_front();
         }
 
@@ -89,7 +105,7 @@ void VisModule::addPositionTrace(glm::vec3 position, double simulationTime) {
     }
 }
 
-void VisModule::renderPositionTrace(GLuint shaderProgramId, double simulationTime, bool fancy) {
+void VisModule::renderPositionTrace(GLuint shaderProgramId, Model& pointModel, double simulationTime, bool fancy) {
 
     GLint billboardLocation = 
         glGetUniformLocation(shaderProgramId, "billboard");
@@ -101,7 +117,7 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, double simulationTim
 
     for (StampedPosition& pos : tracedPositions) {
 
-        float t = (float)(simulationTime - pos.time) * 0.01f;
+        float t = (float)(simulationTime - pos.time) * 10.0f;
 
         float scale = 0.05f;
         glm::vec3 color(0.0f, 1.0f, 0.0f);
@@ -114,7 +130,7 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, double simulationTim
                     0.5f + 0.5f * std::sin(t + glm::radians(240.0f)));
         }
 
-        drawCircle(shaderProgramId, pos.position, scale, color);
+        drawModel(shaderProgramId, pointModel, pos.position, scale, color);
     }
 
     glUniform1i(lightingLocation, true);
@@ -124,6 +140,7 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, double simulationTim
 
 void VisModule::renderDynamicItems(
         GLuint shaderProgramId,
+        Model& arrowModel,
         double simulationTime, 
         std::vector<Scene::Item>& items) {
 
@@ -140,7 +157,8 @@ void VisModule::renderDynamicItems(
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
 
-            drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
+            drawArrow(shaderProgramId, arrowModel, 
+                    startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
 
         if (item.type == DYNAMIC_PEDESTRIAN_RIGHT) {
@@ -152,7 +170,8 @@ void VisModule::renderDynamicItems(
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
 
-            drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
+            drawArrow(shaderProgramId, arrowModel,
+                    startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
 
         if (item.type == DYNAMIC_PEDESTRIAN_LEFT) {
@@ -164,13 +183,19 @@ void VisModule::renderDynamicItems(
             glm::vec3 startWorld(mat * start);
             glm::vec3 endWorld(mat * end);
 
-            drawArrow(shaderProgramId, startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
+            drawArrow(shaderProgramId, arrowModel,
+                    startWorld, endWorld, 0.05f, glm::vec3(1, 1, 0));
         } 
     }
 
 }
 
-void VisModule::renderSensors(GLuint shaderProgramId, Car& car, Settings& settings) {
+void VisModule::renderSensors(
+        GLuint shaderProgramId, 
+        Model& lineModel, 
+        Model& markerModel, 
+        Car& car, 
+        Settings& settings) {
 
     GLint lightingLocation = 
         glGetUniformLocation(shaderProgramId, "lighting");
@@ -187,16 +212,18 @@ void VisModule::renderSensors(GLuint shaderProgramId, Car& car, Settings& settin
         glm::vec4(car.laserSensor.pose.position, 1);
 
     if (settings.showBinaryLightSensor) {
-        drawCircle(
+        drawModel(
                 shaderProgramId,
+                markerModel,
                 binaryLightSensorWorldPos,
                 0.05f,
                 glm::vec3(1, 1, 0));
     }
 
     if (settings.showLaserSensor) {
-        drawCircle(
+        drawModel(
                 shaderProgramId,
+                markerModel,
                 laserSensorWorldPos,
                 0.05f,
                 glm::vec3(1, 1, 0));
@@ -217,6 +244,7 @@ void VisModule::renderSensors(GLuint shaderProgramId, Car& car, Settings& settin
 
         drawLine(
                 shaderProgramId,
+                lineModel,
                 binaryLightSensorWorldPos,
                 binaryLightSensorWorldPos + glm::vec3(glm::normalize(dir)) * lineLength,
                 0.005f,
@@ -228,6 +256,7 @@ void VisModule::renderSensors(GLuint shaderProgramId, Car& car, Settings& settin
     if (settings.showLaserSensor) {
         drawLine(
                 shaderProgramId,
+                lineModel,
                 laserSensorWorldPos,
                 laserSensorWorldPos + glm::vec3(glm::normalize(dir)) * lineLength,
                 0.005f,
@@ -239,6 +268,8 @@ void VisModule::renderSensors(GLuint shaderProgramId, Car& car, Settings& settin
 
 void VisModule::renderVisualization(
         GLuint shaderProgramId,
+        Model& lineModel,
+        Model& endPointModel,
         Scene::Visualization& visualization,
         Settings& settings) {
 
@@ -258,6 +289,7 @@ void VisModule::renderVisualization(
 
                 drawLine(
                         shaderProgramId,
+                        lineModel,
                         prevTrajectoryPoint,
                         trajectoryPoint,
                         0.01f,
@@ -273,8 +305,9 @@ void VisModule::renderVisualization(
             glm::vec2 pos = visualization.trajectoryPoints[127];
             glm::vec3 endPoint = glm::vec3(pos.x, 0.005, pos.y);
 
-            drawCircle(
+            drawModel(
                     shaderProgramId,
+                    endPointModel,
                     endPoint,
                     0.1f,
                     glm::vec3(1, 1, 0));

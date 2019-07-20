@@ -14,7 +14,7 @@ public:
     glm::vec3 scale;
 
     Pose();
-    Pose(glm::vec3 position);
+    explicit Pose(glm::vec3 position);
     Pose(float x, float y, float z);
 
     glm::vec3 getEulerAngles();
