@@ -16,7 +16,6 @@
 #include <helpers/Helpers.h>
 
 #include "scene/Tracks.h"
-#include "scene/Settings.h"
 #include "scene/Car.h"
 
 /*
@@ -100,7 +99,7 @@ struct Scene {
     unsigned int version = VERSION;
     
     /*
-     * If set the simulation clock will not be wind up each frame.
+     * If set the simulation clock will NOT be updated.
      */
     bool paused = false;
 
