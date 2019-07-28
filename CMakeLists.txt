@@ -95,7 +95,6 @@ set(HEADER_FILES
     ./src/helpers/ShaderProgram.h
     ./src/helpers/Input.h
     ./src/helpers/Capture.h
-    ./src/helpers/Dirent.h
     ./src/helpers/Camera.h
     ./src/helpers/ScreenQuad.h
     ./src/helpers/PointLight.h

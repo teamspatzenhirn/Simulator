@@ -1,7 +1,6 @@
 #include "Camera.h"
 #include "Capture.h"
 #include "Clock.h"
-#include "Dirent.h"
 #include "FollowCamera.h"
 #include "FpsCamera.h"
 #include "FrameBuffer.h"

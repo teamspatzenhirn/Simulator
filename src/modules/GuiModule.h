@@ -1,11 +1,8 @@
 #ifndef INC_2019_GUIMODULE_H
 #define INC_2019_GUIMODULE_H
 
-#include <experimental/filesystem>
-
 #include "scene/Scene.h"
-
-namespace fs = std::experimental::filesystem;
+#include "scene/Settings.h"
 
 class GuiModule {
 
@@ -19,10 +16,8 @@ class GuiModule {
     bool showAboutWindow = false;
 
     std::string imguiIniPath;
-    std::string openedPath;
-    std::string openedFilename;
-    std::string currentDirectory;
-    std::string selectedFilename;
+    std::string openedFilePath;
+    std::string selectedFilePath;
 
     std::string errorMessage;
 

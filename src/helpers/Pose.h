@@ -9,7 +9,7 @@
  * Because position, rotation and scale of an object are often
  * used in combination, it is convenient to bundle them. This
  * type is called "Pose" (even though "Transformation" would be
- * more accurate) as this name is much shorter.
+ * more accurate), as this name is much shorter.
  *
  * Pose is intentionally designed as a struct with only public
  * variables. While other implementations may use getter and

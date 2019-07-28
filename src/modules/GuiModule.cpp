@@ -4,7 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <experimental/filesystem>
+#include <filesystem>
 
 #include "Storage.h"
 
@@ -12,31 +12,21 @@
 #include "ocornut_imgui/imgui_impl_glfw.h"
 #include "ocornut_imgui/imgui_impl_opengl3.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     this->window = window;
 
-    fs::create_directories("./spatzsim_test");
-
-    unsigned long separatorIndex = scenePath.find_last_of("\\/");
-
     fs::path homePath = getResourcePath();
-
     imguiIniPath = homePath / "imgui.ini";
 
-    if (separatorIndex > 0) { 
-        openedPath = scenePath.substr(0, separatorIndex+1);
-        openedFilename = scenePath.substr(
-                separatorIndex+1, scenePath.size());
-    } else {
-        openedPath = homePath;
-        openedFilename = scenePath;
+    if (scenePath.empty()) {
+        scenePath = fs::canonical("./");
     }
 
-    currentDirectory = openedPath;
-    selectedFilename = openedFilename;
+    openedFilePath = fs::path(scenePath);
+    selectedFilePath = scenePath;
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -80,8 +70,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New")) {
                 scene = Scene();
-                openedPath = "";
-                openedFilename = "";
+                openedFilePath = "./";
             }
             if (ImGui::MenuItem("Open")) {
                 showOpenFileDialog = true;
@@ -122,10 +111,10 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
     ImGui::Text("Version: 1.3");
 
     std::string msg = "Config: ";
-    if (openedFilename.empty()) { 
+    if (!fs::is_regular_file(openedFilePath)) { 
         msg += "none";
     } else {
-        msg += openedFilename;
+        msg += fs::path(openedFilePath).filename();
     }
     ImGui::Text("%s", msg.c_str());
 
@@ -145,15 +134,15 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
         if (e.key == GLFW_KEY_R && e.action == GLFW_PRESS) {
 
-            if (!openedFilename.empty()) {
+            if (fs::is_regular_file(openedFilePath)) {
 
                 double savedSimulationTime = scene.simulationClock.time;
 
-                if (load(scene, openedPath + openedFilename)) {
+                if (load(scene, openedFilePath)) {
                     Scene::history.clear();
                     scene.simulationClock.time = savedSimulationTime;
                 } else {
-                    errorMessage = "Could not open " + selectedFilename + "!";
+                    errorMessage = "Could not open " + openedFilePath + "!";
                 }
             }
         }
@@ -798,18 +787,21 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 
         if (ImGui::Button("Open", ImVec2(120, 0))) {
 
-            if (load(scene, currentDirectory + selectedFilename)) {
-                openedPath = currentDirectory;
-                openedFilename = selectedFilename;
+            if (!fs::is_directory(selectedFilePath)) {
 
-                settings.configPath = currentDirectory + selectedFilename;
-                save(settings);
+                if (load(scene, selectedFilePath)) {
+                    openedFilePath = selectedFilePath;
 
-                Scene::history.clear();
+                    settings.configPath = selectedFilePath;
+                    save(settings);
 
-                ImGui::CloseCurrentPopup();
-            } else {
-                errorMessage = "Could not open " + selectedFilename + "!";
+                    Scene::history.clear();
+
+                    ImGui::CloseCurrentPopup();
+                } else {
+                    errorMessage = "Could not open "
+                        + std::string(fs::path(selectedFilePath).filename()) + "!";
+                }
             }
         }
 
@@ -829,8 +821,8 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
-    if (!openedFilename.empty() && !showSaveAs && show) {
-        save(scene, openedPath + openedFilename);
+    if (!fs::is_regular_file(openedFilePath) && !showSaveAs && show) {
+        save(scene,openedFilePath);
         return;
     }
 
@@ -843,12 +835,15 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
         renderDirectoryListing();
 
         if (ImGui::Button("Save", ImVec2(120, 0))) {
-            if (save(scene, currentDirectory + selectedFilename)) {
-                openedPath = currentDirectory;
-                openedFilename = selectedFilename;
-                ImGui::CloseCurrentPopup();
-            } else {
-                errorMessage = "Saving " + selectedFilename + " failed!";
+
+            if (!fs::is_directory(selectedFilePath)) {
+
+                if (save(scene, selectedFilePath)) {
+                    openedFilePath = selectedFilePath;
+                    ImGui::CloseCurrentPopup();
+                } else {
+                    errorMessage = "Saving " + selectedFilePath + " failed!";
+                }
             }
         }
 
@@ -873,79 +868,66 @@ void GuiModule::renderDirectoryListing() {
             false,
             ImGuiWindowFlags_HorizontalScrollbar);
 
-    DIR* dir = opendir(currentDirectory.c_str());
-
-    std::vector<dirent> entries;
-
-    if (dir) {
-       dirent* e;
-       while (NULL != (e = readdir(dir))) {
-           entries.push_back(*e);
-       }
-    } 
-
-    closedir(dir);
-
     if (ImGui::Selectable("./..", false)) {
-        // Sigh ... this is not a pretty solution but was easy to implement and
-        // works quite well. Unless someone decides to rape the ".." button like
-        // a fuckin lunatic the currentDirectory string should be fine.
-        currentDirectory += "../";
+        if (fs::is_regular_file(selectedFilePath)) {
+            selectedFilePath = fs::path(selectedFilePath)
+                .parent_path()
+                .parent_path();
+        } else {
+            selectedFilePath = fs::path(selectedFilePath).parent_path();
+        }
     }
 
-    std::vector<std::tuple<std::string, std::string>> entryNames;
-
-    for (dirent& e : entries) {
-
-        if (e.d_name[0] == '.') {
-            continue;
-        }
-
-        std::string filename(e.d_name);
-
-        std::string entryName = "";
-        if (e.d_type == DT_REG) {
-            entryName += filename;
-        }
-        if (e.d_type == DT_DIR) {
-            entryName = "./";
-            entryName += filename;
-        }
-        if (entryName.empty()) {
-            continue;
-        }
-
-        entryNames.push_back(std::make_tuple(filename, entryName));
+    fs::path listPath = selectedFilePath;
+    if (!fs::is_directory(listPath)) {
+        listPath = listPath.parent_path();
     }
 
-    std::sort(entryNames.begin(), entryNames.end(),
-            [](const std::tuple<std::string, std::string>& a,
-               const std::tuple<std::string, std::string>& b){
-                return std::get<1>(a) < std::get<1>(b);
-            });
+    std::vector<fs::directory_entry> entries;
 
-    for (std::tuple<std::string, std::string> e : entryNames) {
+    for (fs::directory_entry e : fs::directory_iterator(listPath)) {
+        entries.push_back(e);
+    }
 
-        std::string filename = std::get<0>(e);
-        std::string entryName = std::get<1>(e);
+    std::sort(
+            entries.begin(),
+            entries.end(),
+            [](auto& a, auto& b) -> bool {
+                if (a.is_directory() && !b.is_directory()) {
+                    return true;
+                } else if (!a.is_directory() && b.is_directory()) {
+                    return false;
+                } else {
+                    return a.path().filename() < b.path().filename();
+                }
+            }
+        );
+
+    for (fs::directory_entry e : entries) {
+
+        std::string displayName = e.path().stem();
+        displayName += e.path().extension();
 
         if (ImGui::Selectable(
-                    entryName.c_str(),
-                    selectedFilename == filename)) {
-            if (entryName[0] == '.') {
-                currentDirectory += filename + "/";
-            } else {
-                selectedFilename = filename;
-            }
+                    displayName.c_str(),
+                    selectedFilePath == e.path())) {
+
+            selectedFilePath = e.path();
         }
     }
 
     ImGui::EndChild();
 
+    //std::string inputFileName = "";
+
+    //if (fs::is_regular_file(selectedFilePath)) { 
+    std::string inputFileName = fs::path(selectedFilePath).filename();
+    //}
+
     char filenameInputBuf[256];
 
-    strncpy(filenameInputBuf,
-            selectedFilename.c_str(),
+    strncpy(filenameInputBuf, 
+            inputFileName.c_str(), 
             sizeof(filenameInputBuf));
 
     ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.8f);
@@ -953,38 +935,8 @@ void GuiModule::renderDirectoryListing() {
             filenameInputBuf, IM_ARRAYSIZE(filenameInputBuf));
     ImGui::PopItemWidth();
 
-    selectedFilename = std::string(filenameInputBuf);
-
-    /*
-     * Normalizes the directory path.
-     * Transforms bits like "./asdf/test/../" to "./asdf/"
-     */
-
-    std::stringstream ss(currentDirectory);
-    std::string pathElement;
-
-    std::vector<std::string> pathElements;
-
-    while (std::getline(ss, pathElement, '/')) {
-        if (pathElements.empty()) {
-            pathElements.push_back(pathElement);
-        } else if (pathElement == "..") {
-            if (pathElements.back() == ".."
-                    || pathElements.back() == ".") {
-                pathElements.push_back(pathElement);
-            } else {
-                pathElements.pop_back();
-            }
-        } else {
-            pathElements.push_back(pathElement);
-        }
-    }
-
-    currentDirectory = "";
-
-    for (std::string& s : pathElements) {
-        currentDirectory += s + "/";
-    }
+    selectedFilePath = fs::path(selectedFilePath)
+        .replace_filename(filenameInputBuf);
 }
 
 void GuiModule::begin() {

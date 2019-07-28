@@ -14,6 +14,7 @@
 
 #include "helpers/Helpers.h"
 #include "scene/Scene.h"
+#include "scene/Settings.h"
 
 class VisModule {
 
