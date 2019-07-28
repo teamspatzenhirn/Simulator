@@ -781,7 +781,10 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
         ImGui::OpenPopup("Open File");
     }
 
-    if (ImGui::BeginPopupModal("Open File", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (ImGui::BeginPopupModal(
+                "Open File", 
+                NULL, 
+                ImGuiWindowFlags_AlwaysAutoResize)) {
 
         renderDirectoryListing();
 
@@ -800,7 +803,8 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
                     ImGui::CloseCurrentPopup();
                 } else {
                     errorMessage = "Could not open "
-                        + std::string(fs::path(selectedFilePath).filename()) + "!";
+                        + std::string(fs::path(selectedFilePath).filename())
+                        + "!";
                 }
             }
         }
@@ -830,7 +834,10 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
         ImGui::OpenPopup("Save File");
     }
 
-    if (ImGui::BeginPopupModal("Save File", NULL, ImGuiWindowFlags_AlwaysAutoResize)) {
+    if (ImGui::BeginPopupModal(
+                "Save File", 
+                NULL, 
+                ImGuiWindowFlags_AlwaysAutoResize)) {
 
         renderDirectoryListing();
 
@@ -878,6 +885,8 @@ void GuiModule::renderDirectoryListing() {
         }
     }
 
+    // Obtain a list of all entries in the current directory
+
     fs::path listPath = selectedFilePath;
     if (!fs::is_directory(listPath)) {
         listPath = listPath.parent_path();
@@ -888,6 +897,10 @@ void GuiModule::renderDirectoryListing() {
     for (fs::directory_entry e : fs::directory_iterator(listPath)) {
         entries.push_back(e);
     }
+
+    // Because the entries may be sorted arbitrarily
+    // we sort them alphabetically.
+    // Also directories are sorted in before files.
 
     std::sort(
             entries.begin(),
@@ -918,11 +931,10 @@ void GuiModule::renderDirectoryListing() {
 
     ImGui::EndChild();
 
-    //std::string inputFileName = "";
-
-    //if (fs::is_regular_file(selectedFilePath)) { 
-    std::string inputFileName = fs::path(selectedFilePath).filename();
-    //}
+    std::string inputFileName = "";
+    if (!fs::is_directory(selectedFilePath)) { 
+        std::string inputFileName = fs::path(selectedFilePath).filename();
+    }
 
     char filenameInputBuf[256];
 
