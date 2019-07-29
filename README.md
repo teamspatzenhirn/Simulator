@@ -2,11 +2,16 @@
 
 ## Build
 
-SpatzSim is build using CMake (version > 3.0). All major dependencies are
-included in the git repository. For creating a window the xorg development
-sources must be installed on the system. On Ubuntu these can be installed with
-xorg-dev package. To build the simulator execute the following in the project
-directory:
+SpatzSim is build using CMake (version > 3.0) and a compiler supporting C++17.
+Most dependencies are included directly in the git repository. Additionally
+SpatzSim requires GLFW and GLEW to be installed as system libraries. On Ubuntu
+18.04 these can be installed with:
+
+```
+sudo apt install libglfw-dev libglew-dev
+```
+
+To build the simulator execute the following in the project directory:
 
 ```
 mkdir build
@@ -15,7 +20,13 @@ cmake ..
 make
 ```
 
-## External libraries:
+To build and run the simulator afterwards the "run" target is also defined
+
+```
+make run
+```
+
+## Used libraries:
 
 ### GLEW
 

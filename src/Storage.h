@@ -21,7 +21,7 @@ bool createResourcePath();
 /*
  * The idea of this storage implementation is that,
  * there are two functions: load and save. To store 
- * or ready any object on disk you just call these functions.
+ * or read any object on disk you just call these functions.
  * And depending on the object type an appropriate implementation
  * (see Storage.cpp) is called.
  *
