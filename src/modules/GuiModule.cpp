@@ -765,7 +765,7 @@ void GuiModule::renderAboutWindow() {
 
         ImGui::Text("SpatzSim 1.3");
         ImGui::Text(" ");
-        ImGui::Text("Initiated in fall 2018 by");
+        ImGui::Text("Created in fall 2018 by");
         ImGui::Text(" ");
         ImGui::Text("Gilberto Rossi");
         ImGui::Text("Johannes Herschel");
@@ -876,12 +876,14 @@ void GuiModule::renderDirectoryListing() {
             ImGuiWindowFlags_HorizontalScrollbar);
 
     if (ImGui::Selectable("./..", false)) {
-        if (fs::is_regular_file(selectedFilePath)) {
+        if (!fs::is_directory(selectedFilePath) 
+                || fs::path(selectedFilePath).filename().empty()) {
             selectedFilePath = fs::path(selectedFilePath)
                 .parent_path()
                 .parent_path();
         } else {
-            selectedFilePath = fs::path(selectedFilePath).parent_path();
+            selectedFilePath = fs::path(selectedFilePath)
+                .parent_path();
         }
     }
 
@@ -894,8 +896,12 @@ void GuiModule::renderDirectoryListing() {
 
     std::vector<fs::directory_entry> entries;
 
-    for (fs::directory_entry e : fs::directory_iterator(listPath)) {
-        entries.push_back(e);
+    if (fs::exists(listPath)) {
+        for (fs::directory_entry e : fs::directory_iterator(listPath)) {
+            if (std::string(e.path().filename()).at(0) != '.') {
+                entries.push_back(e);
+            }
+        }
     }
 
     // Because the entries may be sorted arbitrarily
@@ -921,6 +927,10 @@ void GuiModule::renderDirectoryListing() {
         std::string displayName = e.path().stem();
         displayName += e.path().extension();
 
+        if (e.is_directory()) {
+            displayName += "/";
+        }
+
         if (ImGui::Selectable(
                     displayName.c_str(),
                     selectedFilePath == e.path())) {
@@ -931,15 +941,10 @@ void GuiModule::renderDirectoryListing() {
 
     ImGui::EndChild();
 
-    std::string inputFileName = "";
-    if (!fs::is_directory(selectedFilePath)) { 
-        std::string inputFileName = fs::path(selectedFilePath).filename();
-    }
-
     char filenameInputBuf[256];
 
     strncpy(filenameInputBuf, 
-            inputFileName.c_str(), 
+            selectedFilePath.c_str(), 
             sizeof(filenameInputBuf));
 
     ImGui::PushItemWidth(ImGui::GetContentRegionAvailWidth() * 0.8f);
@@ -947,8 +952,7 @@ void GuiModule::renderDirectoryListing() {
             filenameInputBuf, IM_ARRAYSIZE(filenameInputBuf));
     ImGui::PopItemWidth();
 
-    selectedFilePath = fs::path(selectedFilePath)
-        .replace_filename(filenameInputBuf);
+    selectedFilePath = std::string(filenameInputBuf);
 }
 
 void GuiModule::begin() {
