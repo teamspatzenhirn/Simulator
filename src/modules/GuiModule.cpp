@@ -4,7 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <filesystem>
+#include <experimental/filesystem>
 
 #include "Storage.h"
 
@@ -12,7 +12,7 @@
 #include "ocornut_imgui/imgui_impl_glfw.h"
 #include "ocornut_imgui/imgui_impl_opengl3.h"
 
-namespace fs = std::filesystem;
+namespace fs = std::experimental::filesystem;
 
 GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
@@ -912,9 +912,9 @@ void GuiModule::renderDirectoryListing() {
             entries.begin(),
             entries.end(),
             [](auto& a, auto& b) -> bool {
-                if (a.is_directory() && !b.is_directory()) {
+                if (fs::is_directory(a) && !fs::is_directory(b)) {
                     return true;
-                } else if (!a.is_directory() && b.is_directory()) {
+                } else if (!fs::is_directory(a) && fs::is_directory(b)) {
                     return false;
                 } else {
                     return a.path().filename() < b.path().filename();
