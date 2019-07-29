@@ -20,7 +20,7 @@ cmake ..
 make
 ```
 
-To build and run the simulator afterwards the "run" target is also defined
+To build and run the simulator afterwards the "run" target can also be used:
 
 ```
 make run
