@@ -33,7 +33,6 @@ make run
 Used to load OpenGL extensions.
 
 http://glew.sourceforge.net/
-Using cmake-version https://github.com/Perlmint/glew-cmake
 
 ### GLFW
 
