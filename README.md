@@ -20,7 +20,7 @@ cmake ..
 make
 ```
 
-To build and run the simulator afterwards the "run" target is also defined
+To build and run the simulator afterwards the "run" target can also be used:
 
 ```
 make run
@@ -33,7 +33,6 @@ make run
 Used to load OpenGL extensions.
 
 http://glew.sourceforge.net/
-Using cmake-version https://github.com/Perlmint/glew-cmake
 
 ### GLFW
 
