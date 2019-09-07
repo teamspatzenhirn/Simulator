@@ -30,7 +30,7 @@ public:
     Camera mainCamera;
     Camera depthCamera;
 
-    FrameBuffer frameBuffer{1, 1, 4, GL_RGBA, GL_RGBA};
+    FrameBuffer frameBuffer{1, 1, 1, GL_RGBA, GL_RGBA};
     FrameBuffer bayerFrameBuffer{1, 1, 1, GL_RED, GL_RED};
     FrameBuffer depthCameraFrameBuffer{1, 1, 1, GL_RGB32F, GL_RGB};
 

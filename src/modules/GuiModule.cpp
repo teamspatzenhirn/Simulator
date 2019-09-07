@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <experimental/filesystem>
 
+#define GLM_ENABLE_EXPERIMENTAL 
+#include <glm/gtx/io.hpp>
+
 #include "Storage.h"
 
 #include "ocornut_imgui/imgui.h"
@@ -350,6 +353,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "checkpoint";
         }
 
+        if (ImGui::MenuItem("Missing spot")) {
+            newType = MISSING_SPOT;
+            newName = "missing_spot";
+        }
+
         ImGui::EndMenu();
     }
 
@@ -567,7 +575,7 @@ void GuiModule::renderSceneWindow(Scene& scene) {
 
         if (ImGui::TreeNode("Items")) {
 
-            for (Scene::Item i : scene.items) {
+            for (Scene::Item& i : scene.items) {
 
                 ImGui::PushID((int)i.id);
 

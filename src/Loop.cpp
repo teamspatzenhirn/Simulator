@@ -225,6 +225,12 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     
     scene.addToHistory();
 
+    // copy scene then update by the amount of time in the accumulator.
+    // this will give a very smooth rendering result even though the
+    // actual values in the scene are likely not correct due to floating
+    // point errors and because the accumulator might be small
+    // this is why the scene is copied here and restored down below
+    
     Scene preRenderScene = scene;
 
     update(scene, scene.simulationClock.accumulator);
@@ -272,6 +278,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 screenFrameBuffer);
     }
 
+    // restore scene saved before the rendering
+
     scene = preRenderScene;
 
     guiModule.renderRootWindow(scene, settings);
@@ -307,6 +315,7 @@ void Loop::update(Scene& scene, float deltaTime) {
             collisionModule.add(i.pose, modelStore.items[DYNAMIC_OBSTACLE]);
         } else if (i.type == PEDESTRIAN) {
             collisionModule.add(i.pose, modelStore.items[PEDESTRIAN]);
+
         } else if (i.type == DYNAMIC_PEDESTRIAN_RIGHT) {
             collisionModule.add(i.pose, modelStore.items[PEDESTRIAN]);
         } else if (i.type == DYNAMIC_PEDESTRIAN_LEFT) {
