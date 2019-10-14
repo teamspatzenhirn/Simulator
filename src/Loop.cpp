@@ -1,22 +1,20 @@
 #include "Loop.h"
 
-void setFramebufferSizeCallback(GLFWwindow* window, int width, int height) {
-
-    Loop& loop = *(Loop*)glfwGetWindowUserPointer(window);
-    loop.setFramebufferSize(window, width, height);
-}
-
-GLFWwindow* setupGlfw(GLsizei windowWidth, GLsizei windowHeight) {
+GLFWwindow* setupGlfw(Settings& settings) {
 
     if (!glfwInit()) {
         std::cout << "Could not initialize GLFW!" << std::endl;
         std::exit(-1);
     }
 
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, settings.msaaSamplesEditorView);
 
     GLFWwindow* window = glfwCreateWindow(
-        windowWidth, windowHeight, "SpatzSim", nullptr, nullptr);
+            settings.windowWidth,
+            settings.windowHeight,
+            "SpatzSim",
+            nullptr,
+            nullptr);
 
     glfwMakeContextCurrent(window);
 
@@ -29,12 +27,15 @@ GLFWwindow* setupGlfw(GLsizei windowWidth, GLsizei windowHeight) {
 }
 
 Loop::Loop(Settings settings)
-    : window{setupGlfw(settings.windowWidth, settings.windowHeight)}
-    , windowWidth{settings.windowWidth}
-    , windowHeight{settings.windowHeight}
+    : window{setupGlfw(settings)}
     , settings{settings}
-    , screenFrameBuffer{windowWidth, windowHeight}
-    , frameBuffer{windowWidth, windowHeight, 4, GL_RGBA, GL_RGBA}
+    , screenFrameBuffer{settings.windowWidth, settings.windowHeight}
+    , frameBuffer{
+        settings.windowWidth,
+        settings.windowHeight,
+        settings.msaaSamplesEditorView,
+        GL_RGBA,
+        GL_RGBA}
     , screenQuad{
         settings.resourcePath + "shaders/ScreenQuadVertex.glsl",
         settings.resourcePath + "shaders/ScreenQuadFragment.glsl"}
@@ -56,8 +57,6 @@ Loop::Loop(Settings settings)
     glDepthFunc(GL_LEQUAL);
 
     glfwSwapInterval(0);
-    glfwSetWindowUserPointer(window, this);
-    glfwSetFramebufferSizeCallback(window, setFramebufferSizeCallback);
 
     initInput(window);
 }
@@ -183,7 +182,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
     if (FPS_CAMERA == selectedCamera) {
 
-        scene.fpsCamera.aspectRatio = (float)windowWidth / (float)windowHeight;
+        scene.fpsCamera.aspectRatio = 
+            (float)settings.windowWidth / (float)settings.windowHeight;
 
         if (settings.showMarkers) {
             markerModule.update(window, scene.fpsCamera, scene.selection);
@@ -222,7 +222,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     }
 
     // start rendering camera images
-    
+
     scene.addToHistory();
 
     // copy scene then update by the amount of time in the accumulator.
@@ -251,8 +251,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
     if (MAIN_CAMERA == selectedCamera) {
         renderToScreen(
-                windowWidth, 
-                windowHeight, 
+                settings.windowWidth, 
+                settings.windowHeight, 
                 screenQuad, 
                 scene.car.mainCamera.getAspectRatio(), 
                 true, 
@@ -260,8 +260,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 screenFrameBuffer);
     } else if (DEPTH_CAMERA == selectedCamera) {
         renderToScreen(
-                windowWidth, 
-                windowHeight, 
+                settings.windowWidth, 
+                settings.windowHeight, 
                 screenQuad, 
                 scene.car.depthCamera.getDepthAspectRatio(), 
                 true, 
@@ -269,8 +269,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 screenFrameBuffer);
     } else { // FPS_CAMERA or FOLLOW_CAMERA
         renderToScreen(
-                windowWidth, 
-                windowHeight, 
+                settings.windowWidth, 
+                settings.windowHeight, 
                 screenQuad, 
                 1, 
                 false, 
@@ -282,9 +282,20 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
     scene = preRenderScene;
 
+    if (guiModule.renderSettingsWindow(settings)) {
+        glfwSetWindowSize(
+                window,
+                settings.windowWidth,
+                settings.windowHeight);
+    } else {
+        glfwGetWindowSize(
+                window,
+                &settings.windowWidth,
+                &settings.windowHeight);
+    }
+
     guiModule.renderRootWindow(scene, settings);
     guiModule.renderSceneWindow(scene);
-    guiModule.renderSettingsWindow(settings);
     guiModule.renderRuleWindow(scene.rules);
     guiModule.renderHelpWindow();
     guiModule.renderAboutWindow();
@@ -357,6 +368,15 @@ void Loop::renderScene(Scene& scene, GLuint shaderProgramId) {
 
 void Loop::renderFpsView(Scene& scene) {
 
+    // make sure that framebuffer is resize properly
+
+    frameBuffer.resize(
+            settings.windowWidth,
+            settings.windowHeight,
+            settings.msaaSamplesEditorView);
+
+    // render the actual scene first
+
     glUseProgram(fpsShaderProgram.id);
 
     GLint timeLocation = glGetUniformLocation(fpsShaderProgram.id, "time");
@@ -367,7 +387,7 @@ void Loop::renderFpsView(Scene& scene) {
 
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer.id);
 
-    glViewport(0, 0, windowWidth, windowHeight);
+    glViewport(0, 0, settings.windowWidth, settings.windowHeight);
 
     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -507,15 +527,4 @@ void Loop::renderDepthView(Scene& scene) {
     renderScene(scene, depthCameraShaderProgram.id);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-}
-
-void Loop::setFramebufferSize(GLFWwindow* window, int width, int height) {
-
-    if (this->window == window) {
-
-        windowWidth = width;
-        windowHeight = height;
-
-        frameBuffer.resize(width, height, settings.msaaSamplesEditorView);
-    }
 }

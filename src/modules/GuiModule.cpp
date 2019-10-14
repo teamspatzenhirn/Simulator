@@ -642,11 +642,11 @@ void GuiModule::renderSceneWindow(Scene& scene) {
     }
 }
 
-void GuiModule::renderSettingsWindow(Settings& settings) {
+bool GuiModule::renderSettingsWindow(Settings& settings) {
+
+    bool changed = false;
 
     if (showSettingsWindow) { 
-
-        bool changed = false;
 
         ImGui::Begin("Settings", &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -665,12 +665,29 @@ void GuiModule::renderSettingsWindow(Settings& settings) {
         changed |= ImGui::Checkbox("Show laser sensor", &settings.showLaserSensor);
         changed |= ImGui::Checkbox("Show binary light sensor", &settings.showBinaryLightSensor);
 
+        ImGui::Separator();
+
+        int windowWidth = settings.windowWidth;
+        if (ImGui::InputInt("Window width", &windowWidth, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            settings.windowWidth = std::max(std::min(windowWidth, 4096), 320);
+            changed |= true;
+        }
+        int windowHeight = settings.windowHeight;
+        if (ImGui::InputInt("Window height", &windowHeight, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue)) {
+            settings.windowHeight = std::max(std::min(windowHeight, 2160), 240);
+            changed |= true;
+        }
+        changed |= ImGui::DragInt("MSAA Level", &settings.msaaSamplesEditorView, 1, 1, 32);
+        settings.msaaSamplesEditorView = std::max(std::min(settings.msaaSamplesEditorView, 32), 1);
+
         ImGui::End();
 
         if (changed) {
             save(settings);
         }
     }
+
+    return changed;
 }
 
 void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
@@ -773,7 +790,7 @@ void GuiModule::renderAboutWindow() {
 
         ImGui::Text("SpatzSim 1.3");
         ImGui::Text(" ");
-        ImGui::Text("Initiated in fall 2018 by");
+        ImGui::Text("Created in fall 2018 by");
         ImGui::Text(" ");
         ImGui::Text("Gilberto Rossi");
         ImGui::Text("Johannes Herschel");

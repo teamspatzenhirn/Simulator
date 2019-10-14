@@ -36,7 +36,7 @@ public:
 
     void renderRootWindow(Scene& scene, Settings& settings);
     void renderSceneWindow(Scene& scene);
-    void renderSettingsWindow(Settings& settings);
+    bool renderSettingsWindow(Settings& settings);
     void renderRuleWindow(const Scene::Rules& rules);
     void renderHelpWindow();
     void renderAboutWindow();

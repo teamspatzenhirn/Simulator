@@ -31,6 +31,12 @@ struct Settings {
     int windowHeight = 600;
 
     /*
+     * The amount of samples used for multi sampling antialiasing in the editor
+     * view. Must be > 0 and <= to what your GPU can handle.
+     */
+    int msaaSamplesEditorView = 4;
+
+    /*
      * The speed of the simulation given as fraction of real time.
      */
     float simulationSpeed = 0.25f;
@@ -39,12 +45,6 @@ struct Settings {
      * The delta time (in seconds) for one simulation update. 
      */
     float updateDeltaTime = 0.005f;
-
-    /*
-     * The amount of samples used for multi sampling antialiasing in the editor
-     * view. Must be > 0 and <= to what your GPU can handle.
-     */
-    int msaaSamplesEditorView = 4;
 
     /*
      * If set marker/modifier points will be rendered.

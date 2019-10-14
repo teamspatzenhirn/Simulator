@@ -23,9 +23,6 @@ public:
 
     GLFWwindow* window;
 
-    GLsizei windowWidth;
-    GLsizei windowHeight;
-
     Settings settings;
 
     FrameBuffer screenFrameBuffer;
@@ -73,8 +70,6 @@ public:
 
     void loop(Scene& scene);
     void step(Scene& scene, float frameDeltaTime);
-
-    void setFramebufferSize(GLFWwindow* window, int width, int height);
 };
 
 #endif
