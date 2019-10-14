@@ -9,8 +9,6 @@
  */
 struct Settings {
 
-    Settings(bool loadFromDotfile = false);
-
     /*
      * The path where the global settings file is stored.
      */
@@ -19,7 +17,7 @@ struct Settings {
     /*
      * The path from where resources (e.g. models, shaders) are loaded.
      */
-    std::string resourcePath;
+    std::string resourcePath = "../";
 
     /*
      * The path to the config file that will be loaded on startup.
@@ -72,12 +70,12 @@ struct Settings {
     bool showVehicleTrajectory = true;
 
     /*
-     * If set the ray sent out by the front laser sensor will be draw.
+     * If set, the ray sent out by the front laser sensor will be draw.
      */
     bool showLaserSensor = true;
 
     /*
-     * If set the ray sent out by the back binary light sensor will be draw.
+     * If set, the ray sent out by the back binary light sensor will be draw.
      */
     bool showBinaryLightSensor = true;
 };

@@ -221,15 +221,15 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 scene.simulationClock.time);
     }
 
-    // render camera images
+    // start rendering camera images
     
     scene.addToHistory();
 
     // copy scene then update by the amount of time in the accumulator.
     // this will give a very smooth rendering result even though the
     // actual values in the scene are likely not correct due to floating
-    // point errors and because the accumulator might be small
-    // this is why the scene is copied here and restored down below
+    // point errors and because the accumulator might be small.
+    // this is why the scene is copied here and restored at mark (1)
     
     Scene preRenderScene = scene;
 
@@ -278,7 +278,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 screenFrameBuffer);
     }
 
-    // restore scene saved before the rendering
+    // mark (1): restore scene saved before the rendering
 
     scene = preRenderScene;
 

@@ -1,13 +1,10 @@
-#include <iostream>
 #include <experimental/filesystem>
 
 #include "Storage.h"
+#include "scene/Scene.h"
 
 #include "bly7_obj-loader/OBJ_Loader.h"
 #include "nlohmann_json/json.hpp"
-
-#include "scene/Scene.h"
-#include "helpers/Model.h"
 
 namespace fs = std::experimental::filesystem;
 
@@ -815,12 +812,6 @@ bool save(T& t, std::string path) {
 
 /*
  * Template instantiations/specializations for json load/save functions
- *
- * Providing instantiations of a templated function in the cpp file,
- * is actually a neat trick, which prevents that its implementation
- * must be moved to the header file. Also it lets us control for which
- * types one can call the templated load/save functions. If no
- * specialization for a type is provided, load/save cannot be called.
  */
 
 template <>
