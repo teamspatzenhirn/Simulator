@@ -8,38 +8,6 @@
 
 namespace fs = std::experimental::filesystem;
 
-std::string getResourcePath() {
-
-    fs::path resourcePath("./");
-
-    char* charResourcePath = getenv("HOME");
-    if (charResourcePath) {
-        resourcePath = fs::path(charResourcePath);
-    } else {
-        charResourcePath = getenv("HOMEPATH");
-        if (charResourcePath) {
-            resourcePath = fs::path(charResourcePath);
-        }
-    }
-
-    if (fs::path("./") != resourcePath) {
-        resourcePath /= ".config/spatzsim/";
-    }
-
-    return resourcePath;
-}
-
-bool createResourcePath() {
-
-    fs::path resourcePath = getResourcePath();
-
-    if (!fs::exists(resourcePath)) {
-        return fs::create_directories(resourcePath);
-    }
-
-    return true;
-}
-
 /*
  * JSON (de-)serialization functions comin' up here!
  */
@@ -724,8 +692,6 @@ void from_json(const json& j, Scene& s) {
 void to_json(json& j, const Settings& s) {
 
     j = json({
-            {"windowWidth", s.windowWidth},
-            {"windowHeight", s.windowHeight},
             {"simulationSpeed", s.simulationSpeed},
             {"configPath", s.configPath},
             {"showMarkers", s.showMarkers},
@@ -733,14 +699,15 @@ void to_json(json& j, const Settings& s) {
             {"fancyVehiclePath", s.fancyVehiclePath},
             {"showVehicleTrajectory", s.showVehicleTrajectory},
             {"showLaserSensor", s.showLaserSensor},
-            {"showBinaryLightSensor", s.showBinaryLightSensor}
+            {"showBinaryLightSensor", s.showBinaryLightSensor},
+            {"windowWidth", s.windowWidth},
+            {"windowHeight", s.windowHeight},
+            {"msaaSamplesEditorView", s.msaaSamplesEditorView}
         });
 }
 
 void from_json(const json& j, Settings& s) {
 
-    tryGet(j, "windowWidth", s.windowWidth);
-    tryGet(j, "windowHeight", s.windowHeight);
     tryGet(j, "simulationSpeed", s.simulationSpeed);
     tryGet(j, "configPath", s.configPath);
     tryGet(j, "showMarkers", s.showMarkers);
@@ -749,6 +716,9 @@ void from_json(const json& j, Settings& s) {
     tryGet(j, "showVehicleTrajectory", s.showVehicleTrajectory);
     tryGet(j, "showLaserSensor", s.showLaserSensor);
     tryGet(j, "showBinaryLightSensor", s.showBinaryLightSensor);
+    tryGet(j, "windowWidth", s.windowWidth);
+    tryGet(j, "windowHeight", s.windowHeight);
+    tryGet(j, "msaaSamplesEditorView", s.msaaSamplesEditorView);
 }
 
 /*
@@ -789,149 +759,187 @@ bool saveJson(json j, std::string path) {
     return true;
 }
 
-/*
- * Generic json load/save functions
- */
+namespace storage {
 
-template <typename T>
-bool load(T& t, std::string path) {
+    std::string getXDGSettingsDirectory() {
 
-    json j;
-    bool ok = loadJson(j, path);
-    if (ok) {
-        t = j;
-    }
-    return ok;
-}
+        fs::path resourcePath("./");
 
-template <typename T>
-bool save(T& t, std::string path) {
-
-    return saveJson(t, path);
-}
-
-/*
- * Template instantiations/specializations for json load/save functions
- */
-
-template <>
-bool load<Settings>(Settings& settings, std::string path) {
-
-    json j;
-    bool ok = loadJson(j, path);
-    if (ok) {
-        settings = j;
-        settings.settingsFilePath = path; 
-        settings.resourcePath = getResourcePath(); 
-    }
-
-    return ok;
-}
-
-template bool save<Settings>(Settings& t, std::string path);
-
-template bool load<Scene>(Scene& t, std::string path);
-template bool save<Scene>(Scene& t, std::string path);
-
-void convertMaterial(objl::Material& meshMat, Model::Material& mat) {
-
-    mat.name = meshMat.name;
-    mat.ka = {meshMat.Ka.X, meshMat.Ka.Y, meshMat.Ka.Z};
-    mat.kd = {meshMat.Kd.X, meshMat.Kd.Y, meshMat.Kd.Z};
-    mat.ks = {meshMat.Ks.X, meshMat.Ks.Y, meshMat.Ks.Z};
-    mat.ns = meshMat.Ns;
-    mat.ni = meshMat.Ni;
-    mat.d = meshMat.d;
-    mat.illum = meshMat.illum;
-    mat.mapKa = meshMat.map_Ka;
-    mat.mapKd = meshMat.map_Kd;
-    mat.mapKs = meshMat.map_Ks;
-    mat.mapD = meshMat.map_d;
-    mat.mapBump = meshMat.map_bump;
-}
-
-void convertVertex(objl::Vertex& meshVtx, Model::Vertex& vertex) {
-
-    vertex.position = {
-        meshVtx.Position.X, 
-        meshVtx.Position.Y, 
-        meshVtx.Position.Z
-    };
-
-    vertex.normal = {
-        meshVtx.Normal.X,
-        meshVtx.Normal.Y
-    };
-
-    vertex.textureCoordinate = {
-        meshVtx.TextureCoordinate.X,
-        meshVtx.TextureCoordinate.Y
-    };
-}
-
-template <>
-bool load<Model>(Model& model, std::string path) {
-
-    objl::Loader loader;
-
-    if (!loader.LoadFile(path)) {
-        return false;
-    }
-
-    if (loader.LoadedMeshes.size() < 1) {
-        return false;
-    }
-
-    if (loader.LoadedMeshes.size() == 1) {
-        objl::Mesh mesh = loader.LoadedMeshes.back();
-
-        convertMaterial(mesh.MeshMaterial, model.material);
-
-        for (objl::Vertex& v : mesh.Vertices) {
-           model.vertices.emplace_back();
-           convertVertex(v, model.vertices.back());
-        }
-    } else {
-        for (objl::Mesh& mesh : loader.LoadedMeshes) {
-            model.subModels.emplace_back(model.storageType);
-            Model& subModel = model.subModels.back();
-
-            convertMaterial(mesh.MeshMaterial, subModel.material);
-
-            for (objl::Vertex& v : mesh.Vertices) {
-               subModel.vertices.emplace_back();
-               convertVertex(v, subModel.vertices.back());
+        char* charResourcePath = getenv("HOME");
+        if (charResourcePath) {
+            resourcePath = fs::path(charResourcePath);
+        } else {
+            charResourcePath = getenv("HOMEPATH");
+            if (charResourcePath) {
+                resourcePath = fs::path(charResourcePath);
             }
         }
+
+        if (fs::path("./") != resourcePath) {
+            resourcePath /= ".config/spatzsim/";
+        }
+
+        return resourcePath;
     }
 
-    model.updateBoundingBox();
-    model.upload();
+    bool createXDGSettingsDirectory() {
 
-    return true;
-}
+        fs::path resourcePath = getXDGSettingsDirectory();
 
-/*
- * Additional non-generic overloads
- */
+        if (!fs::exists(resourcePath)) {
+            return fs::create_directories(resourcePath);
+        }
 
-bool load(Settings& settings) {
+        return true;
+    }
 
-    fs::path resourcePath = getResourcePath();
-    fs::path settingsFilePath = resourcePath / "settings.json";
 
-    json j;
-    bool ok = loadJson(j, settingsFilePath);
-    if (ok) {
-        settings = j;
+    /*
+     * Generic json load/save functions
+     */
+
+    template <typename T>
+    bool load(T& t, std::string path) {
+
+        json j;
+        bool ok = loadJson(j, path);
+        if (ok) {
+            t = j;
+        }
+        return ok;
+    }
+
+    template <typename T>
+    bool save(T& t, std::string path) {
+
+        return saveJson(t, path);
+    }
+
+    /*
+     * Template instantiations/specializations for json load/save functions
+     */
+
+    template <>
+    bool load<Settings>(Settings& settings, std::string path) {
+
+        json j;
+        bool ok = loadJson(j, path);
+        if (ok) {
+            settings = j;
+            settings.settingsFilePath = path; 
+        }
+
+        return ok;
+    }
+
+    template bool save<Settings>(Settings& t, std::string path);
+
+    template bool load<Scene>(Scene& t, std::string path);
+    template bool save<Scene>(Scene& t, std::string path);
+
+    void convertMaterial(objl::Material& meshMat, Model::Material& mat) {
+
+        mat.name = meshMat.name;
+        mat.ka = {meshMat.Ka.X, meshMat.Ka.Y, meshMat.Ka.Z};
+        mat.kd = {meshMat.Kd.X, meshMat.Kd.Y, meshMat.Kd.Z};
+        mat.ks = {meshMat.Ks.X, meshMat.Ks.Y, meshMat.Ks.Z};
+        mat.ns = meshMat.Ns;
+        mat.ni = meshMat.Ni;
+        mat.d = meshMat.d;
+        mat.illum = meshMat.illum;
+        mat.mapKa = meshMat.map_Ka;
+        mat.mapKd = meshMat.map_Kd;
+        mat.mapKs = meshMat.map_Ks;
+        mat.mapD = meshMat.map_d;
+        mat.mapBump = meshMat.map_bump;
+    }
+
+    void convertVertex(objl::Vertex& meshVtx, Model::Vertex& vertex) {
+
+        vertex.position = {
+            meshVtx.Position.X, 
+            meshVtx.Position.Y, 
+            meshVtx.Position.Z
+        };
+
+        vertex.normal = {
+            meshVtx.Normal.X,
+            meshVtx.Normal.Y
+        };
+
+        vertex.textureCoordinate = {
+            meshVtx.TextureCoordinate.X,
+            meshVtx.TextureCoordinate.Y
+        };
+    }
+
+    template <>
+    bool load<Model>(Model& model, std::string path) {
+
+        objl::Loader loader;
+
+        if (!loader.LoadFile(path)) {
+            return false;
+        }
+
+        if (loader.LoadedMeshes.size() < 1) {
+            return false;
+        }
+
+        if (loader.LoadedMeshes.size() == 1) {
+            objl::Mesh mesh = loader.LoadedMeshes.back();
+
+            convertMaterial(mesh.MeshMaterial, model.material);
+
+            for (objl::Vertex& v : mesh.Vertices) {
+               model.vertices.emplace_back();
+               convertVertex(v, model.vertices.back());
+            }
+        } else {
+            for (objl::Mesh& mesh : loader.LoadedMeshes) {
+                model.subModels.emplace_back(model.storageType);
+                Model& subModel = model.subModels.back();
+
+                convertMaterial(mesh.MeshMaterial, subModel.material);
+
+                for (objl::Vertex& v : mesh.Vertices) {
+                   subModel.vertices.emplace_back();
+                   convertVertex(v, subModel.vertices.back());
+                }
+            }
+        }
+
+        model.updateBoundingBox();
+        model.upload();
+
+        return true;
+    }
+
+    /*
+     * Additional non-generic overloads
+     */
+
+    bool load(Settings& settings) {
+
+        fs::path settingsPath = getXDGSettingsDirectory();
+        fs::path settingsFilePath = settingsPath / "settings.json";
+
+        json j;
+        bool ok = loadJson(j, settingsFilePath);
+        if (ok) {
+            settings = j;
+        }
+
+        // if loading fails, we still set the default setting path
+        // in order to later store a new settings file at this path
+
         settings.settingsFilePath = settingsFilePath;
-        settings.resourcePath = resourcePath;
+
+        return ok;
     }
 
-    return ok;
-}
+    bool save(Settings& settings) {
 
-bool save(Settings& settings) {
-
-    return saveJson(settings, settings.settingsFilePath);
+        return saveJson(settings, settings.settingsFilePath);
+    }
 }

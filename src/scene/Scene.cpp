@@ -10,7 +10,7 @@ Scene::Scene() : version{VERSION} {
 
 Scene::Scene(std::string path) : version{VERSION} {
 
-    load(*this, path);
+    storage::load(*this, path);
 }
 
 Scene::~Scene() {

@@ -18,7 +18,7 @@ PYBIND11_MODULE(pyspatzsim, m) {
 
     pybind11::class_<Settings>(m, "Settings")
         .def(pybind11::init())
-        .def("load", [](Settings& self) { load(self); })
+        .def("load", [](Settings& self) { storage::load(self); })
         .def_readwrite("resource_path", &Settings::resourcePath)
         .def_readwrite("simulation_speed", &Settings::simulationSpeed);
 

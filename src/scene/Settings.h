@@ -15,14 +15,14 @@ struct Settings {
     std::string settingsFilePath;
 
     /*
-     * The path from where resources (e.g. models, shaders) are loaded.
-     */
-    std::string resourcePath = "../";
-
-    /*
      * The path to the config file that will be loaded on startup.
      */
     std::string configPath;
+
+    /*
+     * The path from where resources (e.g. models, shaders) are loaded.
+     */
+    std::string resourcePath = "/use/local/share/spatzsim";
 
     /*
      * Dimensions of the main window.

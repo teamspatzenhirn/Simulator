@@ -21,7 +21,7 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     this->window = window;
 
-    fs::path homePath = getResourcePath();
+    fs::path homePath = storage::getXDGSettingsDirectory();
     imguiIniPath = homePath / "imgui.ini";
 
     if (scenePath.empty()) {
@@ -141,7 +141,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
                 double savedSimulationTime = scene.simulationClock.time;
 
-                if (load(scene, openedFilePath)) {
+                if (storage::load(scene, openedFilePath)) {
                     Scene::history.clear();
                     scene.simulationClock.time = savedSimulationTime;
                 } else {
@@ -648,46 +648,66 @@ bool GuiModule::renderSettingsWindow(Settings& settings) {
 
     if (showSettingsWindow) { 
 
-        ImGui::Begin("Settings", &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
+        ImGui::Begin("Settings", 
+                &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
 
-        ImGui::Text("Settings file path: %s", settings.settingsFilePath);
-
-        ImGui::Separator();
-
-        changed |= ImGui::DragFloat("Simulation speed", &settings.simulationSpeed, 0.05f, 0.01f, 10.0f);
-        settings.simulationSpeed = std::max(std::min(settings.simulationSpeed, 10.0f), 0.01f);
-
-        changed |= ImGui::DragFloat("Update delta time", &settings.updateDeltaTime, 0.001f, 0.001f, 1.0f);
-        settings.updateDeltaTime = std::max(std::min(settings.updateDeltaTime, 1.0f), 0.001f);
+        ImGui::Text("Settings file path: %s", 
+                settings.settingsFilePath.c_str());
+        ImGui::Text("Config file path: %s", 
+                settings.configPath.c_str());
+        ImGui::Text("Resource path: %s", 
+                settings.resourcePath.c_str());
 
         ImGui::Separator();
 
-        changed |= ImGui::Checkbox("Show markers", &settings.showMarkers);
-        changed |= ImGui::Checkbox("Show vehicle path", &settings.showVehiclePath);
-        changed |= ImGui::Checkbox("Fancy vehicle path", &settings.fancyVehiclePath);
-        changed |= ImGui::Checkbox("Show vehicle trajectory", &settings.showVehicleTrajectory);
-        changed |= ImGui::Checkbox("Show laser sensor", &settings.showLaserSensor);
-        changed |= ImGui::Checkbox("Show binary light sensor", &settings.showBinaryLightSensor);
+        changed |= ImGui::DragFloat("Simulation speed",
+                &settings.simulationSpeed, 0.05f, 0.01f, 10.0f);
+        settings.simulationSpeed = 
+            std::max(std::min(settings.simulationSpeed, 10.0f), 0.01f);
+
+        changed |= ImGui::DragFloat("Update delta time", 
+                &settings.updateDeltaTime, 0.001f, 0.001f, 1.0f);
+        settings.updateDeltaTime = 
+            std::max(std::min(settings.updateDeltaTime, 1.0f), 0.001f);
+
+        ImGui::Separator();
+
+        changed |= ImGui::Checkbox("Show markers", 
+                &settings.showMarkers);
+        changed |= ImGui::Checkbox("Show vehicle path", 
+                &settings.showVehiclePath);
+        changed |= ImGui::Checkbox("Fancy vehicle path", 
+                &settings.fancyVehiclePath);
+        changed |= ImGui::Checkbox("Show vehicle trajectory", 
+                &settings.showVehicleTrajectory);
+        changed |= ImGui::Checkbox("Show laser sensor", 
+                &settings.showLaserSensor);
+        changed |= ImGui::Checkbox("Show binary light sensor",
+                &settings.showBinaryLightSensor);
 
         ImGui::Separator();
 
         int windowWidth = settings.windowWidth;
-        if (ImGui::InputInt("Window width", &windowWidth, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue)) {
+        if (ImGui::InputInt("Window width", 
+                    &windowWidth, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue)) {
             settings.windowWidth = std::max(std::min(windowWidth, 4096), 320);
             changed |= true;
         }
         int windowHeight = settings.windowHeight;
-        if (ImGui::InputInt("Window height", &windowHeight, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue)) {
+        if (ImGui::InputInt("Window height", 
+                    &windowHeight, 0, 0, ImGuiInputTextFlags_EnterReturnsTrue)) {
             settings.windowHeight = std::max(std::min(windowHeight, 2160), 240);
             changed |= true;
         }
-        changed |= ImGui::DragInt("MSAA Level", &settings.msaaSamplesEditorView, 1, 1, 32);
-        settings.msaaSamplesEditorView = std::max(std::min(settings.msaaSamplesEditorView, 32), 1);
+        changed |= ImGui::DragInt("MSAA Level", 
+                &settings.msaaSamplesEditorView, 1, 1, 32);
+        settings.msaaSamplesEditorView = 
+            std::max(std::min(settings.msaaSamplesEditorView, 32), 1);
 
         ImGui::End();
 
         if (changed) {
-            save(settings);
+            storage::save(settings);
         }
     }
 
@@ -821,11 +841,11 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 
             if (!fs::is_directory(selectedFilePath)) {
 
-                if (load(scene, selectedFilePath)) {
+                if (storage::load(scene, selectedFilePath)) {
                     openedFilePath = selectedFilePath;
 
                     settings.configPath = selectedFilePath;
-                    save(settings);
+                    storage::save(settings);
 
                     Scene::history.clear();
 
@@ -855,7 +875,7 @@ void GuiModule::renderOpenFileDialog(Scene& scene, Settings& settings, bool show
 void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
     if (!fs::is_regular_file(openedFilePath) && !showSaveAs && show) {
-        save(scene,openedFilePath);
+        storage::save(scene,openedFilePath);
         return;
     }
 
@@ -874,7 +894,7 @@ void GuiModule::renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs) {
 
             if (!fs::is_directory(selectedFilePath)) {
 
-                if (save(scene, selectedFilePath)) {
+                if (storage::save(scene, selectedFilePath)) {
                     openedFilePath = selectedFilePath;
                     ImGui::CloseCurrentPopup();
                 } else {
