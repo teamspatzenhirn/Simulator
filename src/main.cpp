@@ -69,7 +69,7 @@ int main (int argc, char* argv[]) {
     }
 
     if (!settingsOk) { 
-        std::cerr << "No settings found at "
+        std::cerr << "Loading settings from "
                   << settingsPath
                   << " failed!"
                   << std::endl;

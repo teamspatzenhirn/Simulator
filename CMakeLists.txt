@@ -197,8 +197,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 add_custom_target(run
     COMMAND if [ \"$ENV{VNCDESKTOP}\" ]\;
         # This make the simulator run via VNC by using gl from display :0
-        then vglrun -d :0 ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
-        else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
+        then vglrun -d :0 ${CMAKE_BINARY_DIR}/${PROJECT_NAME} 
+            -r ${PROJECT_SOURCE_DIR}/
+            -s test_settings.json\;
+        else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}
+            -r ${PROJECT_SOURCE_DIR}/
+            -s test_settings.json\;
     fi
     DEPENDS ${EXE_TARGET_NAME})
 
