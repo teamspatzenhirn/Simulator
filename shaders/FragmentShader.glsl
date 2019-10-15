@@ -32,8 +32,11 @@ void main () {
 
     if (lighting) {
         // implements blinn-phong shading
+        
+        vec3 lightFragVector = lightPosition - fragPosition.xyz / fragPosition.w;
+        float d = length(lightFragVector);
 
-        vec3 L = normalize(lightPosition - fragPosition.xyz / fragPosition.w);
+        vec3 L = lightFragVector / d;
         vec3 V = normalize(fragCameraPosition - fragPosition.xyz / fragPosition.w);
         vec3 H = normalize(L + V); 
 
@@ -43,9 +46,20 @@ void main () {
         vec3 ambient = kd * ia; 
 
         vec3 diffuse = kd * id * max(dot(fragNormal, L), 0.0);
-        vec3 specular = ks * is * pow(max(dot(fragNormal, H), 0.0), ns);
+        vec3 specular = ks * is * pow(max(dot(fragNormal, H), 0.0), ns * 40);
 
-        fragColor = vec4(ambient + diffuse + specular * 10, 1.0);
+        // account for distance
+
+        diffuse = diffuse / d / d;
+        specular = specular / d / d;
+
+        // gamma correction
+
+        vec3 colorLinear = ambient + diffuse + specular * 10000;
+        float gamma = 1.3;
+        vec3 colorGammaCorrected = pow(colorLinear, vec3(1.0/gamma));
+
+        fragColor = vec4(colorGammaCorrected, 1.0);
     } else {
         fragColor = vec4(kd, 1.0);
     }
