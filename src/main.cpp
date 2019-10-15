@@ -6,7 +6,12 @@ int main (int argc, char* argv[]) {
     createResourcePath();
 
     Settings settings;
-    load(settings);
+    if (!load(settings)) { 
+        std::cerr << "Loading settings from "
+                  << getResourcePath()
+                  << "settings.json failed!"
+                  << std::endl;
+    }
 
     if (argc > 1) {
         settings.configPath = std::string(argv[1]);

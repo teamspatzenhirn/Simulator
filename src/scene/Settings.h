@@ -31,7 +31,7 @@ struct Settings {
     int windowHeight = 600;
 
     /*
-     * The amount of samples used for multi sampling antialiasing in the editor
+     * The amount of samples used for multi sample antialiasing in the editor
      * view. Must be > 0 and <= to what your GPU can handle.
      */
     int msaaSamplesEditorView = 4;

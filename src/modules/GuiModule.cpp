@@ -650,6 +650,10 @@ bool GuiModule::renderSettingsWindow(Settings& settings) {
 
         ImGui::Begin("Settings", &showSettingsWindow, ImGuiWindowFlags_AlwaysAutoResize);
 
+        ImGui::Text("Settings file path: %s", settings.settingsFilePath);
+
+        ImGui::Separator();
+
         changed |= ImGui::DragFloat("Simulation speed", &settings.simulationSpeed, 0.05f, 0.01f, 10.0f);
         settings.simulationSpeed = std::max(std::min(settings.simulationSpeed, 10.0f), 0.01f);
 
