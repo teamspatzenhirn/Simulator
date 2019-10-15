@@ -28,6 +28,11 @@ int main (int argc, char* argv[]) {
         .implicit_value(true)
         .help("pause simulation timer at startup");
 
+    parser.add_argument("-f", "--fullscreen")
+        .default_value(false)
+        .implicit_value(true)
+        .help("start simulator in fullscreen mode");
+
     try {
         parser.parse_args(argc, argv);
     } catch (const std::runtime_error& err) {
@@ -44,6 +49,7 @@ int main (int argc, char* argv[]) {
     std::string argSettingsPath = parser.get<std::string>("-s");
     std::string argResourcePath = parser.get<std::string>("-r");
     bool argPauseOnStartup = parser.get<bool>("-p");
+    bool argFullscreen = parser.get<bool>("-f");
 
     // Setting up objects, initiating main loop
 
@@ -75,6 +81,10 @@ int main (int argc, char* argv[]) {
     if (!argConfigPath.empty()) {
         settings.configPath = argConfigPath;
     }
+    if (!argResourcePath.empty()) {
+        settings.resourcePath = argResourcePath;
+    }
+    settings.fullscreen = argFullscreen;
 
     Scene scene(settings.configPath);
     scene.paused = argPauseOnStartup;

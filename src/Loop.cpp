@@ -16,6 +16,12 @@ GLFWwindow* setupGlfw(Settings& settings) {
             nullptr,
             nullptr);
 
+    if (settings.fullscreen) {
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    }
+
     glfwMakeContextCurrent(window);
 
     if (GLEW_OK != glewInit()) {
@@ -287,6 +293,17 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 window,
                 settings.windowWidth,
                 settings.windowHeight);
+
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+
+        if (settings.fullscreen) {
+            glfwSetWindowMonitor(window, monitor, 0, 0,
+                    mode->width, mode->height, mode->refreshRate);
+        } else {
+            glfwSetWindowMonitor(window, nullptr, 0, 0,
+                    settings.windowWidth, settings.windowHeight, mode->refreshRate);
+        }
     } else {
         glfwGetWindowSize(
                 window,

@@ -84,6 +84,9 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
             if (ImGui::MenuItem("Save as")) {
                 showSaveAsFileDialog = true;
             }
+            if (ImGui::MenuItem("Exit")) {
+                std::exit(0);
+            }
             ImGui::EndMenu();
         }
 
@@ -703,6 +706,8 @@ bool GuiModule::renderSettingsWindow(Settings& settings) {
                 &settings.msaaSamplesEditorView, 1, 1, 32);
         settings.msaaSamplesEditorView = 
             std::max(std::min(settings.msaaSamplesEditorView, 32), 1);
+
+        changed |= ImGui::Checkbox("Fullscreen", &settings.fullscreen);
 
         ImGui::End();
 

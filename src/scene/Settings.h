@@ -22,7 +22,7 @@ struct Settings {
     /*
      * The path from where resources (e.g. models, shaders) are loaded.
      */
-    std::string resourcePath = "/use/local/share/spatzsim";
+    std::string resourcePath = "/usr/local/share/spatzsim/";
 
     /*
      * Dimensions of the main window.
@@ -35,6 +35,11 @@ struct Settings {
      * view. Must be > 0 and <= to what your GPU can handle.
      */
     int msaaSamplesEditorView = 4;
+
+    /*
+     * Whether to use fullscreen mode for the main window.
+     */
+    bool fullscreen = false;
 
     /*
      * The speed of the simulation given as fraction of real time.
