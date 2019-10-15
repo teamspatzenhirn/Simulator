@@ -33,21 +33,21 @@ float rand (vec2 co) {
 void main () {
 
     if (lighting) {
-        // implements phong shading
+        // implements blinn-phong shading
 
-        vec3 L = normalize(lightPosition - fragPosition.xyz);
-        vec3 V = normalize(fragCameraPosition - fragPosition.xyz);
-        vec3 R = reflect(-L, fragNormal);
+        vec3 L = normalize(lightPosition - fragPosition.xyz / fragPosition.w);
+        vec3 V = normalize(fragCameraPosition - fragPosition.xyz / fragPosition.w);
+        vec3 H = normalize(L + V); 
 
         // the ambient part is not following the phong shading model
         // here, instead kd is used to compensate for blender not
         // exporting a color in the ka value of .obj files
         vec3 ambient = kd * ia; 
 
-        vec3 diffuse = kd * id * max(dot(fragNormal, L), 0);
-        vec3 specular = ks * is * pow(max(dot(V, R), 0), ns);
+        vec3 diffuse = kd * id * max(dot(fragNormal, L), 0.0);
+        vec3 specular = ks * is * pow(max(dot(fragNormal, H), 0.0), ns);
 
-        fragColor = vec4(ambient + diffuse + specular, 1.0);
+        fragColor = vec4(ambient + diffuse + specular * 10, 1.0);
     } else {
         fragColor = vec4(kd, 1.0);
     }

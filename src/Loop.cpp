@@ -52,7 +52,6 @@ Loop::Loop(Settings settings)
 
     glClearColor(1.0, 1.0, 1.0, 1.0);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_MULTISAMPLE);
     glDepthFunc(GL_LEQUAL);
 
     glfwSwapInterval(0);
@@ -326,8 +325,8 @@ void Loop::update(Scene& scene, float deltaTime) {
             scene.dynamicItemSettings,
             scene.items);
 
-    visModule.addPositionTrace(
-            scene.car.modelPose.position, 
+    visModule.addPoseTrace(
+            scene.car.modelPose,
             scene.simulationClock.time);
 
     car.updateMainCamera(scene.car.mainCamera, scene.car.modelPose);
@@ -404,7 +403,7 @@ void Loop::renderFpsView(Scene& scene) {
     }
 
     if (settings.showVehiclePath) {
-        visModule.renderPositionTrace(
+        visModule.renderPoseTrace(
                 fpsShaderProgram.id,
                 modelStore.marker,
                 scene.simulationClock.time,

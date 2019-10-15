@@ -91,21 +91,21 @@ void VisModule::drawArrow(
     arrowModel.render(shaderProgramId, modelMat);
 }
 
-void VisModule::addPositionTrace(glm::vec3 position, double simulationTime) {
+void VisModule::addPoseTrace(Pose& pose, double simulationTime) {
 
     if (simulationTime - lastTraceTime > 0.050 
             || simulationTime < lastTraceTime) {
 
-        if (tracedPositions.size() > 2000) {
-            tracedPositions.pop_front();
+        if (tracedPoses.size() > 100) {
+            tracedPoses.pop_front();
         }
 
-        tracedPositions.push_back({simulationTime, position});
+        tracedPoses.push_back({simulationTime, pose});
         lastTraceTime = simulationTime;
     }
 }
 
-void VisModule::renderPositionTrace(GLuint shaderProgramId, Model& pointModel, double simulationTime, bool fancy) {
+void VisModule::renderPoseTrace(GLuint shaderProgramId, Model& pointModel, double simulationTime, bool fancy) {
 
     GLint billboardLocation = 
         glGetUniformLocation(shaderProgramId, "billboard");
@@ -115,11 +115,11 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, Model& pointModel, d
         glGetUniformLocation(shaderProgramId, "lighting");
     glUniform1i(lightingLocation, false);
 
-    for (StampedPosition& pos : tracedPositions) {
+    for (StampedPose& pose : tracedPoses) {
 
-        float t = (float)(simulationTime - pos.time) * 10.0f;
+        float t = (float)(simulationTime - pose.time) * 10.0f;
 
-        float scale = 0.05f;
+        float scale = 1.0f;
         glm::vec3 color(0.0f, 1.0f, 0.0f);
 
         if (fancy) {
@@ -130,7 +130,7 @@ void VisModule::renderPositionTrace(GLuint shaderProgramId, Model& pointModel, d
                     0.5f + 0.5f * std::sin(t + glm::radians(240.0f)));
         }
 
-        drawModel(shaderProgramId, pointModel, pos.position, scale, color);
+        drawModel(shaderProgramId, pointModel, pose.pose.position, scale, color);
     }
 
     glUniform1i(lightingLocation, true);

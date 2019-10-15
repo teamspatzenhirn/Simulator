@@ -927,7 +927,7 @@ void GuiModule::renderDirectoryListing() {
         std::string displayName = e.path().stem();
         displayName += e.path().extension();
 
-        if (e.is_directory()) {
+        if (fs::is_directory(e)) {
             displayName += "/";
         }
 

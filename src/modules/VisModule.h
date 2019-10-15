@@ -18,14 +18,14 @@
 
 class VisModule {
 
-    struct StampedPosition {
+    struct StampedPose {
 
         double time;
-        glm::vec3 position;
+        Pose pose;
     };
 
     double lastTraceTime;
-    std::deque<StampedPosition> tracedPositions;
+    std::deque<StampedPose> tracedPoses;
 
     void drawLine(
             GLuint shaderProgramId, 
@@ -55,7 +55,7 @@ public:
 
     VisModule();
 
-    void addPositionTrace(glm::vec3 position, double simulationTime);
+    void addPoseTrace(Pose& pose, double simulationTime);
 
     void drawModel(
             GLuint shaderProgramId, 
@@ -71,7 +71,7 @@ public:
             Car& car, 
             Settings& settings);
 
-    void renderPositionTrace(
+    void renderPoseTrace(
             GLuint shaderProgramId,
             Model& pointModel,
             double simulationTime,
