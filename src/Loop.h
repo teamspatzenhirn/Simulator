@@ -23,9 +23,6 @@ public:
 
     GLFWwindow* window;
 
-    GLsizei windowWidth;
-    GLsizei windowHeight;
-
     Settings settings;
 
     FrameBuffer screenFrameBuffer;
@@ -61,7 +58,7 @@ public:
 
     PointLight light{0.0f, 1.0f, 0.0f};
 
-    Loop(Settings settings = {true});
+    Loop(Settings settings);
     ~Loop();
 
     void update(Scene& scene, float deltaTime);
@@ -73,8 +70,6 @@ public:
 
     void loop(Scene& scene);
     void step(Scene& scene, float frameDeltaTime);
-
-    void setFramebufferSize(GLFWwindow* window, int width, int height);
 };
 
 #endif

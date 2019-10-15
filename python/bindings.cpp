@@ -13,12 +13,13 @@
 #include "scene/Scene.h"
 #include "helpers/Pose.h"
 #include "scene/Car.h"
+#include "Storage.h"
 
 PYBIND11_MODULE(pyspatzsim, m) {
 
     pybind11::class_<Settings>(m, "Settings")
-        .def(pybind11::init<bool>())
-        .def("load", [](Settings& self){ load(self); })
+        .def(pybind11::init())
+        .def("load", [](Settings& self) { storage::load(self); })
         .def_readwrite("resource_path", &Settings::resourcePath)
         .def_readwrite("simulation_speed", &Settings::simulationSpeed);
 

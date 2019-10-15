@@ -35,7 +35,7 @@ Model::Model(std::string path, GLenum storageType) : storageType(storageType) {
     glGenVertexArrays(1, &vaoId);
     glGenBuffers(1, &vboId);
 
-    if (!load(*this, path)) {
+    if (!storage::load(*this, path)) {
         std::cerr << "Could not load model from " << path << std::endl;
         std::exit(-1);
     }

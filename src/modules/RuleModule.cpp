@@ -7,7 +7,7 @@ void RuleModule::printViolation(double simulationTime) {
 
     std::cerr << "\nRULE VIOLATION AFTER "
               << simulationTime
-              << " ms"
+              << " seconds!"
               << std::endl;
 }
 

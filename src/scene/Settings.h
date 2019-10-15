@@ -9,17 +9,10 @@
  */
 struct Settings {
 
-    Settings(bool loadFromDotfile = false);
-
     /*
      * The path where the global settings file is stored.
      */
     std::string settingsFilePath;
-
-    /*
-     * The path from where resources (e.g. models, shaders) are loaded.
-     */
-    std::string resourcePath;
 
     /*
      * The path to the config file that will be loaded on startup.
@@ -27,10 +20,26 @@ struct Settings {
     std::string configPath;
 
     /*
+     * The path from where resources (e.g. models, shaders) are loaded.
+     */
+    std::string resourcePath = "/usr/local/share/spatzsim/";
+
+    /*
      * Dimensions of the main window.
      */
     int windowWidth = 800;
     int windowHeight = 600;
+
+    /*
+     * The amount of samples used for multi sample antialiasing in the editor
+     * view. Must be > 0 and <= to what your GPU can handle.
+     */
+    int msaaSamplesEditorView = 4;
+
+    /*
+     * Whether to use fullscreen mode for the main window.
+     */
+    bool fullscreen = false;
 
     /*
      * The speed of the simulation given as fraction of real time.
@@ -41,12 +50,6 @@ struct Settings {
      * The delta time (in seconds) for one simulation update. 
      */
     float updateDeltaTime = 0.005f;
-
-    /*
-     * The amount of samples used for multi sampling antialiasing in the editor
-     * view. Must be > 0 and <= to what your GPU can handle.
-     */
-    int msaaSamplesEditorView = 4;
 
     /*
      * If set marker/modifier points will be rendered.
@@ -72,12 +75,12 @@ struct Settings {
     bool showVehicleTrajectory = true;
 
     /*
-     * If set the ray sent out by the front laser sensor will be draw.
+     * If set, the ray sent out by the front laser sensor will be draw.
      */
     bool showLaserSensor = true;
 
     /*
-     * If set the ray sent out by the back binary light sensor will be draw.
+     * If set, the ray sent out by the back binary light sensor will be draw.
      */
     bool showBinaryLightSensor = true;
 };

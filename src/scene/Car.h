@@ -106,10 +106,10 @@ struct Car {
      */
     struct MainCamera {
 
-        Pose pose{0, 0.260f, 0.110f};
+        Pose pose{0, 0.240f, 0.130f};
 
         MainCamera() {
-            pose.setEulerAngles(glm::vec3(-12.0f, 180.0f, 0.0f));
+            pose.setEulerAngles(glm::vec3(-17.00f, 180.0f, 0.0f));
         }
 
         /*

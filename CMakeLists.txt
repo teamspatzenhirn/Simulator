@@ -5,6 +5,11 @@ set(EXE_TARGET_NAME "${PROJECT_NAME}")
 set(LIB_TARGET_NAME "lib${PROJECT_NAME}")
 set(PY_TARGET_NAME "py${PROJECT_NAME}")
 
+# Define uninstall target here to prevent glm from creating
+# a target with the same name
+# TODO: does not remove created directories
+add_custom_target(uninstall COMMAND xargs -a install_manifest.txt -i echo rm -v {})
+
 # ---[ Check for OpenGL (mandatory) ]---
 
 set(OpenGL_GL_PREFERENCE "GLVND")
@@ -38,12 +43,16 @@ endif()
 
 # --- [ External libs ]---
 
+set(CMAKE_SKIP_INSTALL_ALL_DEPENDENCY true)
+
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 set(BUILD_STATIC_LIBS OFF CACHE BOOL "" FORCE)
 set(GLM_TEST_ENABLE OFF CACHE BOOL "" FORCE)
 
-add_subdirectory(extern/g-truc_glm)
-add_subdirectory(extern/pybind_pybind11)
+# EXCLUDE_FROM_ALL is used here to prevent execution of the
+# install targets of these subdirectories
+add_subdirectory(extern/g-truc_glm EXCLUDE_FROM_ALL)
+add_subdirectory(extern/pybind_pybind11 EXCLUDE_FROM_ALL)
 
 # Collect files.
 
@@ -82,7 +91,6 @@ set(SOURCE_FILES
     ./src/modules/RuleModule.cpp
     ./src/modules/VisModule.cpp
     ./src/scene/Tracks.cpp
-    ./src/scene/Settings.cpp
    )
 
 set(HEADER_FILES
@@ -120,7 +128,7 @@ set(HEADER_FILES
     ./src/scene/ModelStore.h
    )
 
-# Build the library.
+# Build the main static library.
 
 add_library(${LIB_TARGET_NAME} STATIC ${SOURCE_FILES} ${HEADER_FILES})
 
@@ -193,3 +201,11 @@ add_custom_target(run
         else ${CMAKE_BINARY_DIR}/${PROJECT_NAME}\;
     fi
     DEPENDS ${EXE_TARGET_NAME})
+
+# Define install target
+
+install(TARGETS ${PROJECT_NAME} DESTINATION bin/)
+install(DIRECTORY 
+    "${PROJECT_SOURCE_DIR}/shaders"
+    "${PROJECT_SOURCE_DIR}/models"
+    DESTINATION share/${PROJECT_NAME})

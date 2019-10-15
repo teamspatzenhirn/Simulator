@@ -8,7 +8,7 @@ SpatzSim requires GLFW and GLEW to be installed as system libraries. On Ubuntu
 18.04 these can be installed with:
 
 ```
-sudo apt install libglfw-dev libglew-dev
+sudo apt install libglfw3-dev libglew-dev
 ```
 
 To build the simulator execute the following in the project directory:
@@ -20,13 +20,15 @@ cmake ..
 make
 ```
 
-To build and run the simulator afterwards the "run" target can also be used:
+To build and run the simulator the "run" target is used:
 
 ```
 make run
 ```
 
-## Used libraries:
+## Necessary shared libraries:
+
+The following dependencies must be installed as shared libraries on the system:
 
 ### GLEW
 
@@ -40,6 +42,10 @@ Provides an OpenGL context, a window and simple input handling.
 
 https://www.glfw.org/
 https://github.com/glfw/glfw
+
+## Libraries included in repository:
+
+The following additional libraries are used internally and are included in the repository.
 
 ### GLM
 

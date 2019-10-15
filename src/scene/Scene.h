@@ -73,6 +73,7 @@ enum ItemType {
     SIGN_GIVEWAY = 46,
     SIGN_NO_PASSING_START = 47,
     SIGN_NO_PASSING_END = 48,
+    MISSING_SPOT = 49,
 };
 
 /*
