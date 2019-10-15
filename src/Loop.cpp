@@ -198,6 +198,12 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
         itemsModule.update(scene.items, scene.selection.pose);
     }
 
+    if (FOLLOW_CAMERA == selectedCamera) {
+
+        scene.followCamera.aspectRatio = 
+            (float)settings.windowWidth / (float)settings.windowHeight;
+    }
+
     // actual simulation updates
     
     while (scene.simulationClock.step(settings.updateDeltaTime)) {
