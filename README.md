@@ -45,6 +45,8 @@ https://github.com/glfw/glfw
 
 ## Libraries included in repository:
 
+The following additional libraries are used internally and are included in the repository.
+
 ### GLM
 
 GLSL like matrix and vector math library for C++.
