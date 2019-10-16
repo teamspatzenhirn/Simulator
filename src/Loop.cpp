@@ -391,7 +391,7 @@ void Loop::renderScene(Scene& scene, GLuint shaderProgramId) {
 void Loop::renderFpsView(Scene& scene) {
 
     // make sure that framebuffer is resize properly
-
+    
     frameBuffer.resize(
             settings.windowWidth,
             settings.windowHeight,

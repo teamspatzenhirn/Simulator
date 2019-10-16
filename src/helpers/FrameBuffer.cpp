@@ -46,6 +46,16 @@ void FrameBuffer::resize(
         samples = this->samples;
     }
 
+    // only resize if absolutely necessary
+
+    if (this->width == width
+            && this->height == height
+            && this->samples == samples
+            && this->internalFormatColor == internalFormatColor
+            && this->formatColor == formatColor) { 
+        return;
+    }
+
     glBindFramebuffer(GL_FRAMEBUFFER, id);
 
     // color texture
