@@ -21,6 +21,8 @@ class GuiModule {
 
     std::string errorMessage;
 
+    GLint maxMSAASamples;
+
     void renderErrorDialog(std::string& msg);
     void renderOpenFileDialog(Scene& scene, Settings& settings, bool show);
     void renderSaveFileDialog(Scene& scene, bool show, bool showSaveAs);
