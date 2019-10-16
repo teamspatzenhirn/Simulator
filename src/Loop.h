@@ -16,6 +16,7 @@
 #include "modules/CollisionModule.h"
 #include "modules/RuleModule.h"
 #include "modules/VisModule.h"
+#include "modules/AutoTracksModule.h"
 
 class Loop {
 
@@ -46,6 +47,7 @@ public:
         DEPTH_CAMERA,
     } selectedCamera = FPS_CAMERA;
 
+    AutoTracksModule autoTracks;
     CommModule commModule;
     MarkerModule markerModule;
     GuiModule guiModule;

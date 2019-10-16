@@ -230,6 +230,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 scene.car, 
                 scene.paused, 
                 scene.simulationClock.time);
+        
+        autoTracks.update(scene);
     }
 
     // start rendering camera images
