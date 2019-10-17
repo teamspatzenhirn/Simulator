@@ -38,7 +38,6 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
     ImGui_ImplOpenGL3_Init("#version 330");
 
     ImGui::StyleColorsDark();
-
 }
 
 GuiModule::~GuiModule() {
