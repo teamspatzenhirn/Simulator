@@ -39,7 +39,6 @@ GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
     ImGui::StyleColorsDark();
 
-    glGetIntegerv(GL_MAX_SAMPLES, &maxMSAASamples);
 }
 
 GuiModule::~GuiModule() {
@@ -704,8 +703,12 @@ bool GuiModule::renderSettingsWindow(Settings& settings) {
             settings.windowHeight = std::max(std::min(windowHeight, 2160), 240);
             changed |= true;
         }
-        changed |= ImGui::SliderInt("MSAA Level",
-                &settings.msaaSamplesEditorView, 1, maxMSAASamples);
+
+        GLint maxMSAASamples = 1;
+        glGetIntegerv(GL_MAX_SAMPLES, &maxMSAASamples);
+
+        changed |= ImGui::DragInt("MSAA samples editor view",
+                &settings.msaaSamplesEditorView, 1, 1, maxMSAASamples);
         settings.msaaSamplesEditorView =
             std::max(std::min(settings.msaaSamplesEditorView, maxMSAASamples), 1);
 
