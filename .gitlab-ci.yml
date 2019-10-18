@@ -1,5 +1,6 @@
 stages:
   - build
+  - test
   - deploy
 
 compile:
@@ -17,6 +18,28 @@ compile:
       - shaders
     when: on_success
     expire_in: 1 hrs
+
+static_analysis_MR:
+  tags: static-analysis
+  stage: test
+  only:
+    - merge_requests
+  script:
+    - cmake .
+    - make clean
+    - scan-build -plist --intercept-first -o analyzer_reports make -j$(nproc)
+    - sonar-scanner -Dsonar.projectVersion=$CI_COMMIT_SHA -Dsonar.branch.name=$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME -Dsonar.branch.target=$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
+
+static_analysis:
+  tags: static-analysis
+  stage: test
+  only:
+    - master
+  script:
+    - cmake .
+    - make clean
+    - scan-build -plist --intercept-first -o analyzer_reports make -j$(nproc)
+    - sonar-scanner -Dsonar.projectVersion=$CI_COMMIT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME
 
 deploy:
   tags:
