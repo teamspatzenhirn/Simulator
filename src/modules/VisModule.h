@@ -83,6 +83,11 @@ public:
             double simulationTime, 
             std::vector<Scene::Item>& items);
 
+    void renderTrackPath(
+            GLuint shaderProgramId,
+            Model& pointModel,
+            Tracks& tracks);
+
     void renderVisualization(
             GLuint shaderProgramId,
             Model& lineModel,

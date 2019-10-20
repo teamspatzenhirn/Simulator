@@ -46,7 +46,7 @@ void main () {
         vec3 ambient = kd * ia; 
 
         vec3 diffuse = kd * id * max(dot(fragNormal, L), 0.0);
-        vec3 specular = ks * is * pow(max(dot(fragNormal, H), 0.0), ns * 40);
+        vec3 specular = ks * is * pow(max(dot(fragNormal, H), 0.0), ns);
 
         // account for distance
 

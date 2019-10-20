@@ -266,6 +266,34 @@ void VisModule::renderSensors(
     glUniform1i(lightingLocation, true);
 }
 
+void VisModule::renderTrackPath(
+        GLuint shaderProgramId,
+        Model& pointModel,
+        Tracks& tracks) { 
+
+    GLint lightingLocation = 
+        glGetUniformLocation(shaderProgramId, "lighting");
+    glUniform1i(lightingLocation, false);
+
+    GLint billboardLocation = 
+        glGetUniformLocation(shaderProgramId, "billboard");
+    glUniform1i(billboardLocation, true);
+
+    std::vector<glm::vec2> path = tracks.getPath(0.1);
+
+    for (glm::vec2& point : path) { 
+        drawModel(shaderProgramId, 
+                pointModel, 
+                glm::vec3(point.x, 0.1, point.y), 
+                0.1, 
+                glm::vec3(1, 0, 1));
+    }
+
+    glUniform1i(billboardLocation, false);
+
+    glUniform1i(lightingLocation, true);
+}
+
 void VisModule::renderVisualization(
         GLuint shaderProgramId,
         Model& lineModel,

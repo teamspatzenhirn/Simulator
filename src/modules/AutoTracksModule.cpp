@@ -1,3 +1,5 @@
+#include <algorithm>
+
 #include "modules/AutoTracksModule.h"
 
 float AutoTracksModule::rand(float min, float max) { 
@@ -53,9 +55,13 @@ void AutoTracksModule::update(Scene& scene) {
 
     unsigned int failCounter = 0;
 
-    while (tracks.size() < 10) {
+    std::vector<std::shared_ptr<TrackBase>> trackSegments
+        = scene.tracks.getTrackSegments();
+
+    while (trackSegments.size() < 10) {
 
         tracks = scene.tracks.getTracks();
+        trackSegments = scene.tracks.getTrackSegments();
 
         if (tracks.size() == 0) {
 
@@ -75,19 +81,26 @@ void AutoTracksModule::update(Scene& scene) {
 
             scene.tracks.addTrackLine(start, end);
         } else {
-            auto last = controlPoints.back();
-            std::shared_ptr<TrackBase> trackSegment = last->tracks.front();
-            glm::vec2 dir = glm::normalize(trackSegment->getDirection(*last));
-            glm::vec2 ortho = glm::vec2(-dir.y, dir.x);
+
+            // create some helpful variables
+
+            const auto last = controlPoints.back();
+            const glm::vec2 dir = glm::normalize(last->tracks.front()->getDirection(*last));
+            const glm::vec2 ortho = glm::vec2(-dir.y, dir.x);
 
             auto end = std::make_shared<ControlPoint>();
 
-            if (rand(0.0, 1.0) < 0.8) { 
+            std::shared_ptr<TrackBase> genTrack = nullptr;
+
+            // generate either a straight, arc, or intersection 
+            
+            float rtype = rand(0.0, 1.0);
+            if (rtype > 0.5) { 
+                // generate arc
+                
                 float radius = rand(0.8, 3.0);
                 bool rightArc = rand(0.0, 1.0) > 0.5;
                 float arcLength = rand(0.0, M_PI);
-
-                // TODO: 
 
                 glm::vec2 centerCoords = last->coords
                         + (rightArc ? 1.0f : -1.0f) * ortho * radius;
@@ -101,38 +114,46 @@ void AutoTracksModule::update(Scene& scene) {
                         
                 end->coords = endCoords;
 
-                if (glm::length(end->coords) > 20) {
-                    if (failCounter > 25 && tracks.size() > 3) {
-                        scene.tracks.removeControlPoint(controlPoints.back());
-                        controlPoints.pop_back();
-                        failCounter = 0;
-                    } else {
-                        failCounter += 1;
-                    }
-                } else {
-                    scene.tracks.addTrackArc(
-                            last, end, centerCoords, radius, rightArc);
-                    controlPoints.push_back(end);
-                }
-            } else { 
+                genTrack = scene.tracks.addTrackArc(
+                        last, end, centerCoords, radius, rightArc);
+                controlPoints.push_back(end);
+
+            } else if (rtype > 0.3) { 
+                // generate crossing
+                
+                float d = 0.75 + scene.tracks.trackWidth / 2;
+
+                std::shared_ptr<ControlPoint> center = std::make_shared<ControlPoint>();
+                center->coords = last->coords + dir * d;
+
+                std::shared_ptr<ControlPoint> link2 = std::make_shared<ControlPoint>();
+                link2->coords = last->coords + ortho * d + dir * d;
+                std::shared_ptr<ControlPoint> link3 = std::make_shared<ControlPoint>();
+                link3->coords = last->coords + dir * d * 2.0f;
+                std::shared_ptr<ControlPoint> link4 = std::make_shared<ControlPoint>();
+                link4->coords = last->coords - ortho * d + dir * d;
+
+                end = link3;
+
+                genTrack = scene.tracks.addTrackIntersection(
+                        center, last, link2, link3, link4);
+                controlPoints.push_back(end);
+
+            } else {
+                // generate straight
+                
                 float length = rand(0.5, 2.0);
                 end->coords = last->coords + dir * length;
 
-                if (glm::length(end->coords) > 20) {
-                    if (failCounter > 25 && tracks.size() > 3) {
-                        scene.tracks.removeControlPoint(controlPoints.back());
-                        controlPoints.pop_back();
-                        failCounter = 0;
-                    } else {
-                        failCounter += 1;
-                    }
-                } else {
-                    scene.tracks.addTrackLine(last, end);
-                    controlPoints.push_back(end);
-                }
+                genTrack = scene.tracks.addTrackLine(last, end);
+                controlPoints.push_back(end);
             }
 
-            if (!trackIsValid(scene)) {
+            // check if the track + generated segment is still valid 
+            // else delete just created segment and try again
+
+            if (glm::length(end->coords) > 20 || !trackIsValid(scene)) {
+
                 scene.tracks.removeControlPoint(controlPoints.back());
                 controlPoints.pop_back();
 
@@ -143,7 +164,165 @@ void AutoTracksModule::update(Scene& scene) {
                 } else {
                     failCounter += 1;
                 }
+
+                continue;
             }
+
+            // check what track was actually generated
+                
+            bool createdLine = nullptr != std::dynamic_pointer_cast<TrackLine>(genTrack);
+            bool createdArc = nullptr != std::dynamic_pointer_cast<TrackArc>(genTrack);
+
+            // start placing obstacles
+            
+            std::vector<glm::vec2> genTrackPoints = genTrack->getPoints(0.1);
+
+            if (genTrackPoints.size() > 2 && controlPoints.size() > 2) {
+
+                float ps = controlPoints.size();
+                float distEnd = glm::length(
+                        controlPoints.at(ps-1)->coords - genTrackPoints.at(0));
+                float distStart = glm::length(
+                        controlPoints.at(ps-2)->coords - genTrackPoints.at(0));
+
+                if (distEnd < distStart) {
+                    std::reverse(genTrackPoints.begin(), genTrackPoints.end());
+                }
+            }
+
+            if (createdLine || createdArc) {
+                for (size_t i = 1; i < genTrackPoints.size(); ++i) {
+
+                    const glm::vec2 prev = genTrackPoints[i-1];
+                    glm::vec2 p = genTrackPoints[i];
+
+                    if (rand(0.0, 1.0) < 0.05) {
+                        Scene::Item& newItem = scene.items.emplace_back();
+                        newItem.type = ItemType::MISSING_SPOT;
+                        newItem.name = "autotrack_obstacle";
+                        newItem.pose.position = glm::vec3(
+                                p.x + rand(-0.4, 0.4),
+                                0.006f,
+                                p.y + rand(-0.4, 0.4)
+                            );
+                        newItem.pose.scale = glm::vec3(
+                                0.05f + rand(0.0, 0.4),
+                                1.0f,
+                                0.05f + rand(0.0, 0.4)
+                            );
+                        newItem.pose.setEulerAngles(
+                                {0.0, rand(0.0, 360.0), 0.0});
+                    }
+
+                    const glm::vec2 dir = glm::normalize(prev - p);
+                    const glm::vec2 ortho = glm::vec2(-dir.y, dir.x);
+                    p -= ortho * 0.2f;
+
+                    // check if too close to other items
+
+                    bool tooClose = false;
+                    for (Scene::Item& item : scene.items) {
+                        if (glm::length(item.pose.position 
+                                    - glm::vec3(p.x, 0.0f, p.y)) < 0.5) {
+                            tooClose = true;
+                            break;
+                        }
+                        if (tooClose) {
+                            continue;
+                        }
+                    }
+                    if (tooClose) {
+                        continue;
+                    }
+
+                    // ok, not too close ...
+                    // generating obstacles
+
+                    if (rand(0.0, 1.0) < 0.2) {
+
+                        Scene::Item& newItem = scene.items.emplace_back();
+                        newItem.type = ItemType::OBSTACLE;
+                        newItem.name = "autotrack_obstacle";
+                        newItem.pose.position = glm::vec3(
+                                p.x + rand(-0.1, 0.1),
+                                0.0f,
+                                p.y + rand(-0.1, 0.1)
+                            );
+                        newItem.pose.scale = glm::vec3(
+                                1.1f + rand(0.0, 2.0),
+                                1.1f + rand(0.0, 2.0), 
+                                1.1f + rand(0.0, 2.0)
+                            );
+                        newItem.pose.setEulerAngles(
+                                {0.0, rand(0.0, 360.0), 0.0});
+                    }
+                }
+            } else if (genTrack != nullptr) {
+                
+                std::shared_ptr<TrackIntersection> t = 
+                    std::dynamic_pointer_cast<TrackIntersection>(genTrack);
+                
+                float stopProb = rand(0.0, 1.0);
+
+                glm::vec2 center2D = t->center.lock()->coords;
+                glm::vec3 center = glm::vec3(center2D.x, 0.0f, center2D.y);
+                glm::vec2 link1 = t->link1.lock()->coords;
+                glm::vec2 link3 = t->link3.lock()->coords;
+                glm::vec2 dir2D = glm::normalize(link1 - link3);
+                glm::vec3 dir = glm::vec3(dir2D.x, 0.0f, dir2D.y);
+                glm::vec3 ortho = glm::vec3(-dir2D.y, 0.0f, dir2D.x);
+
+                if (stopProb < 0.6) {
+
+                    Scene::Item& newItem = scene.items.emplace_back();
+                    newItem.pose.position = center + dir * 0.4f - ortho * 0.2f;
+                    newItem.pose.setEulerAngles({
+                        0.0, 
+                        glm::degrees(std::atan2(dir.x, dir.z)) + 90, 
+                        0.0});
+
+                    if (stopProb < 0.3) { 
+                        newItem.name = "autotrack_stopline";
+                        newItem.type = ItemType::GIVE_WAY_LINE;
+                    } else {
+                        newItem.name = "autotrack_givewayline";
+                        newItem.type = ItemType::STOP_LINE;
+                    }
+                }
+
+                if (rand(0.0, 1.0) < 0.5) {
+
+                    Scene::Item& newItem = scene.items.emplace_back();
+                    newItem.pose.position = center - dir * 0.2f 
+                            - ortho * (0.6f + rand(-0.1, 0.1));
+                    newItem.pose.setEulerAngles({
+                        0.0, 
+                        glm::degrees(std::atan2(ortho.x, ortho.z)), 
+                        0.0});
+
+                    newItem.name = "autotrack_stopline";
+                    newItem.type = ItemType::DYNAMIC_OBSTACLE;
+                }
+            }
+
+            // cleanup items not close to track
+            
+            std::vector<glm::vec2> trackPoints = scene.tracks.getPath(0.1);
+            
+            scene.items.erase(
+                    std::remove_if(
+                        scene.items.begin(),
+                        scene.items.end(),
+                        [&](const Scene::Item& item) {
+                            float minDist = 100000.0f;
+                            for (glm::vec2& point : trackPoints) {
+                                float d = glm::length(item.pose.position 
+                                        - glm::vec3(point.x, 0.0f, point.y));
+                                minDist = std::min(d, minDist);
+                            }
+                            return minDist > 0.6f;
+                        }),
+                    scene.items.end());
         }
     }
 }

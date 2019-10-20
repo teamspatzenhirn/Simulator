@@ -21,6 +21,24 @@ glm::vec2 TrackLine::getDirection(const ControlPoint& controlPoint) {
     }
 }
 
+std::vector<glm::vec2> TrackLine::getPoints(float pointDistance) {
+
+    std::vector<glm::vec2> pathPoints;
+
+    glm::vec2 start = this->start.lock()->coords;
+    glm::vec2 end = this->end.lock()->coords;
+
+    float len = glm::length(end - start);
+    glm::vec2 dir = glm::normalize(end - start);
+
+    for(float i = 0; i < len; i += pointDistance) {
+        glm::vec2 point = start + i * dir;
+        pathPoints.push_back(point);
+    }
+
+    return pathPoints;
+}
+
 TrackArc::TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
         const glm::vec2& center, const float radius, const bool rightArc)
     : start(start), end(end), center(center), radius(radius), rightArc(rightArc) {
@@ -51,6 +69,44 @@ glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
     return dir;
 }
 
+std::vector<glm::vec2> TrackArc::getPoints(float pointDistance) {
+
+    glm::vec2 start = this->start.lock()->coords;
+    glm::vec2 end = this->end.lock()->coords;
+
+    float angleStart = std::atan2(start.y - center.y, start.x - center.x);
+    float angleEnd = std::atan2(end.y - center.y, end.x - center.x);
+    float baseAngle = 0;
+    float angle = 0;
+
+    if (rightArc) {
+        baseAngle = angleStart;
+        angle = angleEnd - angleStart;
+    } else {
+        baseAngle = angleEnd;
+        angle = angleStart - angleEnd;
+    }
+    if (angle < 0) {
+        angle += (float)(2 * M_PI);
+    }
+
+    float pointRatio = radius * angle / pointDistance;
+
+    std::vector<glm::vec2> points;
+
+    for(float i = 0; i < pointRatio; i += 1) {
+        const float currentAngle = baseAngle + i * angle / pointRatio;
+
+        glm::vec2 point{
+            center.x + std::cos(currentAngle) * radius,
+            center.y + std::sin(currentAngle) * radius };
+
+            points.push_back(point);
+    }
+
+    return points;
+}
+
 TrackIntersection::TrackIntersection(const std::shared_ptr<ControlPoint>& center,
         const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
         const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4)
@@ -79,9 +135,33 @@ glm::vec2 TrackIntersection::getDirection(const ControlPoint& controlPoint) {
     }
 }
 
+std::vector<glm::vec2> TrackIntersection::getPoints(float pointDistance) {
+
+    std::vector<glm::vec2> pathPoints;
+    return pathPoints;
+}
+
 const std::vector<std::shared_ptr<ControlPoint>>& Tracks::getTracks() const {
 
     return tracks;
+}
+
+const std::vector<std::shared_ptr<TrackBase>> Tracks::getTrackSegments() const {
+
+    std::vector<std::shared_ptr<TrackBase>> trackSegments;
+    
+    for (const std::shared_ptr<ControlPoint>& cp : tracks) {
+        for (std::shared_ptr<TrackBase>& tb : cp->tracks) {
+            if (trackSegments.end() == std::find(
+                        trackSegments.begin(), 
+                        trackSegments.end(), 
+                        tb)) {
+                trackSegments.push_back(tb);
+            }
+        }
+    }
+
+    return trackSegments;
 }
 
 std::shared_ptr<TrackLine> Tracks::addTrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end) {
@@ -212,6 +292,10 @@ bool Tracks::isConnected(const std::shared_ptr<ControlPoint>& controlPoint, cons
 }
 
 std::vector<glm::vec2> Tracks::getPath(float distBetweenPoints) {
+
+    if (getTracks().size() < 1) { 
+        return {};
+    }
 
     std::shared_ptr<ControlPoint> cp = getTracks().front();
 

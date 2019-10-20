@@ -29,6 +29,8 @@ public:
     std::deque<std::shared_ptr<ControlPoint>> controlPoints;
     std::deque<std::shared_ptr<ControlPoint>> visitedControlPoints;
 
+    std::deque<Scene::Item*> passedItems;
+
     void update(Scene& scene);
 };
 

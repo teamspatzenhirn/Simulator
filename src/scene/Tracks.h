@@ -25,6 +25,8 @@ struct TrackBase {
     virtual ~TrackBase() = 0;
 
     virtual glm::vec2 getDirection(const ControlPoint& controlPoint) = 0;
+
+    virtual std::vector<glm::vec2> getPoints(float pointDistance) = 0;
 };
 
 struct TrackLine : TrackBase {
@@ -37,6 +39,8 @@ struct TrackLine : TrackBase {
     TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
 
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
+
+    std::vector<glm::vec2> getPoints(float pointDistance) override;
 };
 
 struct TrackArc : TrackBase {
@@ -54,6 +58,8 @@ struct TrackArc : TrackBase {
             const glm::vec2& center, const float radius, const bool rightArc);
 
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
+
+    std::vector<glm::vec2> getPoints(float pointDistance) override;
 };
 
 struct TrackIntersection : TrackBase {
@@ -69,6 +75,8 @@ struct TrackIntersection : TrackBase {
             const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4);
 
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
+
+    std::vector<glm::vec2> getPoints(float pointDistance) override;
 };
 
 struct Tracks {
@@ -99,6 +107,7 @@ public:
     } trackSelection;
 
     const std::vector<std::shared_ptr<ControlPoint>>& getTracks() const;
+    const std::vector<std::shared_ptr<TrackBase>> getTrackSegments() const;
 
     std::shared_ptr<TrackLine> addTrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
     std::shared_ptr<TrackArc> addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc);
