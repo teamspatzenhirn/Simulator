@@ -403,21 +403,14 @@ std::vector<glm::vec2> Tracks::getPath(float distBetweenPoints) {
 
               TrackIntersection& t = (TrackIntersection&)*track;
 
-              std::shared_ptr<ControlPoint> other = t.link1.lock();
+              sampleLine(cp->coords, t.center.lock()->coords);
 
-              if(t.link1.lock() == cp) {
-                other = t.link3.lock();
-              } else if (t.link2.lock() == cp) {
-                other = t.link4.lock();
-              } else if (t.link3.lock() == cp) {
-                other = t.link1.lock();
-              } else if (t.link4.lock() == cp) {
-                other = t.link2.lock();
+              for (auto ptr : {t.link2.lock(), t.link3.lock(), t.link4.lock()}) {
+                if (ptr->tracks.size() > 1) {
+                    sampleLine(t.center.lock()->coords, ptr->coords);
+                    cp = ptr;
+                }
               }
-
-              sampleLine(cp->coords, other->coords);
-
-              cp = other;
             }
 
             break;

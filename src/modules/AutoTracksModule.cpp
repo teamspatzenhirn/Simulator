@@ -133,10 +133,19 @@ void AutoTracksModule::update(Scene& scene) {
                 std::shared_ptr<ControlPoint> link4 = std::make_shared<ControlPoint>();
                 link4->coords = last->coords - ortho * d + dir * d;
 
-                end = link3;
-
                 genTrack = scene.tracks.addTrackIntersection(
                         center, last, link2, link3, link4);
+
+                const float dirProb = rand(0.0, 1.0);
+
+                end = link2;
+
+                if (dirProb < 0.3) {
+                    end = link2;
+                } else if (dirProb < 0.6) {
+                    end = link4;
+                }
+
                 controlPoints.push_back(end);
 
             } else {
@@ -152,7 +161,7 @@ void AutoTracksModule::update(Scene& scene) {
             // check if the track + generated segment is still valid 
             // else delete just created segment and try again
 
-            if (glm::length(end->coords) > 20 || !trackIsValid(scene)) {
+            if (glm::length(end->coords) > 20 ) { //|| !trackIsValid(scene)) {
 
                 scene.tracks.removeControlPoint(controlPoints.back());
                 controlPoints.pop_back();
@@ -228,7 +237,7 @@ void AutoTracksModule::update(Scene& scene) {
                             break;
                         }
                         if (tooClose) {
-                            continue;
+                            break;
                         }
                     }
                     if (tooClose) {
@@ -238,7 +247,7 @@ void AutoTracksModule::update(Scene& scene) {
                     // ok, not too close ...
                     // generating obstacles
 
-                    if (rand(0.0, 1.0) < 0.2) {
+                    if (rand(0.0, 1.0) < 0.05) {
 
                         Scene::Item& newItem = scene.items.emplace_back();
                         newItem.type = ItemType::OBSTACLE;
@@ -255,6 +264,27 @@ void AutoTracksModule::update(Scene& scene) {
                             );
                         newItem.pose.setEulerAngles(
                                 {0.0, rand(0.0, 360.0), 0.0});
+                    }
+
+                    // generating speedlimits
+                    
+                    if (rand(0.0, 1.0) < 0.02) {
+
+                        Scene::Item& newItem = scene.items.emplace_back();
+                        newItem.type = groundSpeedLimitOptions.at(rand(0.0, 18.0));
+                        newItem.name = "autotrack_speedlimit";
+                        newItem.pose.position = glm::vec3(
+                                p.x + rand(-0.05, 0.05),
+                                0.0f,
+                                p.y + rand(-0.05, 0.05)
+                            );
+                        newItem.pose.scale = glm::vec3(
+                                1.0f + rand(-0.05, 0.05),
+                                1.0f + rand(-0.05, 0.05), 
+                                1.0f + rand(-0.05, 0.05)
+                            );
+                        newItem.pose.setEulerAngles(
+                                {0.0, glm::degrees(std::atan2(dir.x, dir.y)) + rand(-2.0, 2.0), 0.0});
                     }
                 }
             } else if (genTrack != nullptr) {
