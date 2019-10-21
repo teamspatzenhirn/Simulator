@@ -45,6 +45,12 @@ void FrameBuffer::resize(
     if (samples < 1) {
         samples = this->samples;
     }
+    if (0 == internalFormatColor) {
+        internalFormatColor = this->internalFormatColor;
+    }
+    if (0 == formatColor) {
+        formatColor = this->formatColor;
+    }
 
     // only resize if absolutely necessary
 
@@ -60,15 +66,11 @@ void FrameBuffer::resize(
 
     // color texture
 
-    if (samples != this->samples
-            || internalFormatColor != this->internalFormatColor
-            || formatColor != this-> formatColor
-            || colorTextureId == 0) { 
-        if (colorTextureId != 0) {
-            glDeleteTextures(1, &colorTextureId);
-        } 
-        glGenTextures(1, &colorTextureId);
-    }
+    if (colorTextureId != 0) {
+        glDeleteTextures(1, &colorTextureId);
+    } 
+
+    glGenTextures(1, &colorTextureId);
 
     if (samples > 1) {
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, colorTextureId);
@@ -113,12 +115,11 @@ void FrameBuffer::resize(
 
     // depth texture
 
-    if (samples != this->samples || depthTextureId == 0) { 
-        if (depthTextureId != 0) {
-            glDeleteTextures(1, &depthTextureId);
-        }
-        glGenTextures(1, &depthTextureId);
+    if (depthTextureId != 0) {
+        glDeleteTextures(1, &depthTextureId);
     }
+
+    glGenTextures(1, &depthTextureId);
 
     if (samples > 1) {
         glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, depthTextureId);

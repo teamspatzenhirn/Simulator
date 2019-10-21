@@ -552,7 +552,7 @@ void Loop::renderDepthView(Scene& scene) {
             scene.car.depthCamera.depthImageWidth,
             scene.car.depthCamera.depthImageHeight);
 
-    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     car.depthCamera.render(depthCameraShaderProgram.id);

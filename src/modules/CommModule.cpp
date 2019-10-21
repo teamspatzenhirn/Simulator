@@ -81,8 +81,6 @@ void CommModule::transmitDepthCamera(
                 GL_RGB,
                 GL_FLOAT);
 
-        std::cout << glGetError() << std::endl;
-
         float maxZ = 0.0f;
         float minZ = 1000000.0f;
 
@@ -92,8 +90,8 @@ void CommModule::transmitDepthCamera(
             minZ = std::min(minZ, obj->buffer[i]);
         }
 
-        std::cout << "Min:" << minZ << std::endl;
-        std::cout << "Max:" << maxZ << std::endl;
+        //std::cout << "Min:" << minZ << std::endl;
+        //std::cout << "Max:" << maxZ << std::endl;
 
         txDepthCamera.unlock(obj);
     } 
