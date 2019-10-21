@@ -19,7 +19,7 @@ bool AutoTracksModule::trackIsValid(Scene& scene) {
             glm::vec2 otherPoint = trackPoints[j];
 
             if (glm::length(currentPoint - otherPoint) < 1.0
-                    && std::abs((int)(i - j)) > 12) {
+                    && std::abs((int)(i - j)) > 24) {
                 return false;
             }
         }
@@ -138,7 +138,7 @@ void AutoTracksModule::update(Scene& scene) {
 
                 const float dirProb = rand(0.0, 1.0);
 
-                end = link2;
+                end = link3;
 
                 if (dirProb < 0.3) {
                     end = link2;
@@ -161,7 +161,7 @@ void AutoTracksModule::update(Scene& scene) {
             // check if the track + generated segment is still valid 
             // else delete just created segment and try again
 
-            if (glm::length(end->coords) > 20 ) { //|| !trackIsValid(scene)) {
+            if (glm::length(end->coords) > 20 || !trackIsValid(scene)) {
 
                 scene.tracks.removeControlPoint(controlPoints.back());
                 controlPoints.pop_back();
@@ -286,6 +286,7 @@ void AutoTracksModule::update(Scene& scene) {
                         newItem.pose.setEulerAngles(
                                 {0.0, glm::degrees(std::atan2(dir.x, dir.y)) + rand(-2.0, 2.0), 0.0});
                     }
+
                 }
             } else if (genTrack != nullptr) {
                 
@@ -332,6 +333,36 @@ void AutoTracksModule::update(Scene& scene) {
 
                     newItem.name = "autotrack_stopline";
                     newItem.type = ItemType::DYNAMIC_OBSTACLE;
+                }
+
+                // generating arrows if necessary
+                
+                if (t->link4.lock() == controlPoints.back()) {
+
+                    Scene::Item& newItem = scene.items.emplace_back();
+                    newItem.pose.position = center + dir * (0.9f + rand(0.05, 0.25))
+                            - ortho * (0.2f + rand(-0.02, 0.02));
+                    newItem.pose.setEulerAngles({
+                        0.0, 
+                        glm::degrees(std::atan2(ortho.x, ortho.z)) + 90, 
+                        0.0});
+
+                    newItem.name = "autotrack_arrow_left";
+                    newItem.type = ItemType::GROUND_ARROW_LEFT;
+                }
+
+                if (t->link2.lock() == controlPoints.back()) {
+
+                    Scene::Item& newItem = scene.items.emplace_back();
+                    newItem.pose.position = center + dir * (0.9f + rand(0.05, 0.25))
+                            - ortho * (0.2f + rand(-0.02, 0.02));
+                    newItem.pose.setEulerAngles({
+                        0.0, 
+                        glm::degrees(std::atan2(ortho.x, ortho.z)) + 90, 
+                        0.0});
+
+                    newItem.name = "autotrack_arrow_left";
+                    newItem.type = ItemType::GROUND_ARROW_RIGHT;
                 }
             }
 

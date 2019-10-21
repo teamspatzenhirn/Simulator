@@ -97,14 +97,18 @@ void FrameBuffer::resize(
                      height,
                      0,
                      formatColor,
-                     GL_UNSIGNED_BYTE,
+                     GL_FLOAT,
                      0);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 
-        glFramebufferTexture(
-                GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, colorTextureId, 0);
+        glFramebufferTexture2D(
+                GL_FRAMEBUFFER, 
+                GL_COLOR_ATTACHMENT0, 
+                GL_TEXTURE_2D, 
+                colorTextureId,
+                0);
     }
 
     // depth texture

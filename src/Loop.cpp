@@ -61,6 +61,10 @@ Loop::Loop(Settings settings)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
+    glClampColor(GL_CLAMP_READ_COLOR, GL_FIXED_ONLY);
+    glClampColor(GL_CLAMP_VERTEX_COLOR, GL_FIXED_ONLY);
+    glClampColor(GL_CLAMP_FRAGMENT_COLOR, GL_FIXED_ONLY);
+
     glfwSwapInterval(0);
 
     initInput(window);
@@ -548,7 +552,7 @@ void Loop::renderDepthView(Scene& scene) {
             scene.car.depthCamera.depthImageWidth,
             scene.car.depthCamera.depthImageHeight);
 
-    glClearColor(1.0f, 1.0f, 100.0f, 1.0f);
+    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     car.depthCamera.render(depthCameraShaderProgram.id);
