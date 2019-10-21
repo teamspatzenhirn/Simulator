@@ -43,14 +43,11 @@ static_analysis:
     - scan-build -plist --intercept-first -o analyzer_reports make -j$(nproc)
     - sonar-scanner -Dsonar.projectVersion=$CI_COMMIT_SHA -Dsonar.branch.name=$CI_COMMIT_REF_NAME
 
+# Trigger simulator update in spatzenhirn/ansible-server
 deploy:
-  tags:
-    - ansible
   only:
     - master
-  allow_failure: true
   stage: deploy
   script:
-    - git lfs pull
-    - chmod 0600 ansible/ansible_ssh_key
-    - ansible-playbook -i ansible/hosts ansible/deploy.yml
+    - curl --request POST --form "token=$ANSIBLE_TRIGGER_TOKEN" --form "ref=master" --form "variables[UPDATE_SIMULATOR]=true" https://git.spatz.wtf/api/v4/projects/265/trigger/pipeline
+
