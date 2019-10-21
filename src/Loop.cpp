@@ -61,10 +61,6 @@ Loop::Loop(Settings settings)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-    glClampColor(GL_CLAMP_READ_COLOR, GL_FIXED_ONLY);
-    glClampColor(GL_CLAMP_VERTEX_COLOR, GL_FIXED_ONLY);
-    glClampColor(GL_CLAMP_FRAGMENT_COLOR, GL_FIXED_ONLY);
-
     glfwSwapInterval(0);
 
     initInput(window);
