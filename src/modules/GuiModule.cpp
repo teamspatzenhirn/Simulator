@@ -702,10 +702,14 @@ bool GuiModule::renderSettingsWindow(Settings& settings) {
             settings.windowHeight = std::max(std::min(windowHeight, 2160), 240);
             changed |= true;
         }
-        changed |= ImGui::DragInt("MSAA Level", 
-                &settings.msaaSamplesEditorView, 1, 1, 32);
-        settings.msaaSamplesEditorView = 
-            std::max(std::min(settings.msaaSamplesEditorView, 32), 1);
+
+        GLint maxMSAASamples = 1;
+        glGetIntegerv(GL_MAX_SAMPLES, &maxMSAASamples);
+
+        changed |= ImGui::DragInt("MSAA samples editor view",
+                &settings.msaaSamplesEditorView, 1, 1, maxMSAASamples);
+        settings.msaaSamplesEditorView =
+            std::max(std::min(settings.msaaSamplesEditorView, maxMSAASamples), 1);
 
         changed |= ImGui::Checkbox("Fullscreen", &settings.fullscreen);
 
