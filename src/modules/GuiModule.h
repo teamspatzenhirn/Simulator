@@ -11,7 +11,7 @@ class GuiModule {
     bool showCreateItemsWindow = true;
     bool showSceneWindow = true;
     bool showSettingsWindow = false;
-    bool showRuleWindow = false;
+    bool showRuleWindow = true;
     bool showHelpWindow = false;
     bool showAboutWindow = false;
 

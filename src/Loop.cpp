@@ -208,6 +208,10 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     
     while (scene.simulationClock.step(settings.updateDeltaTime)) {
 
+        if (scene.enableAutoTracks) {
+            autoTracks.update(scene);
+        }
+
         // TODO: Doing receive in such a way is not really correct!
         // Likely the vesc value will not actually change n-times
         // during the iteration. Probably, we will read the same
@@ -216,7 +220,11 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
         commModule.receiveVesc(scene.car.vesc);
 
-        update(scene, settings.updateDeltaTime);
+        if (scene.failTime == 0) {
+            update(scene, settings.updateDeltaTime);
+        } else if (scene.displayClock.time - scene.failTime > 5.0) {
+            exit(-1);
+        }
 
         ruleModule.update(
                 scene.simulationClock.time,
@@ -226,12 +234,21 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 scene.items,
                 collisionModule);
 
+        if (scene.failTime == 0 && scene.enableAutoTracks && (
+                    scene.rules.leftArrowIgnored
+                    || !scene.rules.onTrack
+                    || scene.rules.rightArrowIgnored
+                    || scene.rules.isColliding
+                    || scene.rules.giveWayLineIgnored
+                    || scene.rules.stopLineIgnored
+                    || scene.rules.noParkingIgnored)) {
+            scene.failTime = scene.displayClock.time;
+        }
+
         commModule.transmitCar(
                 scene.car, 
                 scene.paused, 
                 scene.simulationClock.time);
-        
-        autoTracks.update(scene);
     }
 
     // start rendering camera images

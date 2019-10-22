@@ -34,7 +34,7 @@ private:
 
 // models
 
-    static constexpr float intersectionTrackLength{0.75f};
+    static constexpr float intersectionTrackLength{1.5f};
 
     // materials
     Model::Material markerDefaultMaterial;

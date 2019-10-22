@@ -117,10 +117,14 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
     ImGui::Text("Version: 1.3");
 
     std::string msg = "Config: ";
-    if (!fs::is_regular_file(openedFilePath)) { 
-        msg += "none";
+    if (!scene.enableAutoTracks) {
+        if (!fs::is_regular_file(openedFilePath)) { 
+            msg += "none";
+        } else {
+            msg += fs::path(openedFilePath).filename();
+        }
     } else {
-        msg += fs::path(openedFilePath).filename();
+        msg = "AutoTracks: enabled";
     }
     ImGui::Text("%s", msg.c_str());
 
@@ -731,9 +735,11 @@ void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
         if (!rules.onTrack) {
             message += "Vehicle left track\n";
         }
+        /*
         if (rules.speedLimitExceeded) {
             message += "Speed limit exceeded\n";
         }
+        */
         if (rules.leftArrowIgnored) {
             message += "Left arrow ignored\n";
         }
@@ -760,7 +766,11 @@ void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
         ImGui::Begin("Rules", &showRuleWindow,
                 ImGuiWindowFlags_AlwaysAutoResize);
 
-        ImGui::Text("%s", message.c_str());
+        if ("" == message) {
+            ImGui::Text("No rule violation detected!");
+        } else {
+            ImGui::Text("%s", message.c_str());
+        }
 
         ImGui::End();
 

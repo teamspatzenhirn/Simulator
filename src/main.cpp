@@ -33,6 +33,11 @@ int main (int argc, char* argv[]) {
         .implicit_value(true)
         .help("start simulator in fullscreen mode");
 
+    parser.add_argument("-a", "--autotracks")
+        .default_value(false)
+        .implicit_value(true)
+        .help("enables automatic continuous track generation");
+
     try {
         parser.parse_args(argc, argv);
     } catch (const std::runtime_error& err) {
@@ -50,6 +55,7 @@ int main (int argc, char* argv[]) {
     std::string argResourcePath = parser.get<std::string>("-r");
     bool argPauseOnStartup = parser.get<bool>("-p");
     bool argFullscreen = parser.get<bool>("-f");
+    bool argEnableAutoTracks = parser.get<bool>("-a");
 
     // Setting up objects, initiating main loop
 
@@ -88,8 +94,24 @@ int main (int argc, char* argv[]) {
 
     Scene scene(settings.configPath);
     scene.paused = argPauseOnStartup;
+    scene.enableAutoTracks = argEnableAutoTracks;
+
+    if (scene.enableAutoTracks) { 
+        settings.simulationSpeed = 0.5;
+        //scene.rules.exitIfNotOnTrack = true;
+        //scene.rules.exitOnObstacleCollision = true;
+        //scene.rules.exitIfStopLineIgnored = true;
+        //scene.rules.exitIfGiveWayLineIgnored = true;
+        //scene.rules.exitIfLeftArrowIgnored = true;
+        //scene.rules.exitIfRightArrowIgnored = true;
+    }
 
     Loop loop(settings);
+
+    if (scene.enableAutoTracks) {
+        loop.selectedCamera = Loop::FOLLOW_CAMERA;
+    }
+
     loop.loop(scene);
 
     return 0;

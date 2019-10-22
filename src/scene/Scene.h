@@ -105,6 +105,12 @@ struct Scene {
     bool paused = false;
 
     /*
+     * Variable set at the first rule violation.
+     * Is used to restart the simulator if autotracks is enabled.
+     */
+    double failTime = 0.0;
+
+    /*
      * This clock controls the updates of the non-simulation logic.
      */
     Clock displayClock;
@@ -152,6 +158,11 @@ struct Scene {
      * Manager objects for the tracks (the track graph).
      */
     Tracks tracks;
+
+    /*
+     * If set, procedural track generation is enabled.
+     */
+    bool enableAutoTracks = false;
 
     /*
      * An item is everything that is not the car or the track.

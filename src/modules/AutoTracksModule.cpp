@@ -156,7 +156,7 @@ void AutoTracksModule::update(Scene& scene) {
             } else if (rtype > 0.3) { 
                 // generate crossing
                 
-                float d = 0.75 + scene.tracks.trackWidth / 2;
+                float d = 1.5 + scene.tracks.trackWidth / 2;
 
                 std::shared_ptr<ControlPoint> center = std::make_shared<ControlPoint>();
                 center->coords = last->coords + dir * d;
@@ -259,6 +259,9 @@ void AutoTracksModule::update(Scene& scene) {
                             break;
                         }
                     }
+                    if (glm::length(p) < 2.0) { 
+                        tooClose = true;
+                    }
                     if (tooClose) {
                         continue;
                     }
@@ -290,7 +293,6 @@ void AutoTracksModule::update(Scene& scene) {
                             newItem.pose.setEulerAngles(
                                     {0.0, rand(0.0, 360.0), 0.0});
                         } else if (ItemType::OBSTACLE == newItem.type) {
-                            newItem.type = ItemType::OBSTACLE;
                             newItem.name = "autotrack_obstacle";
                             newItem.pose.position = glm::vec3(
                                     p.x + rand(-0.1, 0.1),
@@ -319,6 +321,8 @@ void AutoTracksModule::update(Scene& scene) {
                                     );
                                 newItem.pose.setEulerAngles(
                                         {0.0, glm::degrees(std::atan2(dir.x, dir.y)) + 180, 0.0});
+                            } else {
+                                scene.items.pop_back();
                             }
                         } else {
                             newItem.name = "autotrack_speedlimit";

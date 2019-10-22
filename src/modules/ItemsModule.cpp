@@ -25,6 +25,9 @@ void ItemsModule::updateDynamicItems(
 
         DynamicItemState& state = itemState[i.id];
 
+        float distStart = glm::length(
+                state.startPose.position - i.pose.position);
+
         if (DYNAMIC_OBSTACLE == i.type) {
 
             if (dist <= 2 && car.vesc.velocity > 0.01f && !state.active) {
@@ -38,7 +41,7 @@ void ItemsModule::updateDynamicItems(
 
                 i.pose.position = newPos;
 
-                if (dist > 2) {
+                if (dist > 2 || distStart > 2) {
                     state.active = false;
                     i.pose = state.startPose;
                 }
