@@ -8,6 +8,41 @@ float AutoTracksModule::rand(float min, float max) {
     return distribution(randomGenerator);
 }
 
+ItemType AutoTracksModule::selectRandItem(std::vector<std::pair<float, ItemType>> probTable) {
+
+    float r = rand(0.0, 1.0);
+    float lowerMargin = 0.0f;
+
+    for (std::pair<float, ItemType>& p: probTable) {
+        if (r >= lowerMargin && r < lowerMargin + std::get<0>(p)) {
+            return std::get<1>(p);
+        }
+        lowerMargin += std::get<0>(p);
+    }
+
+    return ItemType::NONE;
+}
+
+void AutoTracksModule::cleanupItems(Scene& scene) { 
+
+    std::vector<glm::vec2> trackPoints = scene.tracks.getPath(0.1);
+    
+    scene.items.erase(
+            std::remove_if(
+                scene.items.begin(),
+                scene.items.end(),
+                [&](const Scene::Item& item) {
+                    float minDist = 100000.0f;
+                    for (glm::vec2& point : trackPoints) {
+                        float d = glm::length(item.pose.position 
+                                - glm::vec3(point.x, 0.0f, point.y));
+                        minDist = std::min(d, minDist);
+                    }
+                    return minDist > 0.4f;
+                }),
+            scene.items.end());
+}
+
 bool AutoTracksModule::trackIsValid(Scene& scene) {
 
     std::vector<glm::vec2> trackPoints = scene.tracks.getPath(0.1f);
@@ -170,10 +205,12 @@ void AutoTracksModule::update(Scene& scene) {
                     scene.tracks.removeControlPoint(controlPoints.back());
                     controlPoints.pop_back();
                     failCounter = 0;
+
                 } else {
                     failCounter += 1;
                 }
 
+                cleanupItems(scene); 
                 continue;
             }
 
@@ -205,24 +242,6 @@ void AutoTracksModule::update(Scene& scene) {
                     const glm::vec2 prev = genTrackPoints[i-1];
                     glm::vec2 p = genTrackPoints[i];
 
-                    if (rand(0.0, 1.0) < 0.05) {
-                        Scene::Item& newItem = scene.items.emplace_back();
-                        newItem.type = ItemType::MISSING_SPOT;
-                        newItem.name = "autotrack_obstacle";
-                        newItem.pose.position = glm::vec3(
-                                p.x + rand(-0.4, 0.4),
-                                0.006f,
-                                p.y + rand(-0.4, 0.4)
-                            );
-                        newItem.pose.scale = glm::vec3(
-                                0.05f + rand(0.0, 0.4),
-                                1.0f,
-                                0.05f + rand(0.0, 0.4)
-                            );
-                        newItem.pose.setEulerAngles(
-                                {0.0, rand(0.0, 360.0), 0.0});
-                    }
-
                     const glm::vec2 dir = glm::normalize(prev - p);
                     const glm::vec2 ortho = glm::vec2(-dir.y, dir.x);
                     p -= ortho * 0.2f;
@@ -245,48 +264,78 @@ void AutoTracksModule::update(Scene& scene) {
                     }
 
                     // ok, not too close ...
-                    // generating obstacles
+                    ItemType newItemType = selectRandItem({
+                                {0.02, ItemType::MISSING_SPOT},
+                                {0.02, ItemType::OBSTACLE},
+                                {0.01, ItemType::DYNAMIC_OBSTACLE},
+                                {0.02, groundSpeedLimitOptions.at(rand(0.0, 18.0))}
+                            });
 
-                    if (rand(0.0, 1.0) < 0.05) {
-
+                    if (ItemType::NONE != newItemType) {
                         Scene::Item& newItem = scene.items.emplace_back();
-                        newItem.type = ItemType::OBSTACLE;
-                        newItem.name = "autotrack_obstacle";
-                        newItem.pose.position = glm::vec3(
-                                p.x + rand(-0.1, 0.1),
-                                0.0f,
-                                p.y + rand(-0.1, 0.1)
-                            );
-                        newItem.pose.scale = glm::vec3(
-                                1.1f + rand(0.0, 2.0),
-                                1.1f + rand(0.0, 2.0), 
-                                1.1f + rand(0.0, 2.0)
-                            );
-                        newItem.pose.setEulerAngles(
-                                {0.0, rand(0.0, 360.0), 0.0});
+                        newItem.type = newItemType;
+
+                        if (ItemType::MISSING_SPOT == newItem.type) {
+                            newItem.name = "autotrack_missing_spot";
+                            newItem.pose.position = glm::vec3(
+                                    p.x + rand(-0.4, 0.4),
+                                    0.006f,
+                                    p.y + rand(-0.4, 0.4)
+                                );
+                            newItem.pose.scale = glm::vec3(
+                                    0.2f + rand(0.0, 0.4),
+                                    1.0f,
+                                    0.2f + rand(0.0, 0.4)
+                                );
+                            newItem.pose.setEulerAngles(
+                                    {0.0, rand(0.0, 360.0), 0.0});
+                        } else if (ItemType::OBSTACLE == newItem.type) {
+                            newItem.type = ItemType::OBSTACLE;
+                            newItem.name = "autotrack_obstacle";
+                            newItem.pose.position = glm::vec3(
+                                    p.x + rand(-0.1, 0.1),
+                                    0.0f,
+                                    p.y + rand(-0.1, 0.1)
+                                );
+                            newItem.pose.scale = glm::vec3(
+                                    1.1f + rand(0.0, 2.0),
+                                    1.1f + rand(0.0, 2.0), 
+                                    1.1f + rand(0.0, 2.0)
+                                );
+                            newItem.pose.setEulerAngles(
+                                    {0.0, rand(0.0, 360.0), 0.0});
+                        } else if (ItemType::DYNAMIC_OBSTACLE == newItem.type) {
+                            if (createdLine) {
+                                newItem.name = "autotrack_dynamic_item";
+                                newItem.pose.position = glm::vec3(
+                                        p.x + rand(-0.05, 0.05),
+                                        0.0f,
+                                        p.y + rand(-0.05, 0.05)
+                                    );
+                                newItem.pose.scale = glm::vec3(
+                                        1.0f + rand(-0.05, 0.05),
+                                        1.0f + rand(-0.05, 0.05), 
+                                        1.0f + rand(-0.05, 0.05)
+                                    );
+                                newItem.pose.setEulerAngles(
+                                        {0.0, glm::degrees(std::atan2(dir.x, dir.y)) + 180, 0.0});
+                            }
+                        } else {
+                            newItem.name = "autotrack_speedlimit";
+                            newItem.pose.position = glm::vec3(
+                                    p.x + rand(-0.05, 0.05),
+                                    0.0f,
+                                    p.y + rand(-0.05, 0.05)
+                                );
+                            newItem.pose.scale = glm::vec3(
+                                    1.0f + rand(-0.05, 0.05),
+                                    1.0f + rand(-0.05, 0.05), 
+                                    1.0f + rand(-0.05, 0.05)
+                                );
+                            newItem.pose.setEulerAngles(
+                                    {0.0, glm::degrees(std::atan2(dir.x, dir.y)) + rand(-2.0, 2.0), 0.0});
+                        } 
                     }
-
-                    // generating speedlimits
-                    
-                    if (rand(0.0, 1.0) < 0.02) {
-
-                        Scene::Item& newItem = scene.items.emplace_back();
-                        newItem.type = groundSpeedLimitOptions.at(rand(0.0, 18.0));
-                        newItem.name = "autotrack_speedlimit";
-                        newItem.pose.position = glm::vec3(
-                                p.x + rand(-0.05, 0.05),
-                                0.0f,
-                                p.y + rand(-0.05, 0.05)
-                            );
-                        newItem.pose.scale = glm::vec3(
-                                1.0f + rand(-0.05, 0.05),
-                                1.0f + rand(-0.05, 0.05), 
-                                1.0f + rand(-0.05, 0.05)
-                            );
-                        newItem.pose.setEulerAngles(
-                                {0.0, glm::degrees(std::atan2(dir.x, dir.y)) + rand(-2.0, 2.0), 0.0});
-                    }
-
                 }
             } else if (genTrack != nullptr) {
                 
@@ -366,24 +415,7 @@ void AutoTracksModule::update(Scene& scene) {
                 }
             }
 
-            // cleanup items not close to track
-            
-            std::vector<glm::vec2> trackPoints = scene.tracks.getPath(0.1);
-            
-            scene.items.erase(
-                    std::remove_if(
-                        scene.items.begin(),
-                        scene.items.end(),
-                        [&](const Scene::Item& item) {
-                            float minDist = 100000.0f;
-                            for (glm::vec2& point : trackPoints) {
-                                float d = glm::length(item.pose.position 
-                                        - glm::vec3(point.x, 0.0f, point.y));
-                                minDist = std::min(d, minDist);
-                            }
-                            return minDist > 0.6f;
-                        }),
-                    scene.items.end());
+            cleanupItems(scene); 
         }
     }
 }

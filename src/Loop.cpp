@@ -464,10 +464,14 @@ void Loop::renderFpsView(Scene& scene) {
                 settings.fancyVehiclePath);
     }
 
+    /*
+     * Enable for debugging ...
+     * TODO: option in settings
     visModule.renderTrackPath(
             fpsShaderProgram.id, 
             modelStore.marker, 
             scene.tracks);
+    */
 
     visModule.renderSensors(
             fpsShaderProgram.id,

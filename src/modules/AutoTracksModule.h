@@ -21,8 +21,11 @@ class AutoTracksModule {
     std::mt19937 randomGenerator{randomDevice()};
 
     float rand(float min, float max);
+    ItemType selectRandItem(std::vector<std::pair<float, ItemType>> probTable);
 
     bool trackIsValid(Scene& scene);
+
+    void cleanupItems(Scene& scene);
 
     std::vector<ItemType> groundSpeedLimitOptions = {
         GROUND_10,

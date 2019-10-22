@@ -60,6 +60,8 @@ class CommModule {
 
         double time;
 
+        double drivenDistance;
+
         bool paused;
 
         float laserSensorValue;

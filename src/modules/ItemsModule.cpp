@@ -34,7 +34,7 @@ void ItemsModule::updateDynamicItems(
 
             if (state.active == true) {
                 glm::vec3 newPos = glm::vec3(
-                        i.pose.getMatrix() * glm::vec4(0, 0, dis.speed * dt / 1000.0, 1));
+                        i.pose.getMatrix() * glm::vec4(0, 0, dis.speed * dt, 1));
 
                 i.pose.position = newPos;
 
@@ -57,7 +57,7 @@ void ItemsModule::updateDynamicItems(
 
             if (state.active == true) {
                 i.pose.position = glm::vec3(
-                        i.pose.getMatrix() * glm::vec4(0.00015 * dt, 0, 0, 1));
+                        i.pose.getMatrix() * glm::vec4(0.15 * dt, 0, 0, 1));
                 if (dist > 2) {
                     state.active = false;
                     i.pose = state.startPose;

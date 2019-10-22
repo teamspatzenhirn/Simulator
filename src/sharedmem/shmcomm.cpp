@@ -42,6 +42,12 @@ bool SHMCommPrivate::_attach()
     shmId = shmget(key, shmsize, IPC_CREAT | 0666);
 
     if (shmId < 0) {
+        if (errno == EINVAL) {
+            int shmId = shmget(key, 0, 0666);
+            shmctl(shmId, IPC_RMID, nullptr);
+            cerr << "The call to shmget(...) failed because the shared memory segment changed size." << endl;
+            cerr << "Restart simulator to reallocate shared memory." << endl;
+        }
         cerr << "shmget failed miserably: " << strerror(errno) << endl;
         return false;
     }

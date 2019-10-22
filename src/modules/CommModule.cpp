@@ -81,6 +81,18 @@ void CommModule::transmitDepthCamera(
                 GL_RGB,
                 GL_FLOAT);
 
+        float maxZ = 0.0f;
+        float minZ = 1000000.0f;
+
+        for (int i = 2; i < car.depthCamera.depthImageWidth * car.depthCamera.depthImageHeight; i += 3) { 
+
+            maxZ = std::max(maxZ, obj->buffer[i]);
+            minZ = std::min(minZ, obj->buffer[i]);
+        }
+
+        //std::cout << "Min:" << minZ << std::endl;
+        //std::cout << "Max:" << maxZ << std::endl;
+
         txDepthCamera.unlock(obj);
     } 
 
@@ -105,6 +117,7 @@ void CommModule::transmitCar(Car& car, bool paused, double simulationTime) {
         obj->alphaFront = car.alphaFront;
         obj->alphaRear = car.alphaRear;
         obj->time = simulationTime;
+        obj->drivenDistance = car.drivenDistance;
         obj->laserSensorValue = car.laserSensor.value;
         obj->binaryLightSensorTriggered = car.binaryLightSensor.triggered;
         obj->paused = paused;
