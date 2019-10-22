@@ -263,7 +263,10 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     
     Scene preRenderScene = scene;
 
-    update(scene, scene.simulationClock.accumulator);
+
+    if (scene.failTime == 0) {
+        update(scene, scene.simulationClock.accumulator);
+    }
 
     if (FPS_CAMERA == selectedCamera) {
         scene.fpsCamera.update(window, scene.displayClock.accumulator);
