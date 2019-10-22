@@ -72,6 +72,7 @@ set(SOURCE_FILES
     ./src/helpers/ShaderProgram.cpp
     ./src/helpers/FollowCamera.cpp
     ./src/helpers/FpsCamera.cpp
+    ./src/helpers/CinematicCamera.cpp
     ./src/helpers/FrameBuffer.cpp
     ./src/helpers/Clock.cpp
     ./src/helpers/Id.cpp
@@ -101,6 +102,7 @@ set(HEADER_FILES
     ./src/helpers/Helpers.h
     ./src/helpers/FollowCamera.h
     ./src/helpers/FpsCamera.h
+    ./src/helpers/CinematicCamera.h
     ./src/helpers/ShaderProgram.h
     ./src/helpers/Input.h
     ./src/helpers/Capture.h

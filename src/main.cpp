@@ -109,7 +109,7 @@ int main (int argc, char* argv[]) {
     Loop loop(settings);
 
     if (scene.enableAutoTracks) {
-        loop.selectedCamera = Loop::FOLLOW_CAMERA;
+        loop.selectedCamera = Loop::CINEMATIC_CAMERA;
     }
 
     loop.loop(scene);

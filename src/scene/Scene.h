@@ -130,6 +130,8 @@ struct Scene {
      */
     FollowCamera followCamera;
 
+    CinematicCamera cinematicCamera;
+
     struct Selection {
 
         /*

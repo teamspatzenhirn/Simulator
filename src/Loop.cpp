@@ -173,12 +173,14 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
             scene.fpsCamera.update(window, settings.updateDeltaTime);
         } else if (FOLLOW_CAMERA == selectedCamera) {
             scene.followCamera.update(scene.car.modelPose);
+        } else if (CINEMATIC_CAMERA == selectedCamera) {
+            scene.cinematicCamera.update(scene.car.modelPose);
         }
     }
 
     for(KeyEvent& e : getKeyEvents()) {
         if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
-            selectedCamera = (SelectedCamera)((((int)selectedCamera) + 1) % 3);
+            selectedCamera = (SelectedCamera) ((((int) selectedCamera) + 1) % 4);
         }
         if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
             scene.paused = !scene.paused;
@@ -203,6 +205,13 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
         scene.followCamera.aspectRatio = 
             (float)settings.windowWidth / (float)settings.windowHeight;
     }
+
+    if (CINEMATIC_CAMERA == selectedCamera) {
+
+        scene.cinematicCamera.aspectRatio =
+                (float) settings.windowWidth / (float) settings.windowHeight;
+    }
+
 
     // actual simulation updates
     
@@ -272,6 +281,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
         scene.fpsCamera.update(window, scene.displayClock.accumulator);
     } else if (FOLLOW_CAMERA == selectedCamera) {
         scene.followCamera.update(scene.car.modelPose);
+    } else if (CINEMATIC_CAMERA == selectedCamera) {
+        scene.cinematicCamera.update(scene.car.modelPose);
     }
 
     renderCarView(scene);
@@ -300,7 +311,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 true, 
                 car.depthCameraFrameBuffer,
                 screenFrameBuffer);
-    } else { // FPS_CAMERA or FOLLOW_CAMERA
+    } else { // FPS_CAMERA or FOLLOW_CAMERA or CINEMATIC_CAMERA
         renderToScreen(
                 settings.windowWidth, 
                 settings.windowHeight, 
@@ -440,6 +451,8 @@ void Loop::renderFpsView(Scene& scene) {
         scene.fpsCamera.render(fpsShaderProgram.id);
     } else if (selectedCamera == FOLLOW_CAMERA) {
         scene.followCamera.render(fpsShaderProgram.id);
+    } else if (selectedCamera == CINEMATIC_CAMERA) {
+        scene.cinematicCamera.render(fpsShaderProgram.id);
     }
 
     renderScene(scene, fpsShaderProgram.id);
