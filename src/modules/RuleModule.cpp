@@ -541,7 +541,7 @@ void RuleModule::update(
 
     // Check for lack of progress
     
-    if ((rules.lastDrivenDistance - car.drivenDistance) > 0) {
+    if ((car.drivenDistance - rules.lastDrivenDistance) > 0) {
         rules.lastIteractionTime = displayTime;
     }
     rules.lastDrivenDistance = car.drivenDistance;
