@@ -458,8 +458,7 @@ void RuleModule::update(
 
     const double tolerance = 0.1;
 
-    rules.speedLimitExceeded = std::abs(
-            car.vesc.velocity - rules.allowedMaxSpeed)
+    rules.speedLimitExceeded = car.vesc.velocity - rules.allowedMaxSpeed
                 / 3.6 / 10.0 > tolerance;
 
     /*
@@ -476,6 +475,9 @@ void RuleModule::update(
      * Generate error messages and exit (if necessary)
      */
 
+    if (rules.lackOfProgress) {
+        errorMsg = "Lack of progress!";
+    }
     if (rules.speedLimitExceeded) {
         errorMsg = "Speed limit of "
               + std::to_string(rules.allowedMaxSpeed / 3.6 / 10)

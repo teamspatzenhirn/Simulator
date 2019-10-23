@@ -359,10 +359,13 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = CHECKPOINT;
             newName = "checkpoint";
         }
-
         if (ImGui::MenuItem("Missing spot")) {
             newType = MISSING_SPOT;
             newName = "missing_spot";
+        }
+        if (ImGui::MenuItem("Giraffe")) {
+            newType = GIRAFFE;
+            newName = "giraffe";
         }
 
         ImGui::EndMenu();
