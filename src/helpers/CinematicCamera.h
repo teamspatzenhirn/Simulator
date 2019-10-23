@@ -8,14 +8,13 @@
 #ifndef SPATZSIM_CINEMATICCAMERA_H
 #define SPATZSIM_CINEMATICCAMERA_H
 
-
 #include "Camera.h"
 
 class CinematicCamera : public Camera {
+
 public:
 
     void update(Pose &carPose);
 };
-
 
 #endif //SPATZSIM_CINEMATICCAMERA_H
