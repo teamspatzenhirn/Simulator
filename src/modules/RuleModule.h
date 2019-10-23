@@ -13,11 +13,13 @@
 
 class RuleModule {
 
-    void printViolation(double simulationTime);
+    std::string errorMsg = "";
 
 public:
 
     RuleModule();
+
+    void printViolation(double simulationTime, double drivenDistance);
 
     void update(
             double displayTime,

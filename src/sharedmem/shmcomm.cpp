@@ -9,9 +9,20 @@
 using namespace SimulatorSHM;
 using namespace std;
 
-SHMCommPrivate::SHMCommPrivate(Role role, int key, size_t bufsize)
+/*
+
+Image* testImage;
+
+if (shm::send(imageStreamID, a)) { 
+    testImage = 0;
+}
+
+Image* a = shm::recv(imageStream);
+
+*/
+
+SHMCommPrivate::SHMCommPrivate(int key, size_t bufsize)
 {
-    this->role = role;
     this->key = key;
     this->buffersize = bufsize;
     this->shmId = -1;

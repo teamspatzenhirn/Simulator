@@ -254,6 +254,10 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                     || scene.rules.noParkingIgnored
                     || scene.rules.lackOfProgress)) {
             scene.failTime = scene.displayClock.time;
+
+            ruleModule.printViolation(
+                    scene.simulationClock.time,
+                    scene.car.drivenDistance);
         }
 
         commModule.transmitCar(

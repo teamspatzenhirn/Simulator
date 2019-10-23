@@ -1,11 +1,11 @@
 #include "CommModule.h"
 
 CommModule::CommModule() :
-    txMainCamera(SimulatorSHM::SERVER, mainCameraMemId),
-    txDepthCamera(SimulatorSHM::SERVER, depthCameraMemId),
-    txCarState(SimulatorSHM::SERVER, carMemId),
-    rxVesc(SimulatorSHM::CLIENT, vescMemId),
-    rxVisual(SimulatorSHM::CLIENT, visualMemId) { 
+    txMainCamera(mainCameraMemId),
+    txDepthCamera(depthCameraMemId),
+    txCarState(carMemId),
+    rxVesc(vescMemId),
+    rxVisual(visualMemId) { 
 
     initSharedMemory(txMainCamera);
     initSharedMemory(txDepthCamera);
@@ -80,18 +80,6 @@ void CommModule::transmitDepthCamera(
                 4 * 3,
                 GL_RGB,
                 GL_FLOAT);
-
-        float maxZ = 0.0f;
-        float minZ = 1000000.0f;
-
-        for (int i = 2; i < car.depthCamera.depthImageWidth * car.depthCamera.depthImageHeight; i += 3) { 
-
-            maxZ = std::max(maxZ, obj->buffer[i]);
-            minZ = std::min(minZ, obj->buffer[i]);
-        }
-
-        //std::cout << "Min:" << minZ << std::endl;
-        //std::cout << "Max:" << maxZ << std::endl;
 
         txDepthCamera.unlock(obj);
     } 
