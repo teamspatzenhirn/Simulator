@@ -217,6 +217,9 @@ struct Scene {
 
         float allowedMaxSpeed = 1000;
 
+        double lastIteractionTime = -1;
+        double lastDrivenDistance = 0;
+
         bool isColliding = false;
         bool onTrack = false;
         bool speedLimitExceeded = false;
@@ -226,6 +229,7 @@ struct Scene {
         bool giveWayLineIgnored = false;
         bool crosswalkIgnored = false;
         bool noParkingIgnored = false;
+        bool lackOfProgress = false;
 
         bool exitOnObstacleCollision = false;
         bool exitIfNotOnTrack = false;

@@ -236,6 +236,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
         }
 
         ruleModule.update(
+                scene.displayClock.time,
                 scene.simulationClock.time,
                 scene.rules,
                 scene.car,
@@ -250,7 +251,8 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                     || scene.rules.isColliding
                     || scene.rules.giveWayLineIgnored
                     || scene.rules.stopLineIgnored
-                    || scene.rules.noParkingIgnored)) {
+                    || scene.rules.noParkingIgnored
+                    || scene.rules.lackOfProgress)) {
             scene.failTime = scene.displayClock.time;
         }
 

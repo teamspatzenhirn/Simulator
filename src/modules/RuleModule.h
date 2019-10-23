@@ -20,6 +20,7 @@ public:
     RuleModule();
 
     void update(
+            double displayTime,
             double simulationTime,
             Scene::Rules& rules,
             Car& car,

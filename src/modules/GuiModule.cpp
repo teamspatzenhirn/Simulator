@@ -755,6 +755,9 @@ void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
         if (rules.noParkingIgnored) {
             message += "No parking ignored\n";
         }
+        if (rules.lackOfProgress) {
+            message += "Lack of progress\n";
+        }
 
         if ("" != message) { 
             ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(255, 0, 0, 1));

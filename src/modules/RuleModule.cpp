@@ -12,6 +12,7 @@ void RuleModule::printViolation(double simulationTime) {
 }
 
 void RuleModule::update(
+        double displayTime,
         double simulationTime,
         Scene::Rules& rules,
         Car& car,
@@ -537,6 +538,13 @@ void RuleModule::update(
     } else {
         rules.speedLimitExceeded = false;
     }
+
+    // Check for lack of progress
+    
+    if ((rules.lastDrivenDistance - car.drivenDistance) > 0) {
+        rules.lastIteractionTime = displayTime;
+    }
+    rules.lastDrivenDistance = car.drivenDistance;
+
+    rules.lackOfProgress = displayTime - rules.lastIteractionTime > 20;
 }
-
-
