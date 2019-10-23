@@ -38,7 +38,7 @@ void AutoTracksModule::cleanupItems(Scene& scene) {
                                 - glm::vec3(point.x, 0.0f, point.y));
                         minDist = std::min(d, minDist);
                     }
-                    return minDist > 0.4f;
+                    return minDist > 0.6f;
                 }),
             scene.items.end());
 }
@@ -371,20 +371,20 @@ void AutoTracksModule::update(Scene& scene) {
                         newItem.name = "autotrack_givewayline";
                         newItem.type = ItemType::STOP_LINE;
                     }
-                }
 
-                if (rand(0.0, 1.0) < 0.5) {
+                    if (rand(0.0, 1.0) < 0.5) {
 
-                    Scene::Item& newItem = scene.items.emplace_back();
-                    newItem.pose.position = center - dir * 0.2f 
-                            - ortho * (0.6f + rand(-0.1, 0.1));
-                    newItem.pose.setEulerAngles({
-                        0.0, 
-                        glm::degrees(std::atan2(ortho.x, ortho.z)), 
-                        0.0});
+                        Scene::Item& newItem = scene.items.emplace_back();
+                        newItem.pose.position = center - dir * 0.2f 
+                                - ortho * (0.4f + rand(-0.1, 0.1));
+                        newItem.pose.setEulerAngles({
+                            0.0, 
+                            glm::degrees(std::atan2(ortho.x, ortho.z)), 
+                            0.0});
 
-                    newItem.name = "autotrack_stopline";
-                    newItem.type = ItemType::DYNAMIC_OBSTACLE;
+                        newItem.name = "autotrack_dynamics_obstacle";
+                        newItem.type = ItemType::DYNAMIC_OBSTACLE;
+                    }
                 }
 
                 // generating arrows if necessary
