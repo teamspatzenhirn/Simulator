@@ -53,7 +53,7 @@ bool AutoTracksModule::trackIsValid(Scene& scene) {
             glm::vec2 currentPoint = trackPoints[i];
             glm::vec2 otherPoint = trackPoints[j];
 
-            if (glm::length(currentPoint - otherPoint) < 1.0
+            if (glm::length(currentPoint - otherPoint) < 2.0
                     && std::abs((int)(i - j)) > 24) {
                 return false;
             }
@@ -205,7 +205,6 @@ void AutoTracksModule::update(Scene& scene) {
                     scene.tracks.removeControlPoint(controlPoints.back());
                     controlPoints.pop_back();
                     failCounter = 0;
-
                 } else {
                     failCounter += 1;
                 }

@@ -97,13 +97,7 @@ int main (int argc, char* argv[]) {
     scene.enableAutoTracks = argEnableAutoTracks;
 
     if (scene.enableAutoTracks) { 
-        settings.simulationSpeed = 0.5;
-        //scene.rules.exitIfNotOnTrack = true;
-        //scene.rules.exitOnObstacleCollision = true;
-        //scene.rules.exitIfStopLineIgnored = true;
-        //scene.rules.exitIfGiveWayLineIgnored = true;
-        //scene.rules.exitIfLeftArrowIgnored = true;
-        //scene.rules.exitIfRightArrowIgnored = true;
+        settings.simulationSpeed = 1.0;
     }
 
     Loop loop(settings);
