@@ -84,6 +84,15 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
             if (ImGui::MenuItem("Save as")) {
                 showSaveAsFileDialog = true;
             }
+            if (ImGui::MenuItem("Autotracks", nullptr, &scene.enableAutoTracks)) { 
+                if (scene.enableAutoTracks) { 
+                    scene = Scene();
+                    scene.enableAutoTracks = true;
+                } else {
+                    scene = Scene();
+                }
+                openedFilePath = "./";
+            }
             if (ImGui::MenuItem("Exit")) {
                 std::exit(0);
             }
