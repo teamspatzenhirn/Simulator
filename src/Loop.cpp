@@ -24,6 +24,8 @@ GLFWwindow* setupGlfw(Settings& settings) {
 
     glfwMakeContextCurrent(window);
 
+    glewExperimental = true;
+
     if (GLEW_OK != glewInit()) {
         std::cout << "GL Extension Wrangler initialization failed!" << std::endl;
         std::exit(-1);
