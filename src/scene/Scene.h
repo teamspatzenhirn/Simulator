@@ -74,6 +74,7 @@ enum ItemType {
     SIGN_NO_PASSING_START = 47,
     SIGN_NO_PASSING_END = 48,
     MISSING_SPOT = 49,
+    GIRAFFE = 50,
 };
 
 /*
@@ -105,6 +106,12 @@ struct Scene {
     bool paused = false;
 
     /*
+     * Variable set at the first rule violation.
+     * Is used to restart the simulator if autotracks is enabled.
+     */
+    double failTime = 0.0;
+
+    /*
      * This clock controls the updates of the non-simulation logic.
      */
     Clock displayClock;
@@ -123,6 +130,8 @@ struct Scene {
      * This is a top view camera that is following the car.
      */
     FollowCamera followCamera;
+
+    CinematicCamera cinematicCamera;
 
     struct Selection {
 
@@ -152,6 +161,11 @@ struct Scene {
      * Manager objects for the tracks (the track graph).
      */
     Tracks tracks;
+
+    /*
+     * If set, procedural track generation is enabled.
+     */
+    bool enableAutoTracks = false;
 
     /*
      * An item is everything that is not the car or the track.
@@ -204,6 +218,9 @@ struct Scene {
 
         float allowedMaxSpeed = 1000;
 
+        double lastIteractionTime = -1;
+        double lastDrivenDistance = 0;
+
         bool isColliding = false;
         bool onTrack = false;
         bool speedLimitExceeded = false;
@@ -213,6 +230,7 @@ struct Scene {
         bool giveWayLineIgnored = false;
         bool crosswalkIgnored = false;
         bool noParkingIgnored = false;
+        bool lackOfProgress = false;
 
         bool exitOnObstacleCollision = false;
         bool exitIfNotOnTrack = false;

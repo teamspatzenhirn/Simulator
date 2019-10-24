@@ -1,11 +1,11 @@
 #include "CommModule.h"
 
 CommModule::CommModule() :
-    txMainCamera(SimulatorSHM::SERVER, mainCameraMemId),
-    txDepthCamera(SimulatorSHM::SERVER, depthCameraMemId),
-    txCarState(SimulatorSHM::SERVER, carMemId),
-    rxVesc(SimulatorSHM::CLIENT, vescMemId),
-    rxVisual(SimulatorSHM::CLIENT, visualMemId) { 
+    txMainCamera(mainCameraMemId),
+    txDepthCamera(depthCameraMemId),
+    txCarState(carMemId),
+    rxVesc(vescMemId),
+    rxVisual(visualMemId) { 
 
     initSharedMemory(txMainCamera);
     initSharedMemory(txDepthCamera);
@@ -105,6 +105,7 @@ void CommModule::transmitCar(Car& car, bool paused, double simulationTime) {
         obj->alphaFront = car.alphaFront;
         obj->alphaRear = car.alphaRear;
         obj->time = simulationTime;
+        obj->drivenDistance = car.drivenDistance;
         obj->laserSensorValue = car.laserSensor.value;
         obj->binaryLightSensorTriggered = car.binaryLightSensor.triggered;
         obj->paused = paused;

@@ -16,6 +16,7 @@
 #include "modules/CollisionModule.h"
 #include "modules/RuleModule.h"
 #include "modules/VisModule.h"
+#include "modules/AutoTracksModule.h"
 
 class Loop {
 
@@ -42,10 +43,12 @@ public:
     enum SelectedCamera {
         FPS_CAMERA,
         FOLLOW_CAMERA,
+        CINEMATIC_CAMERA,
         MAIN_CAMERA,
         DEPTH_CAMERA,
     } selectedCamera = FPS_CAMERA;
 
+    AutoTracksModule autoTracks;
     CommModule commModule;
     MarkerModule markerModule;
     GuiModule guiModule;
@@ -56,7 +59,7 @@ public:
     CarModule car;
     Editor editor;
 
-    PointLight light{0.0f, 1.0f, 0.0f};
+    PointLight light{5.0f, 5.0f, 5.0f};
 
     Loop(Settings settings);
     ~Loop();

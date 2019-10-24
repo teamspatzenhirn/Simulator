@@ -172,6 +172,7 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
     car.steeringAngle = x.delta;
     car.alphaFront = alpha_front;
     car.alphaRear = alpha_rear;
+    car.drivenDistance += std::sqrt(std::pow(dt * dx.x1, 2) + std::pow(dt * dx.x2, 2));
 
     // user controls ...
 

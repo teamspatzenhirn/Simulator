@@ -175,12 +175,14 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
             scene.fpsCamera.update(window, settings.updateDeltaTime);
         } else if (FOLLOW_CAMERA == selectedCamera) {
             scene.followCamera.update(scene.car.modelPose);
+        } else if (CINEMATIC_CAMERA == selectedCamera) {
+            scene.cinematicCamera.update(scene.car.modelPose);
         }
     }
 
     for(KeyEvent& e : getKeyEvents()) {
         if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
-            selectedCamera = (SelectedCamera)((((int)selectedCamera) + 1) % 3);
+            selectedCamera = (SelectedCamera) ((((int) selectedCamera) + 1) % 4);
         }
         if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
             scene.paused = !scene.paused;
@@ -206,9 +208,20 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
             (float)settings.windowWidth / (float)settings.windowHeight;
     }
 
+    if (CINEMATIC_CAMERA == selectedCamera) {
+
+        scene.cinematicCamera.aspectRatio =
+                (float) settings.windowWidth / (float) settings.windowHeight;
+    }
+
+
     // actual simulation updates
     
     while (scene.simulationClock.step(settings.updateDeltaTime)) {
+
+        if (scene.enableAutoTracks) {
+            autoTracks.update(scene);
+        }
 
         // TODO: Doing receive in such a way is not really correct!
         // Likely the vesc value will not actually change n-times
@@ -218,15 +231,36 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
         commModule.receiveVesc(scene.car.vesc);
 
-        update(scene, settings.updateDeltaTime);
+        if (scene.failTime == 0) {
+            update(scene, settings.updateDeltaTime);
+        } else if (scene.displayClock.time - scene.failTime > 5.0) {
+            exit(-1);
+        }
 
         ruleModule.update(
+                scene.displayClock.time,
                 scene.simulationClock.time,
                 scene.rules,
                 scene.car,
                 scene.tracks,
                 scene.items,
                 collisionModule);
+
+        if (scene.failTime == 0 && scene.enableAutoTracks && (
+                    scene.rules.leftArrowIgnored
+                    || !scene.rules.onTrack
+                    || scene.rules.rightArrowIgnored
+                    || scene.rules.isColliding
+                    || scene.rules.giveWayLineIgnored
+                    || scene.rules.stopLineIgnored
+                    || scene.rules.noParkingIgnored
+                    || scene.rules.lackOfProgress)) {
+            scene.failTime = scene.displayClock.time;
+
+            ruleModule.printViolation(
+                    scene.simulationClock.time,
+                    scene.car.drivenDistance);
+        }
 
         commModule.transmitCar(
                 scene.car, 
@@ -246,12 +280,17 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     
     Scene preRenderScene = scene;
 
-    update(scene, scene.simulationClock.accumulator);
+
+    if (scene.failTime == 0) {
+        update(scene, scene.simulationClock.accumulator);
+    }
 
     if (FPS_CAMERA == selectedCamera) {
         scene.fpsCamera.update(window, scene.displayClock.accumulator);
     } else if (FOLLOW_CAMERA == selectedCamera) {
         scene.followCamera.update(scene.car.modelPose);
+    } else if (CINEMATIC_CAMERA == selectedCamera) {
+        scene.cinematicCamera.update(scene.car.modelPose);
     }
 
     renderCarView(scene);
@@ -280,7 +319,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 true, 
                 car.depthCameraFrameBuffer,
                 screenFrameBuffer);
-    } else { // FPS_CAMERA or FOLLOW_CAMERA
+    } else { // FPS_CAMERA or FOLLOW_CAMERA or CINEMATIC_CAMERA
         renderToScreen(
                 settings.windowWidth, 
                 settings.windowHeight, 
@@ -420,6 +459,8 @@ void Loop::renderFpsView(Scene& scene) {
         scene.fpsCamera.render(fpsShaderProgram.id);
     } else if (selectedCamera == FOLLOW_CAMERA) {
         scene.followCamera.render(fpsShaderProgram.id);
+    } else if (selectedCamera == CINEMATIC_CAMERA) {
+        scene.cinematicCamera.render(fpsShaderProgram.id);
     }
 
     renderScene(scene, fpsShaderProgram.id);
@@ -463,6 +504,15 @@ void Loop::renderFpsView(Scene& scene) {
                 scene.simulationClock.time,
                 settings.fancyVehiclePath);
     }
+
+    /*
+     * Enable for debugging ...
+     * TODO: option in settings
+    visModule.renderTrackPath(
+            fpsShaderProgram.id, 
+            modelStore.marker, 
+            scene.tracks);
+    */
 
     visModule.renderSensors(
             fpsShaderProgram.id,
@@ -543,7 +593,7 @@ void Loop::renderDepthView(Scene& scene) {
             scene.car.depthCamera.depthImageWidth,
             scene.car.depthCamera.depthImageHeight);
 
-    glClearColor(1.0f, 1.0f, 100.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     car.depthCamera.render(depthCameraShaderProgram.id);

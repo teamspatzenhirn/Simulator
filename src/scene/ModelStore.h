@@ -19,7 +19,7 @@ struct ModelStore {
     Model arrow;
     Model scaleArrow;
 
-    Model items[50];
+    Model items[51];
 
     ModelStore (std::string resPath) : 
         car{resPath + "models/spatz.obj"},
@@ -78,7 +78,8 @@ struct ModelStore {
             Model{resPath + "models/sign_giveway.obj"},
             Model{resPath + "models/sign_no_passing.obj"},
             Model{resPath + "models/sign_no_passing_end.obj"},
-            Model{resPath + "models/ground.obj"}
+            Model{resPath + "models/ground.obj"},
+            Model{resPath + "models/giraffe.obj"}
          } {
     }
 };

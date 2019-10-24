@@ -3,21 +3,28 @@
 RuleModule::RuleModule() {
 }
 
-void RuleModule::printViolation(double simulationTime) {
+void RuleModule::printViolation(double simulationTime, double drivenDistance) {
 
-    std::cerr << "\nRULE VIOLATION AFTER "
+    std::cerr << "RULE VIOLATION AFTER "
               << simulationTime
-              << " seconds!"
+              << " seconds"
+              << " and "
+              << drivenDistance
+              << " meters!"
               << std::endl;
+    std::cerr << errorMsg << std::endl;
 }
 
 void RuleModule::update(
+        double displayTime,
         double simulationTime,
         Scene::Rules& rules,
         Car& car,
         Tracks& tracks,
         std::vector<Scene::Item>& items,
         CollisionModule& collisionModule) {
+
+    errorMsg = "";
 
     /*
      * Check if car is on the track.
@@ -28,8 +35,6 @@ void RuleModule::update(
      * It would be correct (according to the rules) to
      * actually check if at least three wheels are on the track.
      */
-
-    // TODO: the on-track-check is still buggy
 
     std::vector<std::shared_ptr<TrackBase>> trackSegments;
 
@@ -239,30 +244,12 @@ void RuleModule::update(
         }
     }
 
-    if (!rules.onTrack) {
-        if (rules.exitIfNotOnTrack) {
-            printViolation(simulationTime);
-            std::cerr << "Vehicle left track! \n" << std::endl;
-            std::exit(-1);
-        }
-    }
-
     /*
      * Validating collisions
      */
 
-    if (collisionModule.getCollisions(car.modelPose).size() > 0) {
-
-        rules.isColliding = true;
-
-        if (rules.exitOnObstacleCollision) {
-            printViolation(simulationTime);
-            std::cerr << "Detected collision with obstacle! \n" << std::endl;
-            std::exit(-1);
-        }
-    } else {
-        rules.isColliding = false;
-    }
+    rules.isColliding = collisionModule.getCollisions(
+            car.modelPose).size() > 0;
 
     /*
      * Validating items
@@ -324,42 +311,27 @@ void RuleModule::update(
 
                             if (i.type == GIVE_WAY_LINE) {
                                 rules.giveWayLineIgnored = true;
-                                if (rules.exitIfGiveWayLineIgnored) {
-                                    printViolation(simulationTime);
-                                    std::cerr << "Passed "
-                                              << typeString
-                                              << " in: "
-                                              << delta
-                                              << "s"
-                                              << std::endl;
-                                    std::exit(-1);
-                                }
+                                errorMsg = "Passed "
+                                      + typeString
+                                      + " in: "
+                                      + std::to_string(delta)
+                                      + "s";
                             }
                             if (i.type == STOP_LINE) {
                                 rules.stopLineIgnored = true;
-                                if (rules.exitIfStopLineIgnored) {
-                                    printViolation(simulationTime);
-                                    std::cerr << "Passed "
-                                              << typeString
-                                              << " in: "
-                                              << delta
-                                              << "s"
-                                              << std::endl;
-                                    std::exit(-1);
-                                }
+                                errorMsg = "Passed "
+                                    + typeString
+                                    + " in: "
+                                    + std::to_string(delta)
+                                    + "s";
                             }
                             if (i.type == CROSSWALK) {
                                 rules.crosswalkIgnored = true;
-                                if (rules.exitIfCrosswalkIgnored) {
-                                    printViolation(simulationTime);
-                                    std::cerr << "Passed "
-                                              << typeString
-                                              << " in: "
-                                              << delta
-                                              << "s"
-                                              << std::endl;
-                                    std::exit(-1);
-                                }
+                                errorMsg = "Passed "
+                                    + typeString
+                                    + " in: "
+                                    + std::to_string(delta)
+                                    + "s";
                             }
                         }
                         rules.linePassed = true;
@@ -420,29 +392,18 @@ void RuleModule::update(
                 if (!rules.rightArrowId && isReallyClose) {
                     rules.rightArrowId = i.id;
                 }
-
                 if (rules.rightArrowId == i.id) {
                     glm::vec4 carWorldCoords =
                         glm::vec4(car.modelPose.position, 1.0f);
                     glm::vec3 carArrowCoords = glm::vec3(
                             i.pose.getInverseMatrix() * carWorldCoords);
 
-                    if (carArrowCoords.x < -0.5
+                    rules.rightArrowIgnored = carArrowCoords.x < -0.5
                             || carArrowCoords.z < -1.5
-                            || carArrowCoords.z > 0.3) {
+                            || carArrowCoords.z > 0.3;
 
-                        rules.rightArrowIgnored = true;
-
-                        if (rules.exitIfRightArrowIgnored) {
-                            printViolation(simulationTime);
-                            std::cerr << "Ignored right arrow!" << std::endl;
-                            std::exit(-1);
-                        }
-                    } else {
-                        rules.rightArrowIgnored = false;
-                    }
-
-                    if (carArrowCoords.x > 0.5 || glm::length(carArrowCoords) > 3) {
+                    if (carArrowCoords.x > 0.5
+                            || glm::length(carArrowCoords) > 3) {
                         rules.rightArrowId = 0;
                     }
                 }
@@ -451,7 +412,6 @@ void RuleModule::update(
                 if (!rules.leftArrowId && isReallyClose) {
                     rules.leftArrowId = i.id;
                 }
-
                 if (rules.leftArrowId == i.id) {
 
                     glm::vec4 carWorldCoords =
@@ -459,40 +419,19 @@ void RuleModule::update(
                     glm::vec3 carArrowCoords = glm::vec3(
                             i.pose.getInverseMatrix() * carWorldCoords);
 
-                    if (carArrowCoords.x > 0.2
+                    rules.leftArrowIgnored = carArrowCoords.x > 0.2
                             || carArrowCoords.z < -1.5
-                            || carArrowCoords.z > 0.3) {
+                            || carArrowCoords.z > 0.3;
 
-                        rules.leftArrowIgnored = true;
-
-                        if (rules.exitIfLeftArrowIgnored) {
-                            printViolation(simulationTime);
-                            std::cerr << "Ignored left arrow!" << std::endl;
-                            std::exit(-1);
-                        }
-                    } else {
-                        rules.leftArrowIgnored = false;
-                    }
-
-                    if (carArrowCoords.x < -0.9 || glm::length(carArrowCoords) > 3) {
+                    if (carArrowCoords.x < -0.9
+                            || glm::length(carArrowCoords) > 3) {
                         rules.leftArrowId = 0;
                     }
                 }
                 break;
 
             case NO_PARKING:
-                if (isReallyClose) {
-
-                    rules.noParkingIgnored = true;
-
-                    if (rules.exitIfNoParkingIgnored) {
-                        printViolation(simulationTime);
-                        std::cerr << "Ignored no parking!" << std::endl;
-                        std::exit(-1);
-                    }
-                } else {
-                    rules.noParkingIgnored = false;
-                }
+                rules.noParkingIgnored = isReallyClose;
                 break;
 
             case CHECKPOINT:
@@ -513,30 +452,103 @@ void RuleModule::update(
         }
     }
 
+    /*
+     * Validate speed limits
+     */
+
+    const double tolerance = 0.1;
+
+    rules.speedLimitExceeded = car.vesc.velocity - rules.allowedMaxSpeed
+                / 3.6 / 10.0 > tolerance;
+
+    /*
+     * Validate lack of progress
+     */
+    
+    if ((car.drivenDistance - rules.lastDrivenDistance) > 0) {
+        rules.lastIteractionTime = displayTime;
+    }
+    rules.lastDrivenDistance = car.drivenDistance;
+    rules.lackOfProgress = displayTime - rules.lastIteractionTime > 20;
+
+    /*
+     * Generate error messages and exit (if necessary)
+     */
+
+    if (rules.lackOfProgress) {
+        errorMsg = "Lack of progress!";
+    }
+    if (rules.speedLimitExceeded) {
+        errorMsg = "Speed limit of "
+              + std::to_string(rules.allowedMaxSpeed / 3.6 / 10)
+              + " but car speed is "
+              + std::to_string(car.vesc.velocity);
+        if (rules.exitIfSpeedLimitExceeded) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (rules.noParkingIgnored) {
+        errorMsg = "Ignored no parking!";
+        if (rules.exitIfNoParkingIgnored) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (rules.leftArrowIgnored) {
+        errorMsg = "Ignored left arrow!";
+        if (rules.exitIfLeftArrowIgnored) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (rules.rightArrowIgnored) {
+        errorMsg = "Ignored right arrow!";
+        if (rules.exitIfRightArrowIgnored) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (rules.isColliding) {
+        errorMsg = "Detected collision with obstacle!";
+        if (rules.exitOnObstacleCollision) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (!rules.onTrack) {
+        errorMsg = "Vehicle left track!";
+        if (rules.exitIfNotOnTrack) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (rules.crosswalkIgnored) { 
+        if (rules.exitIfCrosswalkIgnored) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (rules.stopLineIgnored) { 
+        if (rules.exitIfStopLineIgnored) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+    if (rules.giveWayLineIgnored) { 
+        if (rules.exitIfGiveWayLineIgnored) {
+            printViolation(simulationTime, car.drivenDistance);
+            std::exit(-1);
+        }
+    }
+
+    /*
+     * Exit normally if all checkpoints were passed
+     */
+
     if (allCheckpointsPassed
             && checkpointCounter != 0
             && rules.exitIfAllCheckpointsPassed) {
         std::exit(0);
     }
-
-    // TODO: calc correct max speed
-
-    if (car.vesc.velocity - rules.allowedMaxSpeed / 3.6 / 10.0 > 0.05) {
-
-        rules.speedLimitExceeded = true;
-
-        if (rules.exitIfSpeedLimitExceeded) {
-            printViolation(simulationTime);
-            std::cerr << "Speed limit of "
-                      << rules.allowedMaxSpeed / 3.6 / 10
-                      << " but car speed is "
-                      << car.vesc.velocity
-                      << std::endl;
-            std::exit(-1);
-        }
-    } else {
-        rules.speedLimitExceeded = false;
-    }
 }
-
-

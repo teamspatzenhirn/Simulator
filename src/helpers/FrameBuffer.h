@@ -46,8 +46,8 @@ public:
     void resize(GLsizei width, 
             GLsizei height, 
             GLsizei samples = -1, 
-            GLint internalFormatColor = GL_RGBA,
-            GLenum formatColor = GL_RGBA);
+            GLint internalFormatColor = 0,
+            GLenum formatColor = 0);
 };
 
 #endif

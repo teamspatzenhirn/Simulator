@@ -5,3 +5,4 @@ build
 cmake-*
 compile_commands.json
 *.ini
+*.blend1

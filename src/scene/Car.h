@@ -21,6 +21,8 @@ struct Car {
     double alphaFront = 0;
     double alphaRear = 0;
 
+    double drivenDistance = 0;
+
     struct SystemParams {
 
         // radabstand (m)

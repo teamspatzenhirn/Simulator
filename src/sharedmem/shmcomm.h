@@ -7,9 +7,6 @@
 #define NBUFFERS 4
 
 namespace SimulatorSHM {
-enum Role{
-    SERVER, CLIENT
-};
 
 enum BufferState{
     READING, WRITING, DATA, FREE
@@ -25,12 +22,10 @@ struct Buffer{
     uint64_t writeId;
 };
 
-
-
 class SHMCommPrivate
 {
 public:
-    SHMCommPrivate(Role role, int key,size_t bufsize);
+    SHMCommPrivate(int key,size_t bufsize);
 
     void detach();
     bool destroy();
@@ -44,22 +39,19 @@ private:
     void * shmPtr;
     int shmId;
     int key;
-    Role role;
     Buffer * buffers[NBUFFERS];
     uint64_t gWriteId;
     size_t buffersize;
     size_t shmsize;
 };
 
-
-
 template <typename DataType>
 class SHMComm{
+
 public:
-    SHMComm(Role role, int key) : p(role,key,sizeof(DataType)){
+    SHMComm(int key) : p(key, sizeof(DataType)){
 
     }
-
     void detach(){
         p.detach();
     }
@@ -81,7 +73,5 @@ private:
 };
 
 }
-
-
 
 #endif // SHMCOMM_H

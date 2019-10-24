@@ -84,6 +84,15 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
             if (ImGui::MenuItem("Save as")) {
                 showSaveAsFileDialog = true;
             }
+            if (ImGui::MenuItem("Autotracks", nullptr, &scene.enableAutoTracks)) { 
+                if (scene.enableAutoTracks) { 
+                    scene = Scene();
+                    scene.enableAutoTracks = true;
+                } else {
+                    scene = Scene();
+                }
+                openedFilePath = "./";
+            }
             if (ImGui::MenuItem("Exit")) {
                 std::exit(0);
             }
@@ -117,10 +126,14 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
     ImGui::Text("Version: 1.3");
 
     std::string msg = "Config: ";
-    if (!fs::is_regular_file(openedFilePath)) { 
-        msg += "none";
+    if (!scene.enableAutoTracks) {
+        if (!fs::is_regular_file(openedFilePath)) { 
+            msg += "none";
+        } else {
+            msg += fs::path(openedFilePath).filename();
+        }
     } else {
-        msg += fs::path(openedFilePath).filename();
+        msg = "AutoTracks: enabled";
     }
     ImGui::Text("%s", msg.c_str());
 
@@ -355,10 +368,13 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = CHECKPOINT;
             newName = "checkpoint";
         }
-
         if (ImGui::MenuItem("Missing spot")) {
             newType = MISSING_SPOT;
             newName = "missing_spot";
+        }
+        if (ImGui::MenuItem("Giraffe")) {
+            newType = GIRAFFE;
+            newName = "giraffe";
         }
 
         ImGui::EndMenu();
@@ -735,9 +751,11 @@ void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
         if (!rules.onTrack) {
             message += "Vehicle left track\n";
         }
+        /*
         if (rules.speedLimitExceeded) {
             message += "Speed limit exceeded\n";
         }
+        */
         if (rules.leftArrowIgnored) {
             message += "Left arrow ignored\n";
         }
@@ -753,6 +771,9 @@ void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
         if (rules.noParkingIgnored) {
             message += "No parking ignored\n";
         }
+        if (rules.lackOfProgress) {
+            message += "Lack of progress\n";
+        }
 
         if ("" != message) { 
             ImGui::PushStyleColor(ImGuiCol_TitleBg, ImVec4(255, 0, 0, 1));
@@ -764,7 +785,11 @@ void GuiModule::renderRuleWindow(const Scene::Rules& rules) {
         ImGui::Begin("Rules", &showRuleWindow,
                 ImGuiWindowFlags_AlwaysAutoResize);
 
-        ImGui::Text("%s", message.c_str());
+        if ("" == message) {
+            ImGui::Text("No rule violation detected!");
+        } else {
+            ImGui::Text("%s", message.c_str());
+        }
 
         ImGui::End();
 
