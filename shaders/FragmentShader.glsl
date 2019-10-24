@@ -23,9 +23,30 @@ in vec3 fragCameraPosition;
 
 layout (location = 0) out vec4 fragColor;
 
+#define PI 3.14159265358979323846264
+
 float rand (vec2 co) {
 
     return fract(sin(dot(co.xy, vec2(12.9898,78.233))) * (43758.5453 + time));
+}
+
+float gaussrand (vec2 co) {
+
+    float u, v, r, z;
+
+    u = rand(co + vec2(1, 1));
+    v = rand(co + vec2(2, 2));
+    r = rand(co + vec2(3, 3));
+
+    if (r < 0.5) {
+        z = sqrt(-2.0 * log(u)) * sin(2.0 * PI * v);
+    } else {
+        z = sqrt(-2.0 * log(u)) * cos(2.0 * PI * v);
+    }
+
+    z = z * 0.2;
+
+    return z;
 }
 
 void main () {
@@ -67,6 +88,5 @@ void main () {
     // additive noise
 
     float noiseColor = rand(vec2(gl_FragCoord));
-
     fragColor = fragColor * (1 - noise) + noiseColor * noise;
 }
