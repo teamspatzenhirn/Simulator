@@ -104,13 +104,13 @@ void AutoTracksModule::update(Scene& scene) {
 
             auto start = std::make_shared<ControlPoint>();
             start->coords = glm::vec2(
-                    scene.car.modelPose.position.x + 0.2,
-                    scene.car.modelPose.position.z - 0.2);
+                    scene.car.modelPose.position.x + scene.tracks.laneWidth / 2,
+                    scene.car.modelPose.position.z - scene.tracks.laneWidth / 2);
             controlPoints.push_back(start);
 
             auto end = std::make_shared<ControlPoint>();
             end->coords = glm::vec2(
-                    scene.car.modelPose.position.x + 0.2,
+                    scene.car.modelPose.position.x + scene.tracks.laneWidth / 2,
                     scene.car.modelPose.position.z + rand(0.5, 3.0));
             controlPoints.push_back(end);
 

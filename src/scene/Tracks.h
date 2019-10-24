@@ -83,6 +83,7 @@ struct Tracks {
 
     // total width of a track
     float trackWidth = 0.8f;
+    float laneWidth = trackWidth / 2.0;
 
     // lane markings
     float markingWidth = 0.02f;
