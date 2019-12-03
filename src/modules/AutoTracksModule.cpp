@@ -169,7 +169,7 @@ void AutoTracksModule::update(Scene& scene) {
                 link4->coords = last->coords - ortho * d + dir * d;
 
                 genTrack = scene.tracks.addTrackIntersection(
-                        center, last, link2, link3, link4);
+                        center, {last, link2, link3, link4});
 
                 const float dirProb = rand(0.0, 1.0);
 
@@ -349,8 +349,8 @@ void AutoTracksModule::update(Scene& scene) {
 
                 glm::vec2 center2D = t->center.lock()->coords;
                 glm::vec3 center = glm::vec3(center2D.x, 0.0f, center2D.y);
-                glm::vec2 link1 = t->link1.lock()->coords;
-                glm::vec2 link3 = t->link3.lock()->coords;
+                glm::vec2 link1 = t->links[0].lock()->coords;
+                glm::vec2 link3 = t->links[2].lock()->coords;
                 glm::vec2 dir2D = glm::normalize(link1 - link3);
                 glm::vec3 dir = glm::vec3(dir2D.x, 0.0f, dir2D.y);
                 glm::vec3 ortho = glm::vec3(-dir2D.y, 0.0f, dir2D.x);
@@ -389,7 +389,7 @@ void AutoTracksModule::update(Scene& scene) {
 
                 // generating arrows if necessary
                 
-                if (t->link4.lock() == controlPoints.back()) {
+                if (t->links[3].lock() == controlPoints.back()) {
 
                     Scene::Item& newItem = scene.items.emplace_back();
                     newItem.pose.position = center + dir * (0.9f + rand(0.05, 0.25))
@@ -403,7 +403,7 @@ void AutoTracksModule::update(Scene& scene) {
                     newItem.type = ItemType::GROUND_ARROW_LEFT;
                 }
 
-                if (t->link2.lock() == controlPoints.back()) {
+                if (t->links[1].lock() == controlPoints.back()) {
 
                     Scene::Item& newItem = scene.items.emplace_back();
                     newItem.pose.position = center + dir * (0.9f + rand(0.05, 0.25))

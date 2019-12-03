@@ -390,15 +390,11 @@ void to_json(json& j, const Tracks& t) {
 
             jsonTrack["center"] = std::find(tracks.begin(), tracks.end(), 
                     intersection->center.lock()) - tracks.begin();
-            jsonTrack["link1"] = std::find(tracks.begin(), tracks.end(), 
-                    intersection->link1.lock()) - tracks.begin();
-            jsonTrack["link2"] = std::find(tracks.begin(), tracks.end(), 
-                    intersection->link2.lock()) - tracks.begin();
-            jsonTrack["link3"] = std::find(tracks.begin(), tracks.end(), 
 
-                    intersection->link3.lock()) - tracks.begin();
-            jsonTrack["link4"] = std::find(tracks.begin(), tracks.end(), 
-                    intersection->link4.lock()) - tracks.begin();
+            for (const std::weak_ptr<ControlPoint>& link : intersection->links) {
+                auto cp = std::find(tracks.begin(), tracks.end(), link.lock()) - tracks.begin();
+                jsonTrack["links"].push_back(cp);
+            }
 
             jsonTracks.push_back(jsonTrack);
 
@@ -512,16 +508,13 @@ void from_json(const json& j, Tracks& t) {
 
             std::shared_ptr<ControlPoint>& center = controlPoints.at(
                     jsonTrack.at("center").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link1 = controlPoints.at(
-                    jsonTrack.at("link1").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link2 = controlPoints.at(
-                    jsonTrack.at("link2").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link3 = controlPoints.at(
-                    jsonTrack.at("link3").get<unsigned long>());
-            std::shared_ptr<ControlPoint>& link4 = controlPoints.at(
-                    jsonTrack.at("link4").get<unsigned long>());
 
-            t.addTrackIntersection(center, link1, link2, link3, link4);
+            std::vector<std::shared_ptr<ControlPoint>> links;
+            for (const json& jsonLink : jsonTrack.at("links")) {
+                links.push_back(controlPoints.at(jsonLink.get<unsigned long>()));
+            }
+
+            t.addTrackIntersection(center, links);
 
             continue;
         }

@@ -383,7 +383,7 @@ void Editor::renderScene(GLuint shaderProgramId, Model& groundModel, const Track
                 trackModels[track] = intersectionModel;
 
                 const glm::vec2& center = intersection->center.lock()->coords;
-                const glm::vec2& v = intersection->link1.lock()->coords - center;
+                const glm::vec2& v = intersection->links.front().lock()->coords - center;
                 trackModelMats[track] = genTrackIntersectionMatrix(center, std::atan2(-v.y, v.x), trackYOffset);
             }
         }
@@ -488,7 +488,7 @@ void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Tracks& tracks
         genTrackIntersectionVertices(tracks, *activeTrackModel);
 
         glm::vec2 center = intersection->center.lock()->coords;
-        glm::vec2 v = intersection->link1.lock()->coords - center;
+        glm::vec2 v = intersection->links.front().lock()->coords - center;
         activeTrackMat = genTrackIntersectionMatrix(center, std::atan2(-v.y, v.x), markerYOffset);
     }
 
@@ -574,18 +574,15 @@ void Editor::createIntersection(const glm::vec2& position, Tracks& tracks, const
         return;
     }
 
-    std::shared_ptr<ControlPoint> center = std::make_shared<ControlPoint>();
-    center->coords = position;
-    std::shared_ptr<ControlPoint> link1 = std::make_shared<ControlPoint>();
-    link1->coords = position + glm::vec2(d, 0);
-    std::shared_ptr<ControlPoint> link2 = std::make_shared<ControlPoint>();
-    link2->coords = position + glm::vec2(0, d);
-    std::shared_ptr<ControlPoint> link3 = std::make_shared<ControlPoint>();
-    link3->coords = position + glm::vec2(-d, 0);
-    std::shared_ptr<ControlPoint> link4 = std::make_shared<ControlPoint>();
-    link4->coords = position + glm::vec2(0, -d);
+    std::shared_ptr<ControlPoint> center = std::make_shared<ControlPoint>(position);
+    std::vector<std::shared_ptr<ControlPoint>> links = {
+        std::make_shared<ControlPoint>(position + glm::vec2(d, 0)),
+        std::make_shared<ControlPoint>(position + glm::vec2(0, d)),
+        std::make_shared<ControlPoint>(position + glm::vec2(-d, 0)),
+        std::make_shared<ControlPoint>(position + glm::vec2(0, -d))
+    };
 
-    addTrackIntersection(center, link1, link2, link3, link4, tracks);
+    addTrackIntersection(center, links, tracks);
 
     activeControlPoint = center;
 }
@@ -612,13 +609,10 @@ void Editor::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::
 }
 
 void Editor::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
-        const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
-        const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4,
-        Tracks& tracks) {
+        const std::vector<std::shared_ptr<ControlPoint>>& links, Tracks& tracks) {
 
     // add track
-    std::shared_ptr<TrackIntersection> track = tracks.addTrackIntersection(
-            center, link1, link2, link3, link4);
+    std::shared_ptr<TrackIntersection> track = tracks.addTrackIntersection(center, links);
 
     if (intersectionModel->vertices.size() == 0) {
         intersectionModel = genTrackIntersectionModel(tracks);
@@ -634,11 +628,7 @@ void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint,
     std::shared_ptr<TrackIntersection> intersection = findIntersection(*controlPoint);
 
     if (intersection) {
-        const glm::vec2& cc = intersection->center.lock()->coords;
-        const glm::vec2& c1 = intersection->link1.lock()->coords;
-        const glm::vec2& c2 = intersection->link2.lock()->coords;
-        const glm::vec2& c3 = intersection->link3.lock()->coords;
-        const glm::vec2& c4 = intersection->link4.lock()->coords;
+        const glm::vec2 cc = intersection->center.lock()->coords;
 
         if (intersection->center.lock() == controlPoint) {
             // dragging center point of intersection
@@ -646,10 +636,9 @@ void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint,
             // move all intersection control points by the same offset
             glm::vec2 offset = cursorPos - cc;
             dragState.coords[intersection->center.lock()] = cursorPos;
-            dragState.coords[intersection->link1.lock()] = c1 + offset;
-            dragState.coords[intersection->link2.lock()] = c2 + offset;
-            dragState.coords[intersection->link3.lock()] = c3 + offset;
-            dragState.coords[intersection->link4.lock()] = c4 + offset;
+            for (const std::weak_ptr<ControlPoint>& link : intersection->links) {
+                dragState.coords[link.lock()] = link.lock()->coords + offset;
+            }
         } else {
             // dragging link point of intersection
 
@@ -657,33 +646,18 @@ void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint,
             float angle = std::atan2(-(cursorPos.y - cc.y), cursorPos.x - cc.x)
                     - std::atan2(-(controlPoint->coords.y - cc.y), controlPoint->coords.x - cc.x);
 
-            glm::vec2 v = c1 - cc;
-            float a = std::atan2(-v.y, v.x) + angle;
-            float d = glm::length(v);
-            dragState.coords[intersection->link1.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
-
-            v = c2 - cc;
-            a = std::atan2(-v.y, v.x) + angle;
-            d = glm::length(v);
-            dragState.coords[intersection->link2.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
-
-            v = c3 - cc;
-            a = std::atan2(-v.y, v.x) + angle;
-            d = glm::length(v);
-            dragState.coords[intersection->link3.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
-
-            v = c4 - cc;
-            a = std::atan2(-v.y, v.x) + angle;
-            d = glm::length(v);
-            dragState.coords[intersection->link4.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
+            for (const std::weak_ptr<ControlPoint>& link : intersection->links) {
+                glm::vec2 v = link.lock()->coords - cc;
+                float a = std::atan2(-v.y, v.x) + angle;
+                float d = glm::length(v);
+                dragState.coords[link.lock()] = glm::vec2(cc.x + cos(a) * d, cc.y - sin(a) * d);
+            }
         }
 
-        std::vector<std::shared_ptr<ControlPoint>> controlPoints{{
-                intersection->center.lock(),
-                intersection->link1.lock(),
-                intersection->link2.lock(),
-                intersection->link3.lock(),
-                intersection->link4.lock()}};
+        std::vector<std::shared_ptr<ControlPoint>> controlPoints{{intersection->center.lock()}};
+        for (const std::weak_ptr<ControlPoint>& link : intersection->links) {
+            controlPoints.push_back(link.lock());
+        }
         moveTracksAtControlPoint(controlPoints, false, tracks);
     } else {
         // dragging control point not connected to any intersection
@@ -786,7 +760,7 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
                 trackModelMats[track] = dragState.trackModelMats[track];
             } else {
                 glm::vec2 pos = getDraggedPosition(intersection->center.lock());
-                glm::vec2 v = getDraggedPosition(intersection->link1.lock()) - pos;
+                glm::vec2 v = getDraggedPosition(intersection->links.front().lock()) - pos;
                 dragState.trackModelMats[track] = genTrackIntersectionMatrix(pos, std::atan2(-v.y, v.x), trackYOffset);
             }
 
@@ -984,19 +958,19 @@ std::shared_ptr<TrackBase> Editor::findTrack(const glm::vec2& position, const Tr
                 distance = std::fabs(glm::distance(center, position) - arc->radius);
             } else {
                 std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
-                glm::vec2 link1(intersection->link1.lock()->coords);
-                glm::vec2 link2(intersection->link2.lock()->coords);
-                glm::vec2 link3(intersection->link3.lock()->coords);
-                glm::vec2 link4(intersection->link4.lock()->coords);
-                if (glm::dot(link3 - link1, position - link1) < 0
-                        || glm::dot(link1 - link3, position - link3) < 0
-                        || glm::dot(link4 - link2, position - link2) < 0
-                        || glm::dot(link2 - link4, position - link4) < 0) {
-                    continue;
+                distance = minDistance;
+                glm::vec2 cc = intersection->center.lock()->coords;
+                for (const std::weak_ptr<ControlPoint>& link : intersection->links) {
+                    glm::vec2 lc = link.lock()->coords;
+                    if (glm::dot(lc - cc, position - cc) < 0
+                            || glm::dot(cc - lc, position - lc) < 0) {
+                        continue;
+                    }
+                    float d = std::fabs(distanceLinePoint(cc, lc, position));
+                    if (d < distance) {
+                        distance = d;
+                    }
                 }
-                distance = std::min(
-                        std::fabs(distanceLinePoint(link1, link3, position)),
-                        std::fabs(distanceLinePoint(link2, link4, position)));
             }
 
             if (distance < minDistance) {

@@ -121,9 +121,7 @@ private:
             const std::shared_ptr<ControlPoint>& end, Tracks& tracks);
     void addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc, Tracks& tracks);
     void addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
-            const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
-            const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4,
-            Tracks& tracks);
+            const std::vector<std::shared_ptr<ControlPoint>>& links, Tracks& tracks);
 
     void dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint, const Tracks& tracks);
     void moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Tracks& tracks, float groundSize);

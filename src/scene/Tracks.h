@@ -13,6 +13,9 @@ struct ControlPoint {
     glm::vec2 coords;
 
     std::vector<std::shared_ptr<TrackBase>> tracks;
+
+    ControlPoint();
+    ControlPoint(glm::vec2 coords);
 };
 
 enum struct LaneMarking {
@@ -65,14 +68,10 @@ struct TrackArc : TrackBase {
 struct TrackIntersection : TrackBase {
 
     std::weak_ptr<ControlPoint> center;
-    std::weak_ptr<ControlPoint> link1;
-    std::weak_ptr<ControlPoint> link2;
-    std::weak_ptr<ControlPoint> link3;
-    std::weak_ptr<ControlPoint> link4;
+    std::vector<std::weak_ptr<ControlPoint>> links;
 
     TrackIntersection(const std::shared_ptr<ControlPoint>& center,
-            const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
-            const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4);
+            const std::vector<std::weak_ptr<ControlPoint>>& links);
 
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
 
@@ -113,8 +112,7 @@ public:
     std::shared_ptr<TrackLine> addTrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
     std::shared_ptr<TrackArc> addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc);
     std::shared_ptr<TrackIntersection> addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
-            const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
-            const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4);
+            const std::vector<std::shared_ptr<ControlPoint>>& links);
 
     bool controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const;
 
