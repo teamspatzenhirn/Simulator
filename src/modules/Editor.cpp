@@ -171,7 +171,7 @@ void Editor::updateInput(Camera& camera, Tracks& tracks, float groundSize) {
     }
 }
 
-void Editor::onKey(int key, int action, const Tracks& tracks) {
+void Editor::onKey(int key, int action, Tracks& tracks) {
 
     // track alignment
     if (key == GLFW_KEY_LEFT_CONTROL) {
@@ -201,10 +201,7 @@ void Editor::onKey(int key, int action, const Tracks& tracks) {
 
     if ((key == GLFW_KEY_BACKSPACE && action == GLFW_PRESS)
             || (key == GLFW_KEY_DELETE && action == GLFW_PRESS)) {
-        if (activeControlPoint != nullptr) {
-            ((Tracks&)tracks).removeControlPoint(activeControlPoint);
-            deselectControlPoint();
-        }
+        removeActiveControlPoint(tracks);
     }
 }
 
@@ -375,16 +372,10 @@ void Editor::renderScene(GLuint shaderProgramId, Model& groundModel, const Track
                 trackModelMats[track] = modelMat;
             } else {
                 std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
-
-                if (intersectionModel->vertices.size() == 0) {
-                    intersectionModel = genTrackIntersectionModel(tracks);
-                }
-
-                trackModels[track] = intersectionModel;
+                trackModels[track] = genTrackIntersectionModel(*intersection, tracks);
 
                 const glm::vec2& center = intersection->center.lock()->coords;
-                const glm::vec2& v = intersection->links.front().lock()->coords - center;
-                trackModelMats[track] = genTrackIntersectionMatrix(center, std::atan2(-v.y, v.x), trackYOffset);
+                trackModelMats[track] = genTrackIntersectionMatrix(center, trackYOffset);
             }
         }
 
@@ -485,11 +476,10 @@ void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Tracks& tracks
     } else {
         std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
 
-        genTrackIntersectionVertices(tracks, *activeTrackModel);
+        genTrackIntersectionVertices(*intersection, tracks, *activeTrackModel);
 
         glm::vec2 center = intersection->center.lock()->coords;
-        glm::vec2 v = intersection->links.front().lock()->coords - center;
-        activeTrackMat = genTrackIntersectionMatrix(center, std::atan2(-v.y, v.x), markerYOffset);
+        activeTrackMat = genTrackIntersectionMatrix(center, markerYOffset);
     }
 
     genActiveMarkerMaterial(*activeTrackModel);
@@ -614,13 +604,29 @@ void Editor::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
     // add track
     std::shared_ptr<TrackIntersection> track = tracks.addTrackIntersection(center, links);
 
-    if (intersectionModel->vertices.size() == 0) {
-        intersectionModel = genTrackIntersectionModel(tracks);
-    }
-
     // create model
-    trackModels[track] = intersectionModel;
-    trackModelMats[track] = genTrackIntersectionMatrix(center->coords, 0, trackYOffset);
+    trackModels[track] = genTrackIntersectionModel(*track, tracks);
+    trackModelMats[track] = genTrackIntersectionMatrix(center->coords, trackYOffset);
+}
+
+void Editor::removeActiveControlPoint(Tracks& tracks) {
+
+    if (activeControlPoint != nullptr) {
+        std::vector<std::shared_ptr<TrackBase>> ts = activeControlPoint->tracks;
+
+        // Remove control point and update tracks
+        tracks.removeControlPoint(activeControlPoint);
+
+        // Deselect removed control point
+        deselectControlPoint();
+
+        // Update affected track models
+        for (const std::shared_ptr<TrackBase>& t : ts) {
+            if (const std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(t)) {
+                trackModels[t] = genTrackIntersectionModel(*intersection, tracks);
+            }
+        }
+    }
 }
 
 void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint, const Tracks& tracks) {
@@ -757,11 +763,13 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
     for (const std::shared_ptr<TrackBase>& track : movedTracks) {
         if (std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track)) {
             if (applyMovement) {
+                trackModels[track] = dragState.trackModels[track];
                 trackModelMats[track] = dragState.trackModelMats[track];
             } else {
+                dragState.trackModels[track] = genTrackIntersectionModel(*intersection, tracks);
+
                 glm::vec2 pos = getDraggedPosition(intersection->center.lock());
-                glm::vec2 v = getDraggedPosition(intersection->links.front().lock()) - pos;
-                dragState.trackModelMats[track] = genTrackIntersectionMatrix(pos, std::atan2(-v.y, v.x), trackYOffset);
+                dragState.trackModelMats[track] = genTrackIntersectionMatrix(pos, trackYOffset);
             }
 
             continue;
@@ -1019,7 +1027,7 @@ void Editor::updateMarkers(const Tracks& tracks) {
         }
 
         trackMarker = markerTrackIntersection;
-        trackMarkerMat = genTrackIntersectionMatrix(cursorPos, 0, markerYOffset);
+        trackMarkerMat = genTrackIntersectionMatrix(cursorPos, markerYOffset);
     } else {
         if (!activeControlPoint) {
             return;
@@ -1295,10 +1303,11 @@ std::shared_ptr<Model> Editor::genTrackArcModel(const glm::vec2& start, const gl
     return model;
 }
 
-std::shared_ptr<Model> Editor::genTrackIntersectionModel(const Tracks& tracks) {
+std::shared_ptr<Model> Editor::genTrackIntersectionModel(const TrackIntersection& intersection,
+        const Tracks& tracks) {
 
     std::shared_ptr<Model> model = std::make_shared<Model>();
-    genTrackIntersectionVertices(tracks, *model);
+    genTrackIntersectionVertices(intersection, tracks, *model);
     genTrackMaterial(*model);
     model->upload();
 
@@ -1506,71 +1515,91 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
     }
 }
 
-void Editor::genTrackIntersectionVertices(const Tracks& tracks, Model& model) {
+void Editor::genTrackIntersectionVertices(const TrackIntersection& intersection,
+        const Tracks& tracks, Model& model) {
 
     model.vertices.clear();
 
-    float d1 = tracks.trackWidth / 2.0f + intersectionTrackLength;
-    float d2 = tracks.trackWidth / 2.0f;
-    float d3 = tracks.trackWidth / 2.0f - tracks.markingWidth;
-    float d4 = tracks.markingWidth / 2.0f;
+    glm::vec2 center = getDraggedPosition(intersection.center.lock());
+    const std::vector<std::weak_ptr<ControlPoint>>& links = intersection.links;
 
-    // left and right lane boundaries
-    for (float i = -1; i < 2; i += 2) {
-        glm::vec3 vec0(-d1, 0.0f, -d2);
-        glm::vec3 vec1(-d1, 0.0f, -d3);
-        glm::vec3 vec2(-d3, 0.0f, -d3);
-        glm::vec3 vec3(-d3, 0.0f, -d2);
-        appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
+    // Left and right lane boundaries
+    if (links.size() == 1) {
+        glm::vec2 c1 = getDraggedPosition(links.front().lock()) - center;
+        glm::vec2 dir1 = glm::normalize(c1);
+        glm::vec2 dir1Left(dir1.y, -dir1.x);
+        glm::vec2 inner = (tracks.trackWidth / 2.0f - tracks.markingWidth) * dir1Left;
+        glm::vec2 outer = (tracks.trackWidth / 2.0f) * dir1Left;
 
-        vec0 = {-d1, 0.0f, d3};
-        vec1 = {-d1, 0.0f, d2};
-        vec2 = {-d3, 0.0f, d2};
-        vec3 = {-d3, 0.0f, d3};
-        appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
+        appendGroundQuad(model.vertices, -inner, -outer, c1 - outer, c1 - inner);
+        appendGroundQuad(model.vertices, outer, inner, c1 + inner, c1 + outer);
+    } else {
+        for (unsigned int i = 0; i < links.size(); i++) {
+            glm::vec2 c1 = getDraggedPosition(links[i].lock()) - center;
+            glm::vec2 c2 = getDraggedPosition(links[(i + 1) % links.size()].lock()) - center;
 
-        vec0 = {-d2, 0.0f, d3};
-        vec1 = {-d2, 0.0f, d1};
-        vec2 = {-d3, 0.0f, d1};
-        vec3 = {-d3, 0.0f, d3};
-        appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
+            float a1 = std::atan2(c1.y, c1.x);
+            float a2 = std::atan2(c2.y, c2.x);
 
-        vec0 = {d3, 0.0f, d3};
-        vec1 = {d3, 0.0f, d1};
-        vec2 = {d2, 0.0f, d1};
-        vec3 = {d2, 0.0f, d3};
-        appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
+            if (a1 < a2) {
+                a1 += 2.0f * M_PI;
+            }
+            float a = (a1 + a2) / 2.0f;
+            if (a > M_PI) {
+                a -= 2.0f * M_PI;
+            }
+
+            glm::vec2 centerDir = glm::vec2(cosf(a), sinf(a));
+
+            glm::vec2 dir1 = glm::normalize(c1);
+            glm::vec2 dir2 = glm::normalize(c2);
+            glm::vec2 dir1Right(-dir1.y, dir1.x);
+            glm::vec2 dir2Left(dir2.y, -dir2.x);
+
+            glm::vec2 c1Inner = c1 + (tracks.trackWidth / 2.0f - tracks.markingWidth) * dir1Right;
+            glm::vec2 c1Outer = c1 + (tracks.trackWidth / 2.0f) * dir1Right;
+            glm::vec2 c2Inner = c2 + (tracks.trackWidth / 2.0f - tracks.markingWidth) * dir2Left;
+            glm::vec2 c2Outer = c2 + (tracks.trackWidth / 2.0f) * dir2Left;
+
+            float t{0};
+            bool valid = intersectParam(glm::vec2(0.0f), centerDir, c1Inner, dir1, t);
+            if (!valid) {
+                // This should never happen
+                continue;
+            }
+            glm::vec2 mInner = t * centerDir;
+
+            t = 0;
+            valid = intersectParam(glm::vec2(0.0f), centerDir, c1Outer, dir1, t);
+            if (!valid) {
+                // This should never happen
+                continue;
+            }
+            glm::vec2 mOuter = t * centerDir;
+
+            appendGroundQuad(model.vertices, mInner, mOuter, c1Outer, c1Inner);
+            appendGroundQuad(model.vertices, c2Inner, c2Outer, mOuter, mInner);
+        }
     }
 
-    // center lines
-    float offset = -(d3 * (float)M_PI) / 2.0f + tracks.centerLineInterrupt;
-    while (offset < 0) {
-        offset = offset + tracks.centerLineLength + tracks.centerLineInterrupt;
-    }
-    offset = offset / 2.0f;
+    // Center lines
+    float xEnd = tracks.trackWidth / 2.0f + intersectionTrackLength;
+    
+    for (const std::weak_ptr<ControlPoint>& link : links) {
+        glm::vec2 dir = glm::normalize(getDraggedPosition(link.lock()) - center);
+        glm::vec2 left = (tracks.markingWidth / 2.0f) * glm::vec2(dir.y, -dir.x);
 
-    float x{d3 + offset};
-    while (x < d1) {
-        float xEnd{x + tracks.centerLineLength};
-        if (d1 - x < tracks.centerLineLength) {
-            xEnd = d1;
+        for (float x1 = tracks.trackWidth / 2.0f - tracks.markingWidth; x1 < xEnd;
+                x1 += tracks.centerLineLength + tracks.centerLineInterrupt) {
+
+            float x2 = std::min(x1 + tracks.centerLineLength, xEnd);
+
+            appendGroundQuad(model.vertices,
+                    x1 * dir + left,
+                    x1 * dir - left,
+                    x2 * dir - left,
+                    x2 * dir + left);
         }
-
-        for (float i = -1; i < 2; i += 2) {
-            glm::vec3 vec0(-xEnd, 0.0f, -d4);
-            glm::vec3 vec1(-xEnd, 0.0f, d4);
-            glm::vec3 vec2(-x, 0.0f, d4);
-            glm::vec3 vec3(-x, 0.0f, -d4);
-            appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
-
-            vec0 = {-d4, 0.0f, x};
-            vec1 = {-d4, 0.0f, xEnd};
-            vec2 = {d4, 0.0f, xEnd};
-            vec3 = {d4, 0.0f, x};
-            appendQuad(model.vertices, i * vec0, i * vec1, i * vec2, i * vec3);
-        }
-
-        x += tracks.centerLineLength + tracks.centerLineInterrupt;
     }
 }
 
@@ -1649,10 +1678,9 @@ glm::mat4 Editor::genTrackArcMatrix(const glm::vec2& center, const float y) {
     return glm::translate(glm::mat4(1.0f), glm::vec3(center.x, y, center.y));
 }
 
-glm::mat4 Editor::genTrackIntersectionMatrix(const glm::vec2& center, const float angle, const float y) {
+glm::mat4 Editor::genTrackIntersectionMatrix(const glm::vec2& center, const float y) {
 
-    glm::mat4 m = glm::translate(glm::mat4(1.0f), glm::vec3(center.x, y, center.y));
-    return glm::rotate(m, angle, glm::vec3(0, 1, 0));
+    return glm::translate(glm::mat4(1.0f), glm::vec3(center.x, y, center.y));
 }
 
 glm::mat4 Editor::genTrackLineMarkerMatrix(const glm::vec2& start,
@@ -1665,6 +1693,16 @@ glm::mat4 Editor::genTrackLineMarkerMatrix(const glm::vec2& start,
     modelMat = glm::scale(modelMat, glm::vec3(sqrt(dx * dx + dy * dy) / 2, 1.0f, tracks.trackWidth / 2)); // division by 2 because model has size 2x2
 
     return modelMat;
+}
+
+void Editor::appendGroundQuad(std::vector<Model::Vertex>& vertices, const glm::vec2& vec0,
+        const glm::vec2& vec1, const glm::vec2& vec2, const glm::vec2& vec3) {
+    
+    appendQuad(vertices,
+            glm::vec3(vec0.x, 0.0f, vec0.y),
+            glm::vec3(vec1.x, 0.0f, vec1.y),
+            glm::vec3(vec2.x, 0.0f, vec2.y),
+            glm::vec3(vec3.x, 0.0f, vec3.y));
 }
 
 void Editor::getArcVertexParams(const glm::vec2& start, const glm::vec2& end,

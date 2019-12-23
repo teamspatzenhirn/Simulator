@@ -60,8 +60,6 @@ private:
     std::shared_ptr<Model> markerTrackIntersection = std::make_shared<Model>();
 
     // tracks
-    std::shared_ptr<Model> intersectionModel = std::make_shared<Model>();
-
     std::map<std::shared_ptr<TrackBase>, std::shared_ptr<Model>> trackModels;
     std::map<std::shared_ptr<TrackBase>, glm::mat4> trackModelMats;
 
@@ -94,7 +92,7 @@ public:
     Editor();
 
     void updateInput(Camera& camera, Tracks& tracks, float groundSize);
-    void onKey(int key, int action, const Tracks& tracks);
+    void onKey(int key, int action, Tracks& tracks);
     void onButton(double cursorX, double cursorY, int windowWidth, int windowHeight,
             int button, int action, Camera& camera, Tracks& tracks, float groundSize);
     void onMouseMoved(double cursorX, double cursorY, int windowWidth, int windowHeight,
@@ -122,6 +120,8 @@ private:
     void addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end, const glm::vec2& center, const float radius, const bool rightArc, Tracks& tracks);
     void addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
             const std::vector<std::shared_ptr<ControlPoint>>& links, Tracks& tracks);
+
+    void removeActiveControlPoint(Tracks& tracks);
 
     void dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint, const Tracks& tracks);
     void moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Tracks& tracks, float groundSize);
@@ -174,7 +174,8 @@ private:
     std::shared_ptr<Model> genTrackArcModel(const glm::vec2& start, const glm::vec2& end,
             const glm::vec2& center, const float radius, const bool rightArc,
             const LaneMarking centerLine, const Tracks& tracks);
-    std::shared_ptr<Model> genTrackIntersectionModel(const Tracks& tracks);
+    std::shared_ptr<Model> genTrackIntersectionModel(const TrackIntersection& intersection,
+            const Tracks& tracks);
 
     void genDefaultMarkerMaterial(Model& model);
     void genActiveMarkerMaterial(Model& model);
@@ -186,7 +187,8 @@ private:
     void genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
             const glm::vec2& center, const float radius, const bool rightArc,
             const LaneMarking centerLine, const Tracks& tracks, Model& model);
-    void genTrackIntersectionVertices(const Tracks& tracks, Model& model);
+    void genTrackIntersectionVertices(const TrackIntersection& intersection,
+            const Tracks& tracks, Model& model);
     void genTrackLineMarkerVertices(Model& model);
     void genTrackArcMarkerVertices(const glm::vec2& start, const glm::vec2& end,
             const glm::vec2& center, const float radius, const bool rightArc,
@@ -196,12 +198,14 @@ private:
     glm::mat4 genPointMatrix(const glm::vec2& point, const float y);
     glm::mat4 genTrackLineMatrix(const glm::vec2& start, const glm::vec2& end, const float y);
     glm::mat4 genTrackArcMatrix(const glm::vec2& center, const float y);
-    glm::mat4 genTrackIntersectionMatrix(const glm::vec2& center, const float angle, const float y);
+    glm::mat4 genTrackIntersectionMatrix(const glm::vec2& center, const float y);
     glm::mat4 genTrackLineMarkerMatrix(const glm::vec2& start,
             const glm::vec2& end, const float y, const Tracks& tracks);
 
     /*void appendQuad(std::vector<Model::Vertex>& vertices, const glm::vec3& vec0,
             const glm::vec3& vec1, const glm::vec3& vec2, const glm::vec3& vec3);*/
+    void appendGroundQuad(std::vector<Model::Vertex>& vertices, const glm::vec2& vec0,
+            const glm::vec2& vec1, const glm::vec2& vec2, const glm::vec2& vec3);
 
     void getArcVertexParams(const glm::vec2& start, const glm::vec2& end,
             const glm::vec2& center, const bool rightArc, float& baseAngle,
