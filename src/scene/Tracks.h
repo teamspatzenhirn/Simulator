@@ -118,7 +118,7 @@ public:
 
     void removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint);
 
-    static bool isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const std::shared_ptr<TrackBase>& track);
+    static bool isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const TrackBase& track);
 
     std::vector<glm::vec2> getPath(float distBetweenPoints);
 };
