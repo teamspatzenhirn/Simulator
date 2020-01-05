@@ -120,7 +120,7 @@ void AutoTracksModule::update(Scene& scene) {
             // create some helpful variables
 
             const auto last = controlPoints.back();
-            const glm::vec2 dir = glm::normalize(last->tracks.front()->getDirection(*last));
+            const glm::vec2 dir = glm::normalize(last->tracks.front()->getDirections(*last).front());
             const glm::vec2 ortho = glm::vec2(-dir.y, dir.x);
 
             auto end = std::make_shared<ControlPoint>();

@@ -20,15 +20,15 @@ std::vector<std::weak_ptr<ControlPoint>> TrackLine::getControlPoints() {
     return {start, end};
 }
 
-glm::vec2 TrackLine::getDirection(const ControlPoint& controlPoint) {
+std::vector<glm::vec2> TrackLine::getDirections(const ControlPoint& controlPoint) {
 
     std::shared_ptr<ControlPoint> start = this->start.lock();
     std::shared_ptr<ControlPoint> end = this->end.lock();
 
     if (start.get() == &controlPoint) {
-        return start->coords - end->coords;
+        return {start->coords - end->coords};
     } else {
-        return end->coords - start->coords;
+        return {end->coords - start->coords};
     }
 }
 
@@ -59,7 +59,7 @@ std::vector<std::weak_ptr<ControlPoint>> TrackArc::getControlPoints() {
     return {start, end};
 }
 
-glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
+std::vector<glm::vec2> TrackArc::getDirections(const ControlPoint& controlPoint) {
 
     std::shared_ptr<ControlPoint> start = this->start.lock();
     std::shared_ptr<ControlPoint> end = this->end.lock();
@@ -81,7 +81,7 @@ glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
 
     dir = glm::vec2(-dir.y, dir.x);
 
-    return dir;
+    return {dir};
 }
 
 std::vector<glm::vec2> TrackArc::getPoints(float pointDistance) {
@@ -134,19 +134,23 @@ std::vector<std::weak_ptr<ControlPoint>> TrackIntersection::getControlPoints() {
     return cps;
 }
 
-glm::vec2 TrackIntersection::getDirection(const ControlPoint& controlPoint) {
+std::vector<glm::vec2> TrackIntersection::getDirections(const ControlPoint& controlPoint) {
 
     const glm::vec2& centerCoords = center.lock()->coords;
 
     for (const std::weak_ptr<ControlPoint>& link : links) {
         const std::shared_ptr<ControlPoint>& l = link.lock();
         if (l.get() == &controlPoint) {
-            return l->coords - centerCoords;
+            return {l->coords - centerCoords};
         }
     }
 
     // center
-    return glm::vec2();
+    std::vector<glm::vec2> directions;
+    for (const std::weak_ptr<ControlPoint>& link : links) {
+        directions.push_back(centerCoords - link.lock()->coords);
+    }
+    return directions;
 }
 
 std::vector<glm::vec2> TrackIntersection::getPoints(float pointDistance) {
