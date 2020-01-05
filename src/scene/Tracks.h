@@ -27,6 +27,8 @@ struct TrackBase {
 
     virtual ~TrackBase() = 0;
 
+    virtual std::vector<std::weak_ptr<ControlPoint>> getControlPoints() = 0;
+
     virtual glm::vec2 getDirection(const ControlPoint& controlPoint) = 0;
 
     virtual std::vector<glm::vec2> getPoints(float pointDistance) = 0;
@@ -40,6 +42,8 @@ struct TrackLine : TrackBase {
     LaneMarking centerLine{LaneMarking::Dashed};
 
     TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
+
+    std::vector<std::weak_ptr<ControlPoint>> getControlPoints() override;
 
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
 
@@ -60,6 +64,8 @@ struct TrackArc : TrackBase {
     TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
             const glm::vec2& center, const float radius, const bool rightArc);
 
+    std::vector<std::weak_ptr<ControlPoint>> getControlPoints() override;
+
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
 
     std::vector<glm::vec2> getPoints(float pointDistance) override;
@@ -72,6 +78,8 @@ struct TrackIntersection : TrackBase {
 
     TrackIntersection(const std::shared_ptr<ControlPoint>& center,
             const std::vector<std::weak_ptr<ControlPoint>>& links);
+
+    std::vector<std::weak_ptr<ControlPoint>> getControlPoints() override;
 
     glm::vec2 getDirection(const ControlPoint& controlPoint) override;
 

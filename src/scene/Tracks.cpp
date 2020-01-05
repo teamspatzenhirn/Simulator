@@ -16,6 +16,10 @@ TrackLine::TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shar
     : start(start), end(end) {
 }
 
+std::vector<std::weak_ptr<ControlPoint>> TrackLine::getControlPoints() {
+    return {start, end};
+}
+
 glm::vec2 TrackLine::getDirection(const ControlPoint& controlPoint) {
 
     std::shared_ptr<ControlPoint> start = this->start.lock();
@@ -49,6 +53,10 @@ std::vector<glm::vec2> TrackLine::getPoints(float pointDistance) {
 TrackArc::TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
         const glm::vec2& center, const float radius, const bool rightArc)
     : start(start), end(end), center(center), radius(radius), rightArc(rightArc) {
+}
+
+std::vector<std::weak_ptr<ControlPoint>> TrackArc::getControlPoints() {
+    return {start, end};
 }
 
 glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
@@ -117,6 +125,13 @@ std::vector<glm::vec2> TrackArc::getPoints(float pointDistance) {
 TrackIntersection::TrackIntersection(const std::shared_ptr<ControlPoint>& center,
         const std::vector<std::weak_ptr<ControlPoint>>& links)
     : center(center), links(links) {
+}
+
+std::vector<std::weak_ptr<ControlPoint>> TrackIntersection::getControlPoints() {
+
+    std::vector<std::weak_ptr<ControlPoint>> cps = {center};
+    cps.insert(cps.end(), links.begin(), links.end());
+    return cps;
 }
 
 glm::vec2 TrackIntersection::getDirection(const ControlPoint& controlPoint) {

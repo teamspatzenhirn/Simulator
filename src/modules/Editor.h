@@ -72,10 +72,11 @@ private:
 
     std::shared_ptr<TrackBase> activeTrack;
     std::shared_ptr<Model> activeTrackModel;
-    glm::mat4 activeTrackMat;
 
     struct {
         bool dragging{false};
+
+        glm::vec2 startPos;
 
         std::shared_ptr<ControlPoint> connectedPoint;
 
@@ -124,11 +125,14 @@ private:
     void removeActiveControlPoint(Tracks& tracks);
 
     void dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint, const Tracks& tracks);
-    void moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Tracks& tracks, float groundSize);
+    void dragTrack(const std::shared_ptr<TrackBase>& track, const Tracks& tracks);
+    void applyDragging(std::shared_ptr<ControlPoint>& controlPoint, Tracks& tracks, float groundSize);
     void moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlPoint>>& controlPoints,
             bool applyMovement, const Tracks& tracks);
     std::shared_ptr<TrackIntersection> findIntersection(const ControlPoint& cp) const;
     glm::vec2 getDraggedPosition(const std::shared_ptr<ControlPoint>& cp) const;
+    const std::shared_ptr<Model>& getDraggedTrackModel(const std::shared_ptr<TrackBase>& track) const;
+    const glm::mat4& getDraggedTrackModelMat(const std::shared_ptr<TrackBase>& track) const;
     bool isDragged(const std::shared_ptr<ControlPoint>& cp) const;
 
     std::shared_ptr<ControlPoint> selectControlPoint(const glm::vec2& position, const Tracks& tracks) const;
@@ -163,6 +167,7 @@ private:
 
     void deselectControlPoint();
     void deselectTrack(Tracks& tracks);
+    void clearDragState();
     bool canCreateTrack(const Tracks& tracks);
     bool isComplete(const ControlPoint& cp) const;
     bool maybeDragging(const Tracks& tracks);

@@ -226,7 +226,12 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
                 if (!activeControlPoint) {
                     std::shared_ptr<TrackBase> selectedTrack = findTrack(groundCoords, tracks);
                     if (selectedTrack && !selectControlPoint(groundCoords, tracks)) {
-                        selectTrack(selectedTrack, tracks);
+                        if (selectedTrack == activeTrack) {
+                            dragState.dragging = true;
+                            dragState.startPos = groundCoords;
+                        } else {
+                            selectTrack(selectedTrack, tracks);
+                        }
                     } else {
                         deselectTrack(tracks);
 
@@ -255,8 +260,7 @@ void Editor::onButton(double cursorX, double cursorY, int windowWidth, int windo
                 }
             } else {
                 if (dragState.dragging) {
-                    dragState.dragging = false;
-                    moveControlPoint(activeControlPoint, tracks, groundSize);
+                    applyDragging(activeControlPoint, tracks, groundSize);
                 }
 
                 updateMarkers(tracks);
@@ -288,6 +292,9 @@ void Editor::onMouseMoved(double cursorX, double cursorY, int windowWidth, int w
     if (dragState.dragging) {
         if (activeControlPoint) {
             dragControlPoint(activeControlPoint, tracks);
+        }
+        if (activeTrack) {
+            dragTrack(activeTrack, tracks);
         }
     } else {
         updateMarkers(tracks);
@@ -380,13 +387,7 @@ void Editor::renderScene(GLuint shaderProgramId, Model& groundModel, const Track
         }
 
         if (dragState.dragging) {
-            const std::shared_ptr<Model>& model =
-                    (dragState.trackModels.find(track) != dragState.trackModels.end()
-                    ? dragState.trackModels[track] : trackModels[track]);
-            const glm::mat4& mat =
-                    (dragState.trackModelMats.find(track) != dragState.trackModelMats.end()
-                    ? dragState.trackModelMats[track] : trackModelMats[track]);
-            model->render(shaderProgramId, mat);
+            getDraggedTrackModel(track)->render(shaderProgramId, getDraggedTrackModelMat(track));
         } else {
             trackModels[track]->render(shaderProgramId, trackModelMats[track]);
         }
@@ -433,7 +434,7 @@ void Editor::renderMarkers(GLuint shaderProgramId, const Tracks& tracks, const g
 
     // render active track marker
     if (activeTrack) {
-        activeTrackModel->render(shaderProgramId, activeTrackMat);
+        activeTrackModel->render(shaderProgramId, getDraggedTrackModelMat(activeTrack));
     }
 }
 
@@ -462,24 +463,14 @@ void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Tracks& tracks
     activeTrackModel = std::make_shared<Model>();
 
     if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track)) {
-        glm::vec2 start = line->start.lock()->coords;
-        glm::vec2 end = line->end.lock()->coords;
-
-        genTrackLineVertices(start, end, line->centerLine, tracks, *activeTrackModel);
-
-        activeTrackMat = genTrackLineMatrix(start, end, markerYOffset);
+        genTrackLineVertices(line->start.lock()->coords, line->end.lock()->coords,
+                line->centerLine, tracks, *activeTrackModel);
     } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track)) {
         genTrackArcVertices(arc->start.lock()->coords, arc->end.lock()->coords,
                 arc->center, arc->radius, arc->rightArc, arc->centerLine, tracks, *activeTrackModel);
-
-        activeTrackMat = genTrackArcMatrix(arc->center, markerYOffset);
     } else {
         std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
-
         genTrackIntersectionVertices(*intersection, tracks, *activeTrackModel);
-
-        glm::vec2 center = intersection->center.lock()->coords;
-        activeTrackMat = genTrackIntersectionMatrix(center, markerYOffset);
     }
 
     genActiveMarkerMaterial(*activeTrackModel);
@@ -661,12 +652,32 @@ void Editor::dragControlPoint(const std::shared_ptr<ControlPoint>& controlPoint,
     }
 }
 
-void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Tracks& tracks, float groundSize) {
+void Editor::dragTrack(const std::shared_ptr<TrackBase>& track, const Tracks& tracks) {
+
+    glm::vec2 offset = cursorPos - dragState.startPos;
+
+    // Affected control points
+    std::vector<std::shared_ptr<ControlPoint>> movedControlPoints;
+    for (const std::weak_ptr<ControlPoint>& cp : track->getControlPoints()) {
+        movedControlPoints.push_back(cp.lock());
+    }
+
+    // Move control points
+    for (const std::shared_ptr<ControlPoint>& cp : movedControlPoints) {
+        dragState.coords[cp] = cp->coords + offset;
+    }
+
+    // Move tracks
+    moveTracksAtControlPoint(movedControlPoints, false, tracks);
+}
+
+void Editor::applyDragging(std::shared_ptr<ControlPoint>& controlPoint, Tracks& tracks, float groundSize) {
 
     // validate new positions
     for (const std::pair<const std::shared_ptr<ControlPoint>, glm::vec2>& p : dragState.coords) {
         const glm::vec2& pos = p.second;
         if (pos.x < -groundSize || pos.x > groundSize || pos.y < -groundSize || pos.y > groundSize) {
+            clearDragState();
             return;
         }
     }
@@ -684,7 +695,7 @@ void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Track
     }
 
     // connect control points
-    if (dragState.connectedPoint) {
+    if (controlPoint && dragState.connectedPoint) {
         for (auto it = controlPoint->tracks.begin(); it != controlPoint->tracks.end();) {
             std::shared_ptr<TrackBase>& track = *it;
 
@@ -746,11 +757,7 @@ void Editor::moveControlPoint(std::shared_ptr<ControlPoint>& controlPoint, Track
         activeControlPoint = dragState.connectedPoint;
     }
 
-    // clear drag state
-    dragState.connectedPoint = nullptr;
-    dragState.coords.clear();
-    dragState.trackModels.clear();
-    dragState.trackModelMats.clear();
+    clearDragState();
 }
 
 void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlPoint>>& controlPoints,
@@ -885,6 +892,18 @@ glm::vec2 Editor::getDraggedPosition(const std::shared_ptr<ControlPoint>& cp) co
     } else {
         return cp->coords;
     }
+}
+
+const std::shared_ptr<Model>& Editor::getDraggedTrackModel(const std::shared_ptr<TrackBase>& track) const {
+
+    return dragState.trackModels.find(track) != dragState.trackModels.end()
+            ? dragState.trackModels.at(track) : trackModels.at(track);
+}
+
+const glm::mat4& Editor::getDraggedTrackModelMat(const std::shared_ptr<TrackBase>& track) const {
+
+    return dragState.trackModelMats.find(track) != dragState.trackModelMats.end()
+            ? dragState.trackModelMats.at(track) : trackModelMats.at(track);
 }
 
 bool Editor::isDragged(const std::shared_ptr<ControlPoint>& cp) const {
@@ -1245,11 +1264,7 @@ void Editor::deselectControlPoint() {
 
     activeControlPoint = nullptr;
 
-    dragState.dragging = false;
-    dragState.connectedPoint = nullptr;
-    dragState.coords.clear();
-    dragState.trackModels.clear();
-    dragState.trackModelMats.clear();
+    clearDragState();
 }
 
 void Editor::deselectTrack(Tracks& tracks) {
@@ -1258,6 +1273,15 @@ void Editor::deselectTrack(Tracks& tracks) {
     activeTrackModel = nullptr;
 
     tracks.trackSelection.track = nullptr;
+}
+
+void Editor::clearDragState() {
+
+    dragState.dragging = false;
+    dragState.connectedPoint = nullptr;
+    dragState.coords.clear();
+    dragState.trackModels.clear();
+    dragState.trackModelMats.clear();
 }
 
 bool Editor::canCreateTrack(const Tracks& tracks) {
