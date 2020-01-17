@@ -217,3 +217,4 @@ install(DIRECTORY
     "${PROJECT_SOURCE_DIR}/shaders"
     "${PROJECT_SOURCE_DIR}/models"
     DESTINATION share/${PROJECT_NAME})
+install(CODE "execute_process(COMMAND xdg-desktop-menu install ${CMAKE_SOURCE_DIR}/spatzenhirn-spatzsim.desktop)")
