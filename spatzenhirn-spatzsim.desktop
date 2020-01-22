@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Encoding=UTF-8
+Name=SpatzSim
+Comment=Team Spatzenhirn Simulator
+Exec=spatzsim
+Terminal=False
+GenericName=Team Spatzenhirn Simulator
