@@ -524,7 +524,7 @@ void Editor::endTrack(const glm::vec2& position, Tracks& tracks, float groundSiz
         trackEnd->coords = end;
     }
 
-    // update scene and temporary state
+    // Add track
     if (getEffectiveTrackMode() == TrackMode::Line) {
         addTrackLine(activeControlPoint, trackEnd, tracks);
     } else {
@@ -542,6 +542,11 @@ void Editor::endTrack(const glm::vec2& position, Tracks& tracks, float groundSiz
         }
     }
 
+    // Merge track with intersection if necessary
+    mergeIntersectionLinks(*activeControlPoint, tracks);
+    mergeIntersectionLinks(*trackEnd, tracks);
+
+    // Update temporary state
     activeControlPoint = trackEnd;
 
     updateMarkers(tracks);
@@ -598,6 +603,47 @@ void Editor::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
     // create model
     trackModels[track] = genTrackIntersectionModel(*track, tracks);
     trackModelMats[track] = genTrackIntersectionMatrix(center->coords, trackYOffset);
+}
+
+void Editor::mergeIntersectionLinks(ControlPoint& cp, const Tracks& tracks) {
+
+    // Find intersection
+    std::vector<std::shared_ptr<TrackIntersection>> intersections = findIntersections(cp);
+    if (intersections.size() != 1) {
+        return;
+    }
+
+    const std::shared_ptr<TrackIntersection>& intersection = intersections.front();
+
+    // Turn lines into links
+    for (const std::shared_ptr<TrackBase>& track : cp.tracks) {
+        std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track);
+        if (!line) {
+            continue;
+        }
+
+        std::shared_ptr<ControlPoint> endPoint =
+                (line->start.lock().get() == &cp ? line->end.lock() : line->start.lock());
+
+        // Remove line
+        endPoint->tracks.erase(
+                std::remove(endPoint->tracks.begin(), endPoint->tracks.end(), track),
+                endPoint->tracks.end());
+
+        // Update intersection
+        intersection->links.push_back(endPoint);
+        endPoint->tracks.push_back(intersection);
+    }
+
+    // Remove lines from center control point
+    cp.tracks.erase(
+            std::remove_if(cp.tracks.begin(), cp.tracks.end(), [](const std::shared_ptr<TrackBase>& track) {
+                return std::dynamic_pointer_cast<TrackLine>(track);
+            }),
+            cp.tracks.end());
+
+    // Update intersection model
+    trackModels[intersection] = genTrackIntersectionModel(*intersection, tracks);
 }
 
 void Editor::removeActiveControlPoint(Tracks& tracks) {
@@ -767,6 +813,8 @@ void Editor::applyDragging(std::shared_ptr<ControlPoint>& controlPoint, Tracks& 
         tracks.removeControlPoint(controlPoint);
 
         activeControlPoint = dragState.connectedPoint;
+
+        mergeIntersectionLinks(*activeControlPoint, tracks);
     }
 
     clearDragState();
@@ -882,19 +930,17 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
     }
 }
 
-std::shared_ptr<TrackIntersection> Editor::findIntersection(const ControlPoint& cp) const {
+std::vector<std::shared_ptr<TrackIntersection>> Editor::findIntersections(const ControlPoint& cp) const {
 
-    auto intersection = std::find_if(
-            cp.tracks.begin(), cp.tracks.end(),
-            [](const std::shared_ptr<TrackBase>& track) {
-                return std::dynamic_pointer_cast<TrackIntersection>(track);
-            });
-
-    if (intersection == cp.tracks.end()) {
-        return nullptr;
-    } else {
-        return std::dynamic_pointer_cast<TrackIntersection>(*intersection);
+    std::vector<std::shared_ptr<TrackIntersection>> intersections;
+    for (const std::shared_ptr<TrackBase>& track : cp.tracks) {
+        std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
+        if (intersection && intersection->center.lock().get() == &cp) {
+            intersections.push_back(intersection);
+        }
     }
+
+    return intersections;
 }
 
 glm::vec2 Editor::getDraggedPosition(const std::shared_ptr<ControlPoint>& cp) const {
