@@ -42,8 +42,8 @@ public:
 
     enum SelectedCamera {
         FPS_CAMERA,
-        FOLLOW_CAMERA,
         CINEMATIC_CAMERA,
+        FOLLOW_CAMERA,
         MAIN_CAMERA,
         DEPTH_CAMERA,
     } selectedCamera = FPS_CAMERA;

@@ -183,6 +183,9 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
     for(KeyEvent& e : getKeyEvents()) {
         if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
             selectedCamera = (SelectedCamera) ((((int) selectedCamera) + 1) % 4);
+            if(selectedCamera == CINEMATIC_CAMERA){
+                scene.cinematicCamera.pose = scene.fpsCamera.pose;
+            }
         }
         if (e.key == GLFW_KEY_P && e.action == GLFW_PRESS) {
             scene.paused = !scene.paused;
