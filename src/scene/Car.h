@@ -154,8 +154,8 @@ struct Car {
         int colorImageWidth = 1280;
         int colorImageHeight = 720;
 
-        int depthImageWidth = 320;
-        int depthImageHeight = 240;
+        int depthImageWidth = 640 * 2;
+        int depthImageHeight = 480;
 
         float colorFovy = (float)M_PI * 0.5f;
         float depthFovy = (float)M_PI * 0.25f;
