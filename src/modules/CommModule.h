@@ -31,9 +31,9 @@ class CommModule {
     struct DepthCameraImage {
 
         /*
-         * Here we assume 640x480 to be the maximum possible depth image size.
+         * Here we assume 640x480 to be the maximum possible depth image size of one camera.
          */
-        float buffer[640*480*3];
+        float buffer[640*2*480*3];
 
         int imageWidth;
         int imageHeight;
