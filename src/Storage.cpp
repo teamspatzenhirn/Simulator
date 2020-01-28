@@ -510,8 +510,17 @@ void from_json(const json& j, Tracks& t) {
                     jsonTrack.at("center").get<unsigned long>());
 
             std::vector<std::shared_ptr<ControlPoint>> links;
-            for (const json& jsonLink : jsonTrack.at("links")) {
-                links.push_back(controlPoints.at(jsonLink.get<unsigned long>()));
+
+            if (jsonTrack.find("links") != jsonTrack.end()) {
+                for (const json& jsonLink : jsonTrack.at("links")) {
+                    links.push_back(controlPoints.at(jsonLink.get<unsigned long>()));
+                }
+            } else {
+                // Compatibility with old intersections
+                links.push_back(controlPoints.at(jsonTrack.at("link1").get<unsigned long>()));
+                links.push_back(controlPoints.at(jsonTrack.at("link2").get<unsigned long>()));
+                links.push_back(controlPoints.at(jsonTrack.at("link3").get<unsigned long>()));
+                links.push_back(controlPoints.at(jsonTrack.at("link4").get<unsigned long>()));
             }
 
             t.addTrackIntersection(center, links);
