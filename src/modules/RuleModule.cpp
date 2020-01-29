@@ -97,13 +97,12 @@ void RuleModule::update(
 
             TrackIntersection& ti = *((TrackIntersection*)s.get());
 
-            glm::vec2 start1 = ti.link1.lock()->coords;
-            glm::vec2 end1 = ti.link3.lock()->coords;
+            glm::vec2 center = ti.center.lock()->coords;
 
-            glm::vec2 start2 = ti.link2.lock()->coords;
-            glm::vec2 end2 = ti.link4.lock()->coords;
-
-            if (onLineSegment(start1, end1, 0.4f) || onLineSegment(start2, end2, 0.4f)) {
+            if (std::find_if(ti.links.begin(), ti.links.end(),
+                    [&](const std::weak_ptr<ControlPoint>& link) {
+                        return onLineSegment(center, link.lock()->coords, 0.4f);
+                    }) != ti.links.end()) {
                 rules.onTrack = true;
                 break;
             }

@@ -2,6 +2,13 @@
 
 #include <algorithm>
 
+ControlPoint::ControlPoint() {
+}
+
+ControlPoint::ControlPoint(glm::vec2 coords)
+    : coords(coords) {
+}
+
 TrackBase::~TrackBase() {
 }
 
@@ -9,15 +16,19 @@ TrackLine::TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shar
     : start(start), end(end) {
 }
 
-glm::vec2 TrackLine::getDirection(const ControlPoint& controlPoint) {
+std::vector<std::weak_ptr<ControlPoint>> TrackLine::getControlPoints() {
+    return {start, end};
+}
+
+std::vector<glm::vec2> TrackLine::getDirections(const ControlPoint& controlPoint) {
 
     std::shared_ptr<ControlPoint> start = this->start.lock();
     std::shared_ptr<ControlPoint> end = this->end.lock();
 
     if (start.get() == &controlPoint) {
-        return start->coords - end->coords;
+        return {start->coords - end->coords};
     } else {
-        return end->coords - start->coords;
+        return {end->coords - start->coords};
     }
 }
 
@@ -44,7 +55,11 @@ TrackArc::TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared
     : start(start), end(end), center(center), radius(radius), rightArc(rightArc) {
 }
 
-glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
+std::vector<std::weak_ptr<ControlPoint>> TrackArc::getControlPoints() {
+    return {start, end};
+}
+
+std::vector<glm::vec2> TrackArc::getDirections(const ControlPoint& controlPoint) {
 
     std::shared_ptr<ControlPoint> start = this->start.lock();
     std::shared_ptr<ControlPoint> end = this->end.lock();
@@ -66,7 +81,7 @@ glm::vec2 TrackArc::getDirection(const ControlPoint& controlPoint) {
 
     dir = glm::vec2(-dir.y, dir.x);
 
-    return dir;
+    return {dir};
 }
 
 std::vector<glm::vec2> TrackArc::getPoints(float pointDistance) {
@@ -108,31 +123,34 @@ std::vector<glm::vec2> TrackArc::getPoints(float pointDistance) {
 }
 
 TrackIntersection::TrackIntersection(const std::shared_ptr<ControlPoint>& center,
-        const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
-        const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4)
-    : center(center), link1(link1), link2(link2), link3(link3), link4(link4) {
+        const std::vector<std::weak_ptr<ControlPoint>>& links)
+    : center(center), links(links) {
 }
 
-glm::vec2 TrackIntersection::getDirection(const ControlPoint& controlPoint) {
+std::vector<std::weak_ptr<ControlPoint>> TrackIntersection::getControlPoints() {
 
-    const std::shared_ptr<ControlPoint>& l1 = this->link1.lock();
-    const std::shared_ptr<ControlPoint>& l2 = this->link2.lock();
-    const std::shared_ptr<ControlPoint>& l3 = this->link3.lock();
-    const std::shared_ptr<ControlPoint>& l4 = this->link4.lock();
-    const glm::vec2& centerCoords = this->center.lock()->coords;
+    std::vector<std::weak_ptr<ControlPoint>> cps = {center};
+    cps.insert(cps.end(), links.begin(), links.end());
+    return cps;
+}
 
-    if (l1.get() == &controlPoint) {
-        return l1->coords - centerCoords;
-    } else if (l2.get() == &controlPoint) {
-        return l2->coords - centerCoords;
-    } else if (l3.get() == &controlPoint) {
-        return l3->coords - centerCoords;
-    } else if (l4.get() == &controlPoint) {
-        return l4->coords - centerCoords;
-    } else {
-        // center
-        return glm::vec2();
+std::vector<glm::vec2> TrackIntersection::getDirections(const ControlPoint& controlPoint) {
+
+    const glm::vec2& centerCoords = center.lock()->coords;
+
+    for (const std::weak_ptr<ControlPoint>& link : links) {
+        const std::shared_ptr<ControlPoint>& l = link.lock();
+        if (l.get() == &controlPoint) {
+            return {l->coords - centerCoords};
+        }
     }
+
+    // center
+    std::vector<glm::vec2> directions;
+    for (const std::weak_ptr<ControlPoint>& link : links) {
+        directions.push_back(centerCoords - link.lock()->coords);
+    }
+    return directions;
 }
 
 std::vector<glm::vec2> TrackIntersection::getPoints(float pointDistance) {
@@ -205,38 +223,30 @@ std::shared_ptr<TrackArc> Tracks::addTrackArc(const std::shared_ptr<ControlPoint
 }
 
 std::shared_ptr<TrackIntersection> Tracks::addTrackIntersection(const std::shared_ptr<ControlPoint>& center,
-        const std::shared_ptr<ControlPoint>& link1, const std::shared_ptr<ControlPoint>& link2,
-        const std::shared_ptr<ControlPoint>& link3, const std::shared_ptr<ControlPoint>& link4) {
+        const std::vector<std::shared_ptr<ControlPoint>>& links) {
 
     // add control points
     if (!controlPointExists(center)) {
         tracks.push_back(center);
     }
 
-    if (!controlPointExists(link1)) {
-        tracks.push_back(link1);
-    }
-
-    if (!controlPointExists(link2)) {
-        tracks.push_back(link2);
-    }
-
-    if (!controlPointExists(link3)) {
-        tracks.push_back(link3);
-    }
-
-    if (!controlPointExists(link4)) {
-        tracks.push_back(link4);
+    for (const std::shared_ptr<ControlPoint>& link : links) {
+        if (!controlPointExists(link)) {
+            tracks.push_back(link);
+        }
     }
 
     // create track
-    std::shared_ptr<TrackIntersection> track = std::make_shared<TrackIntersection>(center, link1, link2, link3, link4);
+    std::vector<std::weak_ptr<ControlPoint>> ls;
+    for (const std::shared_ptr<ControlPoint>& link : links) {
+        ls.push_back(link);
+    }
+    std::shared_ptr<TrackIntersection> track = std::make_shared<TrackIntersection>(center, ls);
 
     center->tracks.push_back(track);
-    link1->tracks.push_back(track);
-    link2->tracks.push_back(track);
-    link3->tracks.push_back(track);
-    link4->tracks.push_back(track);
+    for (const std::shared_ptr<ControlPoint>& link : links) {
+        link->tracks.push_back(track);
+    }
 
     return track;
 }
@@ -254,15 +264,34 @@ bool Tracks::controlPointExists(const std::shared_ptr<ControlPoint>& controlPoin
 
 void Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint) {
 
-    for (std::shared_ptr<ControlPoint>& other : tracks) {
-        other->tracks.erase(
-                std::remove_if(
-                    other->tracks.begin(),
-                    other->tracks.end(),
-                    [&](const std::shared_ptr<TrackBase>& b){
-                        return isConnected(controlPoint, b);
-                    }),
-                other->tracks.end());
+    while (!controlPoint->tracks.empty()) {
+        std::shared_ptr<TrackBase> t = controlPoint->tracks.front();
+
+        if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(t)) {
+            removeTrackFromControlPoint(line->start, t);
+            removeTrackFromControlPoint(line->end, t);
+        } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(t)) {
+            removeTrackFromControlPoint(arc->start, t);
+            removeTrackFromControlPoint(arc->end, t);
+        } else {
+            std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(t);
+
+            if (controlPoint == intersection->center.lock()
+                    || intersection->links.size() == 1) {
+                // Remove intersection
+                removeTrackFromControlPoint(intersection->center, t);
+                for (const std::weak_ptr<ControlPoint>& link : intersection->links) {
+                    removeTrackFromControlPoint(link, t);
+                }
+            } else {
+                // Remove link
+                removeTrackFromControlPoint(controlPoint, t);
+                std::vector<std::weak_ptr<ControlPoint>>& ls = intersection->links;
+                ls.erase(std::remove_if(ls.begin(), ls.end(), [&controlPoint](const std::weak_ptr<ControlPoint>& cp) {
+                            return cp.lock() == controlPoint;
+                        }), ls.end());
+            }
+        }
     }
 
     tracks.erase(
@@ -275,20 +304,32 @@ void Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint) {
             tracks.end());
 }
 
-bool Tracks::isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const std::shared_ptr<TrackBase>& track) {
+void Tracks::removeTrack(const std::shared_ptr<TrackBase>& track) {
 
-    if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track)) {
-        return controlPoint == line->start.lock() || controlPoint == line->end.lock();
-    } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track)) {
-        return controlPoint == arc->start.lock() || controlPoint == arc->end.lock();
-    } else {
-        std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
-        return controlPoint == intersection->center.lock()
-                || controlPoint == intersection->link1.lock()
-                || controlPoint == intersection->link2.lock()
-                || controlPoint == intersection->link3.lock()
-                || controlPoint == intersection->link4.lock();
+    // Remove track from control points
+    for (const std::weak_ptr<ControlPoint>& cp : track->getControlPoints()) {
+        removeTrackFromControlPoint(cp, track);
     }
+
+    // Remove empty control points
+    tracks.erase(
+            std::remove_if(
+                tracks.begin(),
+                tracks.end(),
+                [](const std::shared_ptr<ControlPoint>& cp) {
+                    return cp->tracks.empty();
+                }),
+            tracks.end());
+}
+
+bool Tracks::isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const TrackBase& track) {
+
+    const std::vector<std::shared_ptr<TrackBase>>& ts = controlPoint->tracks;
+
+    return std::find_if(ts.begin(), ts.end(),
+            [&track](const std::shared_ptr<TrackBase>& t) {
+                return t.get() == &track;
+            }) != ts.end();
 }
 
 std::vector<glm::vec2> Tracks::getPath(float distBetweenPoints) {
@@ -405,7 +446,8 @@ std::vector<glm::vec2> Tracks::getPath(float distBetweenPoints) {
 
               sampleLine(cp->coords, t.center.lock()->coords);
 
-              for (auto ptr : {t.link2.lock(), t.link3.lock(), t.link4.lock()}) {
+              for (unsigned int i = 1; i < t.links.size(); i++) {
+                const std::shared_ptr<ControlPoint>& ptr = t.links[i].lock();
                 if (ptr->tracks.size() > 1) {
                     sampleLine(t.center.lock()->coords, ptr->coords);
                     cp = ptr;
@@ -418,4 +460,10 @@ std::vector<glm::vec2> Tracks::getPath(float distBetweenPoints) {
     }
 
     return pathPoints;
+}
+
+void Tracks::removeTrackFromControlPoint(const std::weak_ptr<ControlPoint>& cp, const std::shared_ptr<TrackBase>& t) {
+
+    std::vector<std::shared_ptr<TrackBase>>& ts = cp.lock()->tracks;
+    ts.erase(std::remove(ts.begin(), ts.end(), t), ts.end());
 }
