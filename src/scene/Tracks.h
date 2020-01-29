@@ -125,10 +125,15 @@ public:
     bool controlPointExists(const std::shared_ptr<ControlPoint>& controlPoint) const;
 
     void removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint);
+    void removeTrack(const std::shared_ptr<TrackBase>& track);
 
     static bool isConnected(const std::shared_ptr<ControlPoint>& controlPoint, const TrackBase& track);
 
     std::vector<glm::vec2> getPath(float distBetweenPoints);
+
+private:
+
+    void removeTrackFromControlPoint(const std::weak_ptr<ControlPoint>& cp, const std::shared_ptr<TrackBase>& t);
 };
 
 #endif

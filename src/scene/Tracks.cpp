@@ -267,30 +267,25 @@ void Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint) {
     while (!controlPoint->tracks.empty()) {
         std::shared_ptr<TrackBase> t = controlPoint->tracks.front();
 
-        auto removeTrack = [&t](const std::weak_ptr<ControlPoint>& cp) {
-            std::vector<std::shared_ptr<TrackBase>>& ts = cp.lock()->tracks;
-            ts.erase(std::remove(ts.begin(), ts.end(), t), ts.end());
-        };
-
         if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(t)) {
-            removeTrack(line->start);
-            removeTrack(line->end);
+            removeTrackFromControlPoint(line->start, t);
+            removeTrackFromControlPoint(line->end, t);
         } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(t)) {
-            removeTrack(arc->start);
-            removeTrack(arc->end);
+            removeTrackFromControlPoint(arc->start, t);
+            removeTrackFromControlPoint(arc->end, t);
         } else {
             std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(t);
 
             if (controlPoint == intersection->center.lock()
                     || intersection->links.size() == 1) {
                 // Remove intersection
-                removeTrack(intersection->center);
+                removeTrackFromControlPoint(intersection->center, t);
                 for (const std::weak_ptr<ControlPoint>& link : intersection->links) {
-                    removeTrack(link);
+                    removeTrackFromControlPoint(link, t);
                 }
             } else {
                 // Remove link
-                removeTrack(controlPoint);
+                removeTrackFromControlPoint(controlPoint, t);
                 std::vector<std::weak_ptr<ControlPoint>>& ls = intersection->links;
                 ls.erase(std::remove_if(ls.begin(), ls.end(), [&controlPoint](const std::weak_ptr<ControlPoint>& cp) {
                             return cp.lock() == controlPoint;
@@ -305,6 +300,24 @@ void Tracks::removeControlPoint(std::shared_ptr<ControlPoint>& controlPoint) {
                 tracks.end(),
                 [&](const std::shared_ptr<ControlPoint>& c){
                     return c == controlPoint || c->tracks.empty();
+                }),
+            tracks.end());
+}
+
+void Tracks::removeTrack(const std::shared_ptr<TrackBase>& track) {
+
+    // Remove track from control points
+    for (const std::weak_ptr<ControlPoint>& cp : track->getControlPoints()) {
+        removeTrackFromControlPoint(cp, track);
+    }
+
+    // Remove empty control points
+    tracks.erase(
+            std::remove_if(
+                tracks.begin(),
+                tracks.end(),
+                [](const std::shared_ptr<ControlPoint>& cp) {
+                    return cp->tracks.empty();
                 }),
             tracks.end());
 }
@@ -447,4 +460,10 @@ std::vector<glm::vec2> Tracks::getPath(float distBetweenPoints) {
     }
 
     return pathPoints;
+}
+
+void Tracks::removeTrackFromControlPoint(const std::weak_ptr<ControlPoint>& cp, const std::shared_ptr<TrackBase>& t) {
+
+    std::vector<std::shared_ptr<TrackBase>>& ts = cp.lock()->tracks;
+    ts.erase(std::remove(ts.begin(), ts.end(), t), ts.end());
 }

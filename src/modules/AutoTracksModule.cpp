@@ -198,11 +198,11 @@ void AutoTracksModule::update(Scene& scene) {
 
             if (glm::length(end->coords) > 20 || !trackIsValid(scene)) {
 
-                scene.tracks.removeControlPoint(controlPoints.back());
+                scene.tracks.removeTrack(controlPoints.back()->tracks.front());
                 controlPoints.pop_back();
 
                 if (failCounter > 25 && tracks.size() > 3) {
-                    scene.tracks.removeControlPoint(controlPoints.back());
+                    scene.tracks.removeTrack(controlPoints.back()->tracks.front());
                     controlPoints.pop_back();
                     failCounter = 0;
                 } else {
