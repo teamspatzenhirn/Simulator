@@ -20,6 +20,7 @@ compile:
     expire_in: 1 hrs
 
 static_analysis_MR:
+  allow_failure: true
   tags:
     - static-analysis
   stage: test
@@ -32,6 +33,7 @@ static_analysis_MR:
     - sonar-scanner -Dsonar.projectVersion=$CI_COMMIT_SHA -Dsonar.branch.name=$CI_MERGE_REQUEST_SOURCE_BRANCH_NAME -Dsonar.branch.target=$CI_MERGE_REQUEST_TARGET_BRANCH_NAME
 
 static_analysis:
+  allow_failure: true
   tags:
     - static-analysis
   stage: test
