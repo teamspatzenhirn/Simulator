@@ -97,7 +97,7 @@ void CommModule::transmitCar(Car& car, bool paused, double simulationTime) {
         obj->y = car.simulatorState.x2;
         obj->psi = car.simulatorState.psi;
         obj->dPsi = car.simulatorState.d_psi;
-        obj->steeringAngle = car.steeringAngle;
+        obj->steeringAngle = car.steeringAngleFront;
         obj->velX = car.velocity.z;
         obj->velY = car.velocity.x;
         obj->accX = car.acceleration.z;
@@ -131,12 +131,14 @@ void CommModule::receiveVesc(Car::Vesc& vesc) {
         vescFailCounter = 0;
 
         vesc.velocity = obj->velocity;
-        vesc.steeringAngle = obj->steeringAngle;
+        vesc.steeringAngleFront = obj->steeringAngleFront;
+        vesc.steeringAngleRear = obj->steeringAngleRear;
 
         rxVesc.unlock(obj);
     } else if (vescFailCounter == 100) {
         vesc.velocity = 0.0f;
-        vesc.steeringAngle = 0.0f;
+        vesc.steeringAngleFront = 0.0f;
+        vesc.steeringAngleRear = 0.0f;
         vescFailCounter++;
     } else {
         vescFailCounter++;

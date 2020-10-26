@@ -72,7 +72,7 @@ class CommModule {
     struct Vesc {
 
         double velocity;
-        double steeringAngle;
+        double steeringAngleFront, steeringAngleRear;
     };
 
     struct Visualization {

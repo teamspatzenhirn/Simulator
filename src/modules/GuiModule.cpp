@@ -123,7 +123,7 @@ void GuiModule::renderRootWindow(Scene& scene, Settings& settings) {
 
     // rendering the status text
 
-    ImGui::Text("Version: 1.3");
+    ImGui::Text("Version: 1.4");
 
     std::string msg = "Config: ";
     if (!scene.enableAutoTracks) {
@@ -502,7 +502,8 @@ void GuiModule::renderSceneWindow(Scene& scene) {
             if (ImGui::TreeNode("Vesc")) {
 
                 ImGui::InputDouble("velocity", &scene.car.vesc.velocity);
-                ImGui::InputDouble("steeringAngle", &scene.car.vesc.steeringAngle);
+                ImGui::InputDouble("steeringAngleFront", &scene.car.vesc.steeringAngleFront);
+                ImGui::InputDouble("steeringAngleRear", &scene.car.vesc.steeringAngleRear);
 
                 ImGui::TreePop();
             }
@@ -813,6 +814,7 @@ void GuiModule::renderHelpWindow() {
         ImGui::Text("Press shift to to move the camera down");
         ImGui::Text("Press space to to move the camera up");
         ImGui::Text("Use arrow keys to move the vehicle");
+        ImGui::Text("use h j k to control the rear axle steering");
         ImGui::Text("Right click and drag to move the camera");
         ImGui::Text("Press c to switch car cameras");
         ImGui::Text("Press p to pause the simulation");
@@ -831,7 +833,7 @@ void GuiModule::renderHelpWindow() {
         ImGui::Separator();
 
         ImGui::Text("Click on a green marker to select it");
-        ImGui::Text("Click again to cycle tranformation modes");
+        ImGui::Text("Click again to cycle transformation modes");
         ImGui::Text("Press ESC or click anywhere to deselect");
         ImGui::Text("Press h to toggle marker visibility");
 
@@ -846,7 +848,7 @@ void GuiModule::renderAboutWindow() {
         ImGui::Begin("About", &showAboutWindow,
                 ImGuiWindowFlags_AlwaysAutoResize);
 
-        ImGui::Text("SpatzSim 1.3");
+        ImGui::Text("SpatzSim 1.4");
         ImGui::Text(" ");
         ImGui::Text("Created in fall 2018 by");
         ImGui::Text(" ");
