@@ -188,12 +188,19 @@ PYBIND11_MODULE(pyspatzsim, m) {
             [](Car& car, float velocity) { 
                 return car.vesc.velocity = velocity;
             })
-        .def_property("steer_angle", 
+        .def_property("steer_angle_front",
             [](Car& car) {
-                return car.vesc.steeringAngle;
+                return car.vesc.steeringAngleFront;
             },
-            [](Car& car, float steerAngle) { 
-                return car.vesc.steeringAngle = steerAngle;
+            [](Car& car, float steerAngleFront) {
+                return car.vesc.steeringAngleFront = steerAngleFront;
+            })
+        .def_property("steer_angle_rear",
+            [](Car& car) {
+                return car.vesc.steeringAngleRear;
+            },
+            [](Car& car, float steerAngleRear) {
+                return car.vesc.steeringAngleRear = steerAngleRear;
             })
         .def_readwrite("model_pose", &Car::modelPose)
         .def_readwrite("main_camera", &Car::mainCamera);
@@ -209,5 +216,6 @@ PYBIND11_MODULE(pyspatzsim, m) {
     pybind11::class_<Car::Vesc>(m, "Vesc")
         .def(pybind11::init())
         .def_readwrite("velocity", &Car::Vesc::velocity)
-        .def_readwrite("steering_angle", &Car::Vesc::steeringAngle);
+        .def_readwrite("steering_angle_front", &Car::Vesc::steeringAngleFront)
+        .def_readwrite("steering_angle_rear", &Car::Vesc::steeringAngleRear);
 }

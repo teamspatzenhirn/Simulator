@@ -193,7 +193,7 @@ void to_json(json& j, const Car::SimulatorState& o) {
             {"x1", o.x1},
             {"x2", o.x2},
             {"psi", o.psi},
-            {"delta", o.delta},
+            {"deltaFront", o.deltaFront},
             {"v", o.v},
             {"vLon", o.v_lon},
             {"vLat", o.v_lat},
@@ -206,7 +206,7 @@ void from_json(const json& j, Car::SimulatorState& o) {
     o.x1 = j.at("x1").get<double>();
     o.x2 = j.at("x2").get<double>();
     o.psi = j.at("psi").get<double>();
-    o.delta = j.at("delta").get<double>();
+    o.deltaFront = j.at("deltaFront").get<double>();
     o.v = j.at("v").get<double>();
     o.v_lon = j.at("vLon").get<double>();
     o.v_lat = j.at("vLat").get<double>();

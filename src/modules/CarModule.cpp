@@ -94,21 +94,50 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
     F = std::max(F, -car.limits.max_F * car.systemParams.mass);
 
     Car::SimulatorState dx;
-    dx.delta = (car.vesc.steeringAngle - x.delta) / dt;
-    dx.delta = std::min(dx.delta, car.limits.max_d_delta);
-    dx.delta = std::max(dx.delta, -car.limits.max_d_delta);
+    dx.deltaFront = (car.vesc.steeringAngleFront - x.deltaFront) / dt;
+    dx.deltaFront = std::min(dx.deltaFront, car.limits.max_d_delta);
+    dx.deltaFront = std::max(dx.deltaFront, -car.limits.max_d_delta);
+
+    dx.deltaRear = (car.vesc.steeringAngleRear - x.deltaRear) / dt;
+    dx.deltaRear = std::min(dx.deltaRear, car.limits.max_d_delta);
+    dx.deltaRear = std::max(dx.deltaRear, -car.limits.max_d_delta);
+
     double alpha_front = 0, alpha_rear = 0;
 
     if (!car.wheels.usePacejkaModel || x.v_lon <= 0) {
-        dx.x1 = x.v * std::cos(x.psi);
-        dx.x2 = x.v * std::sin(x.psi);
-        dx.psi = x.v * std::tan(x.delta) / car.systemParams.axesDistance;
-        double cos_ = std::cos(x.delta);
-        double tan_ = std::tan(x.delta);
+        /*
+         * Implements a kinematic single track model with rear (and front) axle steering.
+         * At every time step the vehicle moves along a circular trajectory with
+         * centre at the intersection of the two (virtual) axles. The rear axle moves
+         * in the direction the rear wheel(s) point, the rotation is determined by the
+         * radius (=1/kappa) and the velocity.
+         */
+        const double cosFront = std::cos(x.deltaFront);
+        const double tanFront = std::tan(x.deltaFront);
+        const double cosRear = std::cos(x.deltaRear);
+        const double tanRear = std::tan(x.deltaRear);
 
-        dx.v = ((1 + car.systemParams.axesMomentRatio * (1 / cos_ - 1)) * F
-                - 2 * car.systemParams.getM() * x.v * tan_ / (cos_ * cos_) * dx.delta)
-               / (car.systemParams.mass + car.systemParams.getM() * (tan_ * tan_));
+        // Car velocity (at rear axle midpoint)
+        dx.x1 = x.v * std::cos(x.psi + x.deltaRear);
+        dx.x2 = x.v * std::sin(x.psi + x.deltaRear);
+
+        const double kappa = cosRear * (tanFront - tanRear) / car.systemParams.axesDistance;
+        // Rotation rate
+        dx.psi = x.v * kappa;
+
+        /*
+         * The acceleration is derived using the overall energy of the vehicle. See "Ein neues Konzept für
+         * die Trajektoriengenerierung und -stabilisierung in zeitkritischen Verkehrsszenarien" (Moritz Werling, 2010),
+         * page 57-59 for the derivation of the acceleration term for vehicles with only front-axle steering.
+         * https://publikationen.bibliothek.kit.edu/1000021738
+         *
+         * The same term is used here for a vehicle with both front- and rear-axle steering, this is (from a theoretical
+         * standpoint) wrong but sufficient in our case. Additionally the original derivation seems to contain errors
+         * thus it has not been extended for our case.
+         */
+        dx.v = ((1 + car.systemParams.axesMomentRatio * (1 / cosFront - 1)) * F
+                - 2 * car.systemParams.getM() * x.v * tanFront / (cosFront * cosFront) * dx.deltaFront)
+               / (car.systemParams.mass + car.systemParams.getM() * (tanFront * tanFront));
 
         x.x1 += dt * dx.x1;
         x.x2 += dt * dx.x2;
@@ -120,15 +149,15 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
         dx.v_lon = dx.v;
         dx.v_lat = 0;
     } else {
-        dx.x1 = x.v_lon*std::cos(x.psi) + x.v_lat*std::sin(x.psi);
-        dx.x2 = x.v_lon*std::sin(x.psi) - x.v_lat*std::cos(x.psi);
+        dx.x1 = x.v_lon*std::cos(x.psi) - x.v_lat*std::sin(x.psi);
+        dx.x2 = x.v_lon*std::sin(x.psi) + x.v_lat*std::cos(x.psi);
         dx.psi = x.d_psi;
 
         //abs um korrekten Schräglaufwinkel fürs Rückwärts fahren zu erhalten
         alpha_front = -std::atan2(dx.psi * car.systemParams.distCogToFrontAxle
-                + x.v_lat, std::abs(x.v_lon)) + x.delta;
+                + x.v_lat, std::abs(x.v_lon)) + x.deltaFront;
         alpha_rear = std::atan2(dx.psi * car.systemParams.distCogToRearAxle
-                - x.v_lat, std::abs(x.v_lon));
+                - x.v_lat, std::abs(x.v_lon)) + x.deltaRear;
 
         const double F_front_lat = car.systemParams.mass * car.wheels.D_front * std::sin(
                 car.wheels.C_front * std::atan(car.wheels.B_front * alpha_front));
@@ -139,13 +168,26 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
         const double F_front_lon = F * car.systemParams.axesMomentRatio;
         const double F_rear_lon = F * (1-car.systemParams.axesMomentRatio);
 
-        dx.v_lon = 1 / car.systemParams.mass * (F_rear_lon - F_front_lat*std::sin(x.delta)
-                + F_front_lon*std::cos(x.delta) + car.systemParams.mass*x.v_lat*x.d_psi);
-        dx.v_lat = 1 / car.systemParams.mass * (F_rear_lat + F_front_lat*std::cos(x.delta)
-                + F_front_lon*std::sin(x.delta) - car.systemParams.mass*x.v_lon*x.d_psi);
-        dx.d_psi = 1 / car.systemParams.inertia * ((F_front_lat*std::cos(x.delta)
-                + F_front_lon*std::sin(x.delta)) * car.systemParams.distCogToFrontAxle
-                - F_rear_lat * car.systemParams.distCogToRearAxle);
+        const double F_lon = + F_rear_lat*std::sin(x.deltaRear)
+                             + F_rear_lon*std::cos(x.deltaRear)
+                             - F_front_lat*std::sin(x.deltaFront)
+                             + F_front_lon*std::cos(x.deltaFront)
+                             + car.systemParams.mass * x.v_lat * x.d_psi;
+
+        const double F_lat = + F_rear_lat*std::cos(x.deltaRear)
+                             - F_rear_lon*std::sin(x.deltaRear)
+                             + F_front_lat*std::cos(x.deltaFront)
+                             + F_front_lon*std::sin(x.deltaFront)
+                             - car.systemParams.mass * x.v_lon * x.d_psi;
+
+        const double torque_rot = (F_front_lat * std::cos(x.deltaFront) + F_front_lon*std::sin(x.deltaFront))
+                                    * car.systemParams.distCogToFrontAxle
+                                - (F_rear_lat * std::cos(x.deltaRear) + F_rear_lon*std::sin(x.deltaRear))
+                                    * car.systemParams.distCogToRearAxle;
+
+        dx.v_lon = F_lon / car.systemParams.mass;
+        dx.v_lat = F_lat / car.systemParams.mass;
+        dx.d_psi = 1 / car.systemParams.inertia * torque_rot;
 
         x.x1 += dt * dx.x1;
         x.x2 += dt * dx.x2;
@@ -157,9 +199,13 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
         dx.v = dx.v_lon;
     }
 
-    x.delta += dt * dx.delta;
-    x.delta = std::min(x.delta, car.limits.max_delta);
-    x.delta = std::max(x.delta, -car.limits.max_delta);
+    x.deltaFront += dt * dx.deltaFront;
+    x.deltaFront = std::min(x.deltaFront, car.limits.max_delta);
+    x.deltaFront = std::max(x.deltaFront, -car.limits.max_delta);
+
+    x.deltaRear += dt * dx.deltaRear;
+    x.deltaRear = std::min(x.deltaRear, car.limits.max_delta);
+    x.deltaRear = std::max(x.deltaRear, -car.limits.max_delta);
 
     double acc_x = dx.v_lon - x.v_lat * x.d_psi;
     double acc_y = dx.v_lat + x.v_lon * x.d_psi;
@@ -169,7 +215,8 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
     car.modelPose.rotation = glm::angleAxis((float)x.psi, glm::vec3(0, 1, 0));
     car.velocity = glm::vec3(dx.x2, 0, dx.x1);
     car.acceleration = glm::vec3(acc_y, 0, acc_x);
-    car.steeringAngle = x.delta;
+    car.steeringAngleFront = x.deltaFront;
+    car.steeringAngleRear = x.deltaRear;
     car.alphaFront = alpha_front;
     car.alphaRear = alpha_rear;
     car.drivenDistance += std::sqrt(std::pow(dt * dx.x1, 2) + std::pow(dt * dx.x2, 2));
@@ -178,16 +225,26 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
 
     if (getKey(GLFW_KEY_UP) == GLFW_PRESS) {
         car.vesc.velocity = 1.0;
-        car.vesc.steeringAngle = 0;
+        car.vesc.steeringAngleFront = 0;
+        car.vesc.steeringAngleRear = 0;
     }
     if (getKey(GLFW_KEY_DOWN) == GLFW_PRESS) {
         car.vesc.velocity = 0.0;
     }
     if (getKey(GLFW_KEY_LEFT) == GLFW_PRESS) {
-        car.vesc.steeringAngle = 0.4;
+        car.vesc.steeringAngleFront = 0.4;
     }
     if (getKey(GLFW_KEY_RIGHT) == GLFW_PRESS) {
-        car.vesc.steeringAngle = -0.4;
+        car.vesc.steeringAngleFront = -0.4;
+    }
+    if (getKey(GLFW_KEY_J) == GLFW_PRESS) {
+        car.vesc.steeringAngleRear = 0.4;
+    }
+    if (getKey(GLFW_KEY_K) == GLFW_PRESS) {
+        car.vesc.steeringAngleRear = 0.0;
+    }
+    if (getKey(GLFW_KEY_L) == GLFW_PRESS) {
+        car.vesc.steeringAngleRear = -0.4;
     }
 }
 

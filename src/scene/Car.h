@@ -16,7 +16,7 @@ struct Car {
     glm::vec3 velocity{0, 0, 0};
     glm::vec3 acceleration{0, 0, 0};
 
-    double steeringAngle = 0;
+    double steeringAngleFront, steeringAngleRear = 0;
 
     double alphaFront = 0;
     double alphaRear = 0;
@@ -60,7 +60,7 @@ struct Car {
         double x1 = 0;
         double x2 = 0;
         double psi = 0;
-        double delta = 0;
+        double deltaFront, deltaRear = 0;
         double v = 0;
         double v_lon = 0;
         double v_lat = 0; 
@@ -98,12 +98,12 @@ struct Car {
     struct Vesc {
 
         double velocity = 0;
-        double steeringAngle = 0;
+        double steeringAngleFront, steeringAngleRear = 0;
 
     } vesc;
 
     /*
-     * This contains important paramters of the main
+     * This contains important parameters of the main
      * color camera of the vehicle.
      */
     struct MainCamera {
