@@ -121,8 +121,8 @@ struct Car {
          */
         float noise = 0.2f;
 
-        int imageWidth = 2064;
-        int imageHeight = 1544;
+        int imageWidth = 2048;
+        int imageHeight = 1536;
 
         float fovy = (float)M_PI * 0.5f;
 
