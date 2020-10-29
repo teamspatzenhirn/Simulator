@@ -48,8 +48,8 @@
         },
         "mainCamera": {
             "fov": 1.5707963705062866,
-            "imageHeight": 1544,
-            "imageWidth": 2064,
+            "imageHeight": 1536,
+            "imageWidth": 2048,
             "noise": 0.20000000298023224,
             "pose": {
                 "position": [

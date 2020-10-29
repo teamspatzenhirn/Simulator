@@ -22,7 +22,7 @@ class CommModule {
          * Assuming 2064x1544 Bayer 8 (one byte per pixel) as the maximum
          * possible image size otherwise ... welp, not good ...
          */
-        unsigned char buffer[3186816];
+        unsigned char buffer[2064*1544];
 
         int imageWidth;
         int imageHeight;
