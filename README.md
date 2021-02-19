@@ -1,5 +1,9 @@
 # SpatzSim
 
+## Getting the source
+This repo uses git LFS for storage of the 3D model.
+Run `git lfs pull` after cloning to download all models.
+
 ## Build
 
 SpatzSim is build using CMake (version > 3.0) and a compiler supporting C++17.
