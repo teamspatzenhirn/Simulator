@@ -97,7 +97,8 @@ void CommModule::transmitCar(Car& car, bool paused, double simulationTime) {
         obj->y = car.simulatorState.x2;
         obj->psi = car.simulatorState.psi;
         obj->dPsi = car.simulatorState.d_psi;
-        obj->steeringAngle = car.steeringAngleFront;
+        obj->steeringAngleFront = car.steeringAngleFront;
+        obj->steeringAngleRear = car.steeringAngleRear;
         obj->velX = car.velocity.z;
         obj->velY = car.velocity.x;
         obj->accX = car.acceleration.z;
