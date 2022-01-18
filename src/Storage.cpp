@@ -704,7 +704,8 @@ void to_json(json& j, const Settings& s) {
             {"showBinaryLightSensor", s.showBinaryLightSensor},
             {"windowWidth", s.windowWidth},
             {"windowHeight", s.windowHeight},
-            {"msaaSamplesEditorView", s.msaaSamplesEditorView}
+            {"msaaSamplesEditorView", s.msaaSamplesEditorView},
+            {"instantCloseInAutotrack", s.instantCloseInAutotrack}
         });
 }
 
@@ -721,6 +722,7 @@ void from_json(const json& j, Settings& s) {
     tryGet(j, "windowWidth", s.windowWidth);
     tryGet(j, "windowHeight", s.windowHeight);
     tryGet(j, "msaaSamplesEditorView", s.msaaSamplesEditorView);
+    tryGet(j, "instantCloseInAutotrack", s.instantCloseInAutotrack);
 }
 
 /*

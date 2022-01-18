@@ -83,6 +83,12 @@ struct Settings {
      * If set, the ray sent out by the back binary light sensor will be draw.
      */
     bool showBinaryLightSensor = true;
+
+    /*
+     * If set, the simulator will instantly close in autotrack mode
+     * once any rule was broken.
+     */
+    bool instantCloseInAutotrack = true;
 };
 
 #endif

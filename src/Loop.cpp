@@ -236,7 +236,7 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
         if (scene.failTime == 0) {
             update(scene, settings.updateDeltaTime);
-        } else if (scene.displayClock.time - scene.failTime > 5.0) {
+        } else if (settings.instantCloseInAutotrack && (scene.displayClock.time - scene.failTime > 5.0)) {
             exit(-1);
         }
 

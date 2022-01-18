@@ -704,6 +704,8 @@ bool GuiModule::renderSettingsWindow(Settings& settings) {
                 &settings.showLaserSensor);
         changed |= ImGui::Checkbox("Show binary light sensor",
                 &settings.showBinaryLightSensor);
+        changed |= ImGui::Checkbox("Instant close in autotrack mode",
+                &settings.instantCloseInAutotrack);
 
         ImGui::Separator();
 
