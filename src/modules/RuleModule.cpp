@@ -15,7 +15,7 @@ void RuleModule::printViolation(double simulationTime, double drivenDistance) {
     std::cerr << errorMsg << std::endl;
 }
 
-void RuleModule::update(
+bool RuleModule::update(
         double displayTime,
         double simulationTime,
         Scene::Rules& rules,
@@ -550,4 +550,6 @@ void RuleModule::update(
             && rules.exitIfAllCheckpointsPassed) {
         std::exit(0);
     }
+
+    return errorMsg.empty();
 }

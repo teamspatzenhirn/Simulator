@@ -21,7 +21,7 @@ public:
 
     void printViolation(double simulationTime, double drivenDistance);
 
-    void update(
+    bool update(
             double displayTime,
             double simulationTime,
             Scene::Rules& rules,
