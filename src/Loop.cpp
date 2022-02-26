@@ -234,13 +234,13 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
 
         commModule.receiveVesc(scene.car.vesc);
 
-        if (scene.failTime == 0) {
+        if (scene.failTime == 0 || !settings.instantCloseInAutotrack) {
             update(scene, settings.updateDeltaTime);
         } else if (scene.displayClock.time - scene.failTime > 5.0) {
             exit(-1);
         }
 
-        ruleModule.update(
+        bool noViolation = ruleModule.update(
                 scene.displayClock.time,
                 scene.simulationClock.time,
                 scene.rules,
@@ -249,15 +249,11 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 scene.items,
                 collisionModule);
 
-        if (scene.failTime == 0 && scene.enableAutoTracks && (
-                    scene.rules.leftArrowIgnored
-                    || !scene.rules.onTrack
-                    || scene.rules.rightArrowIgnored
-                    || scene.rules.isColliding
-                    || scene.rules.giveWayLineIgnored
-                    || scene.rules.stopLineIgnored
-                    || scene.rules.noParkingIgnored
-                    || scene.rules.lackOfProgress)) {
+        if (scene.failTime != 0 && scene.enableAutoTracks && noViolation) {
+            scene.failTime = 0;
+        }
+
+        if (scene.failTime == 0 && scene.enableAutoTracks && !noViolation) {
             scene.failTime = scene.displayClock.time;
 
             ruleModule.printViolation(
