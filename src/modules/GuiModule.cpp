@@ -402,6 +402,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_expressway_end";
         }
 
+        if (ImGui::MenuItem("Right of way")) {
+            newType = SIGN_RIGHT_OF_WAY;
+            newName = "sign_right_of_way";
+        }
+
         if (ImGui::MenuItem("Giveway")) {
             newType = SIGN_GIVEWAY;
             newName = "sign_giveway_end";
