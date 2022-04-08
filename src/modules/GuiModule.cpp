@@ -417,6 +417,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_no_passing_end";
         }
 
+        if (ImGui::MenuItem("Parking area")) {
+            newType = SIGN_PARKING_AREA;
+            newName = "sign_parking_area";
+        }
+
         ImGui::EndMenu();
     }
 

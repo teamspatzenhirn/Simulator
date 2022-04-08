@@ -75,6 +75,7 @@ enum ItemType {
     SIGN_NO_PASSING_END = 48,
     MISSING_SPOT = 49,
     GIRAFFE = 50,
+    SIGN_PARKING_AREA = 51,
 };
 
 /*
