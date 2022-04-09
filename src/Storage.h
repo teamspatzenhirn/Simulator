@@ -30,7 +30,7 @@ namespace storage {
      *
      * So instead of separate load functions on different
      * objects, there is a uniform interface for loading
-     * and saving that can be access through a single header.
+     * and saving that can be accessed through a single header.
      */
 
     template <typename T>

@@ -419,7 +419,7 @@ void Loop::update(Scene& scene, float deltaTime) {
 
 void Loop::renderScene(Scene& scene, GLuint shaderProgramId) {
 
-    light.render(shaderProgramId);
+    scene.light.render(shaderProgramId);
 
     car.render(shaderProgramId, scene.car, modelStore);
 
@@ -475,7 +475,7 @@ void Loop::renderFpsView(Scene& scene) {
                 scene.tracks,
                 scene.fpsCamera.pose.position);
 
-        markerModule.add(light.pose, MarkerModule::TRANSLATE_ALL);
+        markerModule.add(scene.light.pose, MarkerModule::TRANSLATE_ALL);
         markerModule.add(scene.car.modelPose,
                 MarkerModule::TRANSLATE_X 
                 | MarkerModule::TRANSLATE_Z

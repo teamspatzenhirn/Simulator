@@ -59,8 +59,6 @@ public:
     CarModule car;
     Editor editor;
 
-    PointLight light{5.0f, 5.0f, 5.0f};
-
     Loop(Settings settings);
     ~Loop();
 

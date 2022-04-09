@@ -22,7 +22,7 @@ struct ModelStore {
     Model items[60];
 
     ModelStore (std::string resPath) : 
-        car{resPath + "models/spatz.obj"},
+        car{resPath + "models/spatz11.obj"},
         rect{resPath + "models/ground.obj"},
         ring{resPath + "models/ring.obj"},
         marker{resPath + "models/marker.obj"},
