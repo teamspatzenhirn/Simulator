@@ -391,6 +391,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_forbidden";
         }
 
+        if (ImGui::MenuItem("Uphill")) {
+            newType = SIGN_UPHILL;
+            newName = "sign_uphill";
+        }
+
         if (ImGui::MenuItem("Downhill")) {
             newType = SIGN_DOWNHILL;
             newName = "sign_downhill";

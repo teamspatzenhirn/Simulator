@@ -83,6 +83,7 @@ enum ItemType {
     SIGN_STOP = 56,
     SIGN_TURN_LEFT = 57,
     SIGN_TURN_RIGHT = 58,
+    SIGN_UPHILL = 59,
 };
 
 /*
