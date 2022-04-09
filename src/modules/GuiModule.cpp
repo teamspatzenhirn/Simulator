@@ -413,7 +413,12 @@ void GuiModule::renderCreateMenu(Scene& scene) {
 
         if (ImGui::MenuItem("Giveway")) {
             newType = SIGN_GIVEWAY;
-            newName = "sign_giveway_end";
+            newName = "sign_giveway";
+        }
+
+        if (ImGui::MenuItem("Stop")) {
+            newType = SIGN_STOP;
+            newName = "sign_stop";
         }
 
         if (ImGui::MenuItem("No passing start")) {
