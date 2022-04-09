@@ -81,6 +81,7 @@ enum ItemType {
     SIGN_PEDESTRIAN_ISLAND = 54,
     SIGN_CROSSWALK = 55,
     SIGN_STOP = 56,
+    SIGN_TURN_LEFT = 57,
 };
 
 /*
