@@ -431,6 +431,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_parking_area";
         }
 
+        if (ImGui::MenuItem("Pedestrian Island Arrow")) {
+            newType = SIGN_PEDESTRIAN_ISLAND;
+            newName = "sign_pedestrian_island_arrow";
+        }
+
         ImGui::EndMenu();
     }
 

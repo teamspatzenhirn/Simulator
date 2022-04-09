@@ -77,7 +77,8 @@ enum ItemType {
     GIRAFFE = 50,
     SIGN_PARKING_AREA = 51,
     SIGN_RIGHT_OF_WAY = 52,
-    SIGN_30,
+    SIGN_30 = 53,
+    SIGN_PEDESTRIAN_ISLAND = 54,
 };
 
 /*
