@@ -153,6 +153,11 @@ struct Scene {
     Car car;
 
     /*
+     * The point light source.
+     */
+    PointLight light{5.0f, 5.0f, 5.0f};
+
+    /*
      * The size of the ground plate on which tracks can be placed.
      */
     float groundSize = 40.0f;
