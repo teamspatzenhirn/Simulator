@@ -436,6 +436,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_pedestrian_island_arrow";
         }
 
+        if (ImGui::MenuItem("Crosswalk")) {
+            newType = SIGN_CROSSWALK;
+            newName = "sign_crosswalk";
+        }
+
         ImGui::EndMenu();
     }
 
