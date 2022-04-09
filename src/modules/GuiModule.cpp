@@ -426,6 +426,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_turn_left";
         }
 
+        if (ImGui::MenuItem("Turn right")) {
+            newType = SIGN_TURN_RIGHT;
+            newName = "sign_turn_right";
+        }
+
         if (ImGui::MenuItem("No passing start")) {
             newType = SIGN_NO_PASSING_START;
             newName = "sign_no_passing_start";

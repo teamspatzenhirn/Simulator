@@ -82,6 +82,7 @@ enum ItemType {
     SIGN_CROSSWALK = 55,
     SIGN_STOP = 56,
     SIGN_TURN_LEFT = 57,
+    SIGN_TURN_RIGHT = 58,
 };
 
 /*
