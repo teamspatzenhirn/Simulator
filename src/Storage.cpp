@@ -620,6 +620,22 @@ void from_json(const json& j, Scene::DynamicItemSettings& dis) {
 }
 
 /*
+ * PointLight
+ */
+
+void to_json(json& j, const PointLight& o) {
+
+    j = json({
+             {"pose", o.pose}
+         });
+}
+
+void from_json(const json& j, PointLight& o) {
+
+    tryGet(j, "pose", o.pose);
+}
+
+/*
  * Scene::Rules
  */
 
@@ -667,7 +683,8 @@ void to_json(json& j, const Scene& s) {
             {"tracks", s.tracks},
             {"items", s.items},
             {"dynamicItemSettings", s.dynamicItemSettings},
-            {"rules", s.rules}
+            {"rules", s.rules},
+            {"light", s.light}
         });
 }
 
@@ -684,6 +701,12 @@ void from_json(const json& j, Scene& s) {
         s.rules = j.at("rules").get<Scene::Rules>();
     } catch (std::exception& e) {
         std::cout << "Loading defaults for Scene::Rules" << std::endl;
+    }
+
+    try {
+        s.light = j.at("light").get<PointLight>();
+    } catch (std::exception& e) {
+        std::cout << "Loading defaults for the point light source" << std::endl;
     }
 }
 
