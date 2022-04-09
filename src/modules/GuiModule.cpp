@@ -268,6 +268,10 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = GROUND_30;
             newName = "speed_limit_30";
         }
+        if (ImGui::MenuItem("Speed limit 30 Sign")) {
+            newType = SIGN_30;
+            newName = "sign_speed_limit_30";
+        }
         if (ImGui::MenuItem("Speed limit 40")) {
             newType = GROUND_40;
             newName = "speed_limit_40";
