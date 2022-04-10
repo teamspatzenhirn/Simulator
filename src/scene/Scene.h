@@ -77,13 +77,13 @@ enum ItemType {
     GIRAFFE = 50,
     SIGN_PARKING_AREA = 51,
     SIGN_RIGHT_OF_WAY = 52,
-    SIGN_30 = 53,
+    SIGN_UPHILL = 53,
     SIGN_PEDESTRIAN_ISLAND = 54,
     SIGN_CROSSWALK = 55,
     SIGN_STOP = 56,
     SIGN_TURN_LEFT = 57,
     SIGN_TURN_RIGHT = 58,
-    SIGN_UPHILL = 59,
+    SIGN_30 = 59,
 };
 
 /*

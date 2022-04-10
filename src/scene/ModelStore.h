@@ -80,15 +80,16 @@ struct ModelStore {
             Model{resPath + "models/signs/sign_no_passing_end.obj"},
             Model{resPath + "models/ground.obj"},
             Model{resPath + "models/giraffe.obj"},
+
             Model{resPath + "models/signs/sign_parking.obj"},
             Model{resPath + "models/signs/sign_right_of_way.obj"},
-            Model{resPath + "models/signs/sign_speedlimit_30_start.obj"},
+            Model{resPath + "models/signs/sign_uphill.obj"},
             Model{resPath + "models/signs/sign_pedestrian_island.obj"},
             Model{resPath + "models/signs/sign_zebra.obj"},
             Model{resPath + "models/signs/sign_stop.obj"},
             Model{resPath + "models/signs/sign_turn_left.obj"},
             Model{resPath + "models/signs/sign_turn_right.obj"},
-            Model{resPath + "models/signs/sign_uphill.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_30_start.obj"},
          } {
     }
 };
