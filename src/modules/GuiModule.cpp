@@ -260,9 +260,17 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = GROUND_10;
             newName = "speed_limit_10";
         }
+        if (ImGui::MenuItem("Speed limit 10 Sign")) {
+            newType = SIGN_10;
+            newName = "sign_speed_limit_10";
+        }
         if (ImGui::MenuItem("Speed limit 20")) {
             newType = GROUND_20;
             newName = "speed_limit_20";
+        }
+        if (ImGui::MenuItem("Speed limit 20 Sign")) {
+            newType = SIGN_20;
+            newName = "sign_speed_limit_20";
         }
         if (ImGui::MenuItem("Speed limit 30")) {
             newType = GROUND_30;
@@ -276,25 +284,49 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = GROUND_40;
             newName = "speed_limit_40";
         }
+        if (ImGui::MenuItem("Speed limit 40 Sign")) {
+            newType = SIGN_40;
+            newName = "sign_speed_limit_40";
+        }
         if (ImGui::MenuItem("Speed limit 50")) {
             newType = GROUND_50;
             newName = "speed_limit_50";
+        }
+        if (ImGui::MenuItem("Speed limit 50 Sign")) {
+            newType = SIGN_50;
+            newName = "sign_speed_limit_50";
         }
         if (ImGui::MenuItem("Speed limit 60")) {
             newType = GROUND_60;
             newName = "speed_limit_60";
         }
+        if (ImGui::MenuItem("Speed limit 60 Sign")) {
+            newType = SIGN_60;
+            newName = "sign_speed_limit_60";
+        }
         if (ImGui::MenuItem("Speed limit 70")) {
             newType = GROUND_70;
             newName = "speed_limit_70";
+        }
+        if (ImGui::MenuItem("Speed limit 70 Sign")) {
+            newType = SIGN_70;
+            newName = "sign_speed_limit_70";
         }
         if (ImGui::MenuItem("Speed limit 80")) {
             newType = GROUND_80;
             newName = "speed_limit_80";
         }
+        if (ImGui::MenuItem("Speed limit 80 Sign")) {
+            newType = SIGN_80;
+            newName = "sign_speed_limit_80";
+        }
         if (ImGui::MenuItem("Speed limit 90")) {
             newType = GROUND_90;
             newName = "speed_limit_90";
+        }
+        if (ImGui::MenuItem("Speed limit 90 Sign")) {
+            newType = SIGN_90;
+            newName = "sign_speed_limit_90";
         }
 
         ImGui::EndMenu();

@@ -83,7 +83,15 @@ enum ItemType {
     SIGN_STOP = 56,
     SIGN_TURN_LEFT = 57,
     SIGN_TURN_RIGHT = 58,
-    SIGN_30 = 59,
+    SIGN_10 = 59,
+    SIGN_20 = 60,
+    SIGN_30 = 61,
+    SIGN_40 = 63,
+    SIGN_50 = 64,
+    SIGN_60 = 65,
+    SIGN_70 = 66,
+    SIGN_80 = 67,
+    SIGN_90 = 68,
 };
 
 /*
