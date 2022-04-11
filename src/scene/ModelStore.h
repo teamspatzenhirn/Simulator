@@ -19,7 +19,7 @@ struct ModelStore {
     Model arrow;
     Model scaleArrow;
 
-    Model items[68];
+    Model items[77];
 
     ModelStore (std::string resPath) : 
         car{resPath + "models/spatz11.obj"},
@@ -98,6 +98,15 @@ struct ModelStore {
             Model{resPath + "models/signs/sign_speedlimit_70_start.obj"},
             Model{resPath + "models/signs/sign_speedlimit_80_start.obj"},
             Model{resPath + "models/signs/sign_speedlimit_90_start.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_10_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_20_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_30_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_40_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_50_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_60_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_70_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_80_end.obj"},
+            Model{resPath + "models/signs/sign_speedlimit_90_end.obj"},
          } {
     }
 };
