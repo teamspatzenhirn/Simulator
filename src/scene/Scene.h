@@ -119,7 +119,7 @@ struct Scene {
      * This is the current most recent version of the Scene object.
      * Increment this, whenever there were changes made to Scene.
      */
-    static const unsigned int VERSION = 4;
+    static const unsigned int VERSION = 5;
 
     /*
      * This is the actual version of the scene object.
