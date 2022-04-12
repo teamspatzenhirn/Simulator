@@ -118,6 +118,7 @@ struct Scene {
     /*
      * This is the current most recent version of the Scene object.
      * Increment this, whenever there were changes made to Scene.
+     * A changelog describing the changes can be found at the end of this file.
      */
     static const unsigned int VERSION = 5;
 
@@ -314,3 +315,14 @@ struct Scene {
 };
 
 #endif
+
+/*
+ * Version changelog:
+ * - V1: unknown
+ * - V2: unknown
+ * - V3: unknown
+ * - V4: unknown
+ * - V5: added new signs (SIGN_PARKING_AREA, SIGN_RIGHT_OF_WAY, SIGN_UPHILL, SIGN_PEDESTRIAN_ISLAND,
+         SIGN_CROSSWALK, SIGN_STOP, SIGN_TURN_LEFT, SIGN_TURN_RIGHT, SIGN_10 to SIGN_90,
+         SIGN_10_END to SIGN_90_END)
+ */
