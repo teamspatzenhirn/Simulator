@@ -75,6 +75,32 @@ enum ItemType {
     SIGN_NO_PASSING_END = 48,
     MISSING_SPOT = 49,
     GIRAFFE = 50,
+    SIGN_PARKING_AREA = 51,
+    SIGN_RIGHT_OF_WAY = 52,
+    SIGN_UPHILL = 53,
+    SIGN_PEDESTRIAN_ISLAND = 54,
+    SIGN_CROSSWALK = 55,
+    SIGN_STOP = 56,
+    SIGN_TURN_LEFT = 57,
+    SIGN_TURN_RIGHT = 58,
+    SIGN_10 = 59,
+    SIGN_20 = 60,
+    SIGN_30 = 61,
+    SIGN_40 = 62,
+    SIGN_50 = 63,
+    SIGN_60 = 64,
+    SIGN_70 = 65,
+    SIGN_80 = 66,
+    SIGN_90 = 67,
+    SIGN_10_END = 68,
+    SIGN_20_END = 69,
+    SIGN_30_END = 70,
+    SIGN_40_END = 71,
+    SIGN_50_END = 72,
+    SIGN_60_END = 73,
+    SIGN_70_END = 74,
+    SIGN_80_END = 75,
+    SIGN_90_END = 76,
 };
 
 /*
@@ -92,8 +118,9 @@ struct Scene {
     /*
      * This is the current most recent version of the Scene object.
      * Increment this, whenever there were changes made to Scene.
+     * A changelog describing the changes can be found at the end of this file.
      */
-    static const unsigned int VERSION = 4;
+    static const unsigned int VERSION = 5;
 
     /*
      * This is the actual version of the scene object.
@@ -288,3 +315,14 @@ struct Scene {
 };
 
 #endif
+
+/*
+ * Version changelog:
+ * - V1: unknown
+ * - V2: unknown
+ * - V3: unknown
+ * - V4: unknown
+ * - V5: added new signs (SIGN_PARKING_AREA, SIGN_RIGHT_OF_WAY, SIGN_UPHILL, SIGN_PEDESTRIAN_ISLAND,
+         SIGN_CROSSWALK, SIGN_STOP, SIGN_TURN_LEFT, SIGN_TURN_RIGHT, SIGN_10 to SIGN_90,
+         SIGN_10_END to SIGN_90_END)
+ */

@@ -260,37 +260,73 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = GROUND_10;
             newName = "speed_limit_10";
         }
+        if (ImGui::MenuItem("Speed limit 10 Sign")) {
+            newType = SIGN_10;
+            newName = "sign_speed_limit_10";
+        }
         if (ImGui::MenuItem("Speed limit 20")) {
             newType = GROUND_20;
             newName = "speed_limit_20";
+        }
+        if (ImGui::MenuItem("Speed limit 20 Sign")) {
+            newType = SIGN_20;
+            newName = "sign_speed_limit_20";
         }
         if (ImGui::MenuItem("Speed limit 30")) {
             newType = GROUND_30;
             newName = "speed_limit_30";
         }
+        if (ImGui::MenuItem("Speed limit 30 Sign")) {
+            newType = SIGN_30;
+            newName = "sign_speed_limit_30";
+        }
         if (ImGui::MenuItem("Speed limit 40")) {
             newType = GROUND_40;
             newName = "speed_limit_40";
+        }
+        if (ImGui::MenuItem("Speed limit 40 Sign")) {
+            newType = SIGN_40;
+            newName = "sign_speed_limit_40";
         }
         if (ImGui::MenuItem("Speed limit 50")) {
             newType = GROUND_50;
             newName = "speed_limit_50";
         }
+        if (ImGui::MenuItem("Speed limit 50 Sign")) {
+            newType = SIGN_50;
+            newName = "sign_speed_limit_50";
+        }
         if (ImGui::MenuItem("Speed limit 60")) {
             newType = GROUND_60;
             newName = "speed_limit_60";
+        }
+        if (ImGui::MenuItem("Speed limit 60 Sign")) {
+            newType = SIGN_60;
+            newName = "sign_speed_limit_60";
         }
         if (ImGui::MenuItem("Speed limit 70")) {
             newType = GROUND_70;
             newName = "speed_limit_70";
         }
+        if (ImGui::MenuItem("Speed limit 70 Sign")) {
+            newType = SIGN_70;
+            newName = "sign_speed_limit_70";
+        }
         if (ImGui::MenuItem("Speed limit 80")) {
             newType = GROUND_80;
             newName = "speed_limit_80";
         }
+        if (ImGui::MenuItem("Speed limit 80 Sign")) {
+            newType = SIGN_80;
+            newName = "sign_speed_limit_80";
+        }
         if (ImGui::MenuItem("Speed limit 90")) {
             newType = GROUND_90;
             newName = "speed_limit_90";
+        }
+        if (ImGui::MenuItem("Speed limit 90 Sign")) {
+            newType = SIGN_90;
+            newName = "sign_speed_limit_90";
         }
 
         ImGui::EndMenu();
@@ -302,37 +338,73 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = GROUND_10_END;
             newName = "end_speed_limit_10";
         }
+        if (ImGui::MenuItem("End speed limit 10 Sign")) {
+            newType = SIGN_10_END;
+            newName = "sign_speed_limit_10_end";
+        }
         if (ImGui::MenuItem("End speed limit 20")) {
             newType = GROUND_20_END;
             newName = "end_speed_limit_20";
+        }
+        if (ImGui::MenuItem("End speed limit 20 Sign")) {
+            newType = SIGN_20_END;
+            newName = "sign_speed_limit_20_end";
         }
         if (ImGui::MenuItem("End speed limit 30")) {
             newType = GROUND_30_END;
             newName = "end_speed_limit_30";
         }
+        if (ImGui::MenuItem("End speed limit 30 Sign")) {
+            newType = SIGN_30_END;
+            newName = "sign_speed_limit_30_end";
+        }
         if (ImGui::MenuItem("End speed limit 40")) {
             newType = GROUND_40_END;
             newName = "end_speed_limit_40";
+        }
+        if (ImGui::MenuItem("End speed limit 40 Sign")) {
+            newType = SIGN_40_END;
+            newName = "sign_speed_limit_40_end";
         }
         if (ImGui::MenuItem("End speed limit 50")) {
             newType = GROUND_50_END;
             newName = "end_speed_limit_50";
         }
+        if (ImGui::MenuItem("End speed limit 50 Sign")) {
+            newType = SIGN_50_END;
+            newName = "sign_speed_limit_50_end";
+        }
         if (ImGui::MenuItem("End speed limit 60")) {
             newType = GROUND_60_END;
             newName = "end_speed_limit_60";
+        }
+        if (ImGui::MenuItem("End speed limit 60 Sign")) {
+            newType = SIGN_60_END;
+            newName = "sign_speed_limit_60_end";
         }
         if (ImGui::MenuItem("End speed limit 70")) {
             newType = GROUND_70_END;
             newName = "end_speed_limit_70";
         }
+        if (ImGui::MenuItem("End speed limit 70 Sign")) {
+            newType = SIGN_70_END;
+            newName = "sign_speed_limit_70_end";
+        }
         if (ImGui::MenuItem("End speed limit 80")) {
             newType = GROUND_80_END;
             newName = "end_speed_limit_80";
         }
+        if (ImGui::MenuItem("End speed limit 80 Sign")) {
+            newType = SIGN_80_END;
+            newName = "sign_speed_limit_80_end";
+        }
         if (ImGui::MenuItem("End speed limit 90")) {
             newType = GROUND_90_END;
             newName = "end_speed_limit_90";
+        }
+        if (ImGui::MenuItem("End speed limit 90 Sign")) {
+            newType = SIGN_90_END;
+            newName = "sign_speed_limit_90_end";
         }
 
         ImGui::EndMenu();
@@ -387,6 +459,11 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_forbidden";
         }
 
+        if (ImGui::MenuItem("Uphill")) {
+            newType = SIGN_UPHILL;
+            newName = "sign_uphill";
+        }
+
         if (ImGui::MenuItem("Downhill")) {
             newType = SIGN_DOWNHILL;
             newName = "sign_downhill";
@@ -402,9 +479,29 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newName = "sign_expressway_end";
         }
 
+        if (ImGui::MenuItem("Right of way")) {
+            newType = SIGN_RIGHT_OF_WAY;
+            newName = "sign_right_of_way";
+        }
+
         if (ImGui::MenuItem("Giveway")) {
             newType = SIGN_GIVEWAY;
-            newName = "sign_giveway_end";
+            newName = "sign_giveway";
+        }
+
+        if (ImGui::MenuItem("Stop")) {
+            newType = SIGN_STOP;
+            newName = "sign_stop";
+        }
+
+        if (ImGui::MenuItem("Turn left")) {
+            newType = SIGN_TURN_LEFT;
+            newName = "sign_turn_left";
+        }
+
+        if (ImGui::MenuItem("Turn right")) {
+            newType = SIGN_TURN_RIGHT;
+            newName = "sign_turn_right";
         }
 
         if (ImGui::MenuItem("No passing start")) {
@@ -415,6 +512,21 @@ void GuiModule::renderCreateMenu(Scene& scene) {
         if (ImGui::MenuItem("No passing end")) {
             newType = SIGN_NO_PASSING_END;
             newName = "sign_no_passing_end";
+        }
+
+        if (ImGui::MenuItem("Parking area")) {
+            newType = SIGN_PARKING_AREA;
+            newName = "sign_parking_area";
+        }
+
+        if (ImGui::MenuItem("Pedestrian Island Arrow")) {
+            newType = SIGN_PEDESTRIAN_ISLAND;
+            newName = "sign_pedestrian_island_arrow";
+        }
+
+        if (ImGui::MenuItem("Crosswalk")) {
+            newType = SIGN_CROSSWALK;
+            newName = "sign_crosswalk";
         }
 
         ImGui::EndMenu();
