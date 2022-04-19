@@ -223,27 +223,47 @@ void CarModule::updatePosition(Car& car, float deltaTime) {
 
     // user controls ...
 
+    // calculate longitudinal velocity
+    auto psi = glm::radians(car.modelPose.getEulerAngles().y);
+    auto orientationVec = glm::vec3(std::sin(psi), 0, std::cos(psi));
+
+    auto longitudinalVelocity = glm::dot(orientationVec, car.velocity);
+
     if (getKey(GLFW_KEY_UP) == GLFW_PRESS) {
-        car.vesc.velocity = 1.0;
-        car.vesc.steeringAngleFront = 0;
-        car.vesc.steeringAngleRear = 0;
+        // slow down if the car currently moves backwards, otherwise drive forwards
+        if (longitudinalVelocity < 0) {
+            car.vesc.velocity = 0.0;
+            lastKeyPress = GLFW_KEY_UP;
+        } else {
+            car.vesc.steeringAngleFront = 0;
+            car.vesc.steeringAngleRear = 0;
+            car.vesc.velocity = (lastKeyPress != GLFW_KEY_UP) ? 1.0 : 0.0;
+        }
+    } else if (getKey(GLFW_KEY_DOWN) == GLFW_PRESS) {
+        // slow down if the car currently moves forwards, otherwise drive backwards
+        if (longitudinalVelocity > 0) {
+            car.vesc.velocity = 0.0;
+            lastKeyPress = GLFW_KEY_DOWN;
+        } else {
+            car.vesc.steeringAngleFront = 0;
+            car.vesc.steeringAngleRear = 0;
+            car.vesc.velocity = (lastKeyPress != GLFW_KEY_DOWN) ? -1.0 : 0.0;
+        }
+    } else {
+        lastKeyPress = 0;
     }
-    if (getKey(GLFW_KEY_DOWN) == GLFW_PRESS) {
-        car.vesc.velocity = 0.0;
-    }
+
     if (getKey(GLFW_KEY_LEFT) == GLFW_PRESS) {
         car.vesc.steeringAngleFront = 0.4;
-    }
-    if (getKey(GLFW_KEY_RIGHT) == GLFW_PRESS) {
+    } else if (getKey(GLFW_KEY_RIGHT) == GLFW_PRESS) {
         car.vesc.steeringAngleFront = -0.4;
     }
+
     if (getKey(GLFW_KEY_J) == GLFW_PRESS) {
         car.vesc.steeringAngleRear = 0.4;
-    }
-    if (getKey(GLFW_KEY_K) == GLFW_PRESS) {
+    } else if (getKey(GLFW_KEY_K) == GLFW_PRESS) {
         car.vesc.steeringAngleRear = 0.0;
-    }
-    if (getKey(GLFW_KEY_L) == GLFW_PRESS) {
+    } else if (getKey(GLFW_KEY_L) == GLFW_PRESS) {
         car.vesc.steeringAngleRear = -0.4;
     }
 }
