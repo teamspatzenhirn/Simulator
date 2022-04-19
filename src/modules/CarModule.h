@@ -18,40 +18,42 @@
 #include "modules/MarkerModule.h"
 
 class CarModule {
+    public:
+        Camera mainCamera;
+        Camera depthCamera;
 
-    float calcLaserSensorValue(
-            glm::vec3 position,
-            glm::vec3 direction,
-            ModelStore& modelStore,
-            std::vector<Scene::Item>& items);
+        FrameBuffer frameBuffer{1, 1, 1, GL_RGBA, GL_RGBA};
+        FrameBuffer bayerFrameBuffer{1, 1, 1, GL_RED, GL_RED};
+        FrameBuffer depthCameraFrameBuffer{1, 1, 1, GL_RGB32F, GL_RGB};
 
-public:
+        CarModule();
 
-    Camera mainCamera;
-    Camera depthCamera;
+        void updatePosition(Car& car, float deltaTime);
 
-    FrameBuffer frameBuffer{1, 1, 1, GL_RGBA, GL_RGBA};
-    FrameBuffer bayerFrameBuffer{1, 1, 1, GL_RED, GL_RED};
-    FrameBuffer depthCameraFrameBuffer{1, 1, 1, GL_RGB32F, GL_RGB};
+        void updateMainCamera(
+                Car::MainCamera& carMainCamera,
+                Pose& carModelPose);
 
-    CarModule();
+        void updateDepthCamera(
+                Car::DepthCamera& carDepthCamera,
+                Pose& carModelPose);
 
-    void updatePosition(Car& car, float deltaTime);
+        void updateLaserSensors(
+                Car& car,
+                ModelStore& modelStore,
+                std::vector<Scene::Item>& items);
 
-    void updateMainCamera(
-            Car::MainCamera& carMainCamera,
-            Pose& carModelPose);
+        void render(GLuint shaderProgramId, Car& car, ModelStore& store);
 
-    void updateDepthCamera(
-            Car::DepthCamera& carDepthCamera,
-            Pose& carModelPose);
+    private:
+        float calcLaserSensorValue(
+                glm::vec3 position,
+                glm::vec3 direction,
+                ModelStore& modelStore,
+                std::vector<Scene::Item>& items);
 
-    void updateLaserSensors(
-            Car& car,
-            ModelStore& modelStore,
-            std::vector<Scene::Item>& items);
-
-    void render(GLuint shaderProgramId, Car& car, ModelStore& store);
+        // stores whether arrow up / down or none of both keys was pressed last
+        int lastKeyPress = 0;
 };
 
 #endif
