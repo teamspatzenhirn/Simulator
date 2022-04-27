@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 project(spatzsim)
 
+set(CMAKE_CXX_STANDARD 17)
+
 set(EXE_TARGET_NAME "${PROJECT_NAME}")
 set(LIB_TARGET_NAME "lib${PROJECT_NAME}")
 set(PY_TARGET_NAME "py${PROJECT_NAME}")

@@ -26,31 +26,31 @@ struct Car {
     struct SystemParams {
 
         // radabstand (m)
-        double axesDistance = 0.225; 
+        double axesDistance = 0.2565;
 
         // Verhältnis des Moments vorder/hinter Achse;
-        double axesMomentRatio = 0.5; 
-        
-        // kg*m^2 
-        double inertia = 0.042; 
+        double axesMomentRatio = 0.5;
 
         // masse (kg)
-        double mass = 3.875; 
+        double mass = 5.602;
+
+        // kg*m^2, rectangular vehicle: (1/12) * mass * (width²+length²)
+        double inertia = (1.0 / 12.0) * mass * (0.18 * 0.18 + 0.37 * 0.37);
 
         // center of gravity to front axle
         double distCogToFrontAxle = axesDistance / 2.0;
 
         // center of gravity to rear axle
         double distCogToRearAxle = axesDistance - distCogToFrontAxle;
-       
-        double getM () {
+
+        double getM() {
 
             return (mass
-                * distCogToRearAxle
-                * distCogToRearAxle
-                + inertia)
-             / axesDistance
-             / axesDistance;
+                    * distCogToRearAxle
+                    * distCogToRearAxle
+                    + inertia)
+                   / axesDistance
+                   / axesDistance;
         }
 
     } systemParams;
@@ -63,8 +63,8 @@ struct Car {
         double deltaFront, deltaRear = 0;
         double v = 0;
         double v_lon = 0;
-        double v_lat = 0; 
-        double d_psi = 0;     
+        double v_lat = 0;
+        double d_psi = 0;
 
     } simulatorState;
 
@@ -108,10 +108,12 @@ struct Car {
      */
     struct MainCamera {
 
-        Pose pose{0, 0.240f, 0.130f};
+        // Approximate results from Spatz11 camera calib
+        Pose pose{0.0f, 0.3f, 0.15f};
 
         MainCamera() {
-            pose.setEulerAngles(glm::vec3(-17.00f, 180.0f, 0.0f));
+            // Same angle of 10° as Spatz11 IRL
+            pose.setEulerAngles(glm::vec3(-10.00f, 180.0f, 0.0f));
         }
 
         /*
@@ -124,7 +126,8 @@ struct Car {
         int imageWidth = 2048;
         int imageHeight = 1536;
 
-        float fovy = (float)M_PI * 0.5f;
+        // FOV height, adjusted by varying the parameter until the image looked like an undistorted camera image
+        float fovy = 1.7;
 
         struct DistortionCoefficients {
 
@@ -134,7 +137,7 @@ struct Car {
         } distortionCoefficients;
 
         float getAspectRatio() {
-            return (float)imageWidth / (float)imageHeight;
+            return (float) imageWidth / (float) imageHeight;
         }
 
     } mainCamera;
@@ -157,15 +160,15 @@ struct Car {
         int depthImageWidth = 640 * 2;
         int depthImageHeight = 480;
 
-        float colorFovy = (float)M_PI * 0.5f;
-        float depthFovy = (float)M_PI * 0.25f;
+        float colorFovy = (float) M_PI * 0.5f;
+        float depthFovy = (float) M_PI * 0.25f;
 
         float getColorAspectRatio() {
-            return (float)colorImageWidth / (float)colorImageHeight;
+            return (float) colorImageWidth / (float) colorImageHeight;
         }
 
         float getDepthAspectRatio() {
-            return (float)depthImageWidth / (float)depthImageHeight;
+            return (float) depthImageWidth / (float) depthImageHeight;
         }
 
     } depthCamera;
@@ -175,7 +178,7 @@ struct Car {
         /*
          * The position of the sensor in car coordinate.
          */
-        Pose pose{-0.05f, 0.1f, -0.025f};
+        Pose pose{/*left*/ -0.084f, /*up*/ 0.085f, /*front*/ -0.034f};
 
         /*
          * The distance detected by this light sensors
