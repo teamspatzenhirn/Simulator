@@ -101,6 +101,7 @@ enum ItemType {
     SIGN_70_END = 74,
     SIGN_80_END = 75,
     SIGN_90_END = 76,
+    START_BOX_SIGNS = 77,
 };
 
 /*
