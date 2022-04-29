@@ -416,6 +416,10 @@ void GuiModule::renderCreateMenu(Scene& scene) {
             newType = START_BOX;
             newName = "start_box";
         }
+        if (ImGui::MenuItem("Start box signs")) {
+            newType = START_BOX_SIGNS;
+            newName = "start_box_signs";
+        }
         if (ImGui::MenuItem("Traffic island")) {
             newType = TRAFFIC_ISLAND;
             newName = "traffic_island";

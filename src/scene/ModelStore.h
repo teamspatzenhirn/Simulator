@@ -3,6 +3,8 @@
 
 #include "helpers/Model.h"
 
+#include "Scene.h"
+
 /*
  * Simple object, which holds and loads all used models
  * in the simulator. Should be used to avoid loading the
@@ -19,7 +21,7 @@ struct ModelStore {
     Model arrow;
     Model scaleArrow;
 
-    Model items[77];
+    Model items[ItemType::LAST_ELEMENT];
 
     ModelStore (std::string resPath) : 
         car{resPath + "models/spatz11.obj"},
@@ -107,6 +109,7 @@ struct ModelStore {
             Model{resPath + "models/signs/sign_speedlimit_70_end.obj"},
             Model{resPath + "models/signs/sign_speedlimit_80_end.obj"},
             Model{resPath + "models/signs/sign_speedlimit_90_end.obj"},
+            Model{resPath + "models/start_box_signs.obj"},
          } {
     }
 };
