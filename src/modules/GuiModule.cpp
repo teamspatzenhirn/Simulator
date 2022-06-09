@@ -4,7 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <experimental/filesystem>
+#include <filesystem>
 
 #define GLM_ENABLE_EXPERIMENTAL 
 #include <glm/gtx/io.hpp>
@@ -15,7 +15,7 @@
 #include "ocornut_imgui/imgui_impl_glfw.h"
 #include "ocornut_imgui/imgui_impl_opengl3.h"
 
-namespace fs = std::experimental::filesystem;
+namespace fs = std::filesystem;
 
 GuiModule::GuiModule(GLFWwindow* window, std::string scenePath) {
 
