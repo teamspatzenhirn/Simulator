@@ -1,0 +1,15 @@
+name: ci
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install dependencies via APT
+        run: sudo apt update && sudo apt install -y libglfw3-dev libglew-dev
+      - name: Build
+        run: |
+          mkdir build && cd build
+          cmake ..
+          cmake --build . --parallel $(nproc)
