@@ -16,7 +16,7 @@ The following aspects are simulated:
 * Lane markings: Straight section, curved sections and crossings with arbitrary number of entries
   and arbitrary angles, placed in interactive editor
 
-IMU, wheel encoder and steering angle sensors are not currently simulated.
+IMU, wheel encoder and steering angle sensors are currently not simulated.
 The entire vehicle state (with perfect odometry and position data) is available as
 an output.
 
