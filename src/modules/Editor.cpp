@@ -1467,6 +1467,7 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
 
             break;
         }
+
         case LaneMarking::DoubleSolid: {
             vec0 = {0.0f, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth};
             vec1 = {0.0f, 0.0f, -tracks.centerLineGap / 2};
@@ -1479,6 +1480,41 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
             vec1 = {0.0f, 0.0f, tracks.centerLineGap / 2 + tracks.markingWidth};
             vec2 = {length, 0.0f, tracks.centerLineGap / 2 + tracks.markingWidth};
             vec3 = {length, 0.0f, tracks.centerLineGap / 2};
+
+            appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+
+            break;
+        }
+
+        case LaneMarking::SolidAndDashed:
+            [[fallthrough]];
+        case LaneMarking::DashedAndSolid: {
+            // decides which of the two center lines is shifted into which direction
+            float sign = (centerLine == LaneMarking::SolidAndDashed) ? 1.0F : -1.0F;
+
+            // dashed line on one side
+            float x{0.0f};
+            while (x < length) {
+                float xEnd{x + tracks.centerLineLength};
+                if (length - x < tracks.centerLineLength) {
+                    xEnd = length;
+                }
+
+                vec0 = {x, 0.0f, sign * 1.5F * tracks.markingWidth};
+                vec1 = {x, 0.0f, sign * 0.5F * tracks.markingWidth};
+                vec2 = {xEnd, 0.0f, sign * 0.5F * tracks.markingWidth};
+                vec3 = {xEnd, 0.0f, sign * 1.5F * tracks.markingWidth};
+
+                appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+
+                x += tracks.centerLineLength + tracks.centerLineInterrupt;
+            }
+
+            // solid lane on the other side
+            vec0 = {0.0f, 0.0f, -sign * tracks.centerLineGap / 2};
+            vec1 = {0.0f, 0.0f, -sign * (tracks.centerLineGap / 2 + tracks.markingWidth)};
+            vec2 = {length, 0.0f, -sign * (tracks.centerLineGap / 2 + tracks.markingWidth)};
+            vec3 = {length, 0.0f, -sign * tracks.centerLineGap / 2};
 
             appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1529,14 +1565,13 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
 
         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
-        // center line
-        glm::vec3 vecStartOuter(cos(angle1) * rCenterOuter, 0.0f, sin(angle1) * rCenterOuter);
-        glm::vec3 vecStartInner(cos(angle1) * rCenterInner, 0.0f, sin(angle1) * rCenterInner);
-        glm::vec3 vecEndInner(cos(angle2) * rCenterInner, 0.0f, sin(angle2) * rCenterInner);
-        glm::vec3 vecEndOuter(cos(angle2) * rCenterOuter, 0.0f, sin(angle2) * rCenterOuter);
-
         switch (centerLine) {
             case LaneMarking::Dashed: {
+                glm::vec3 vecStartOuter(cos(angle1) * rCenterOuter, 0.0f, sin(angle1) * rCenterOuter);
+                glm::vec3 vecStartInner(cos(angle1) * rCenterInner, 0.0f, sin(angle1) * rCenterInner);
+                glm::vec3 vecEndInner(cos(angle2) * rCenterInner, 0.0f, sin(angle2) * rCenterInner);
+                glm::vec3 vecEndOuter(cos(angle2) * rCenterOuter, 0.0f, sin(angle2) * rCenterOuter);
+
                 float markingStart{0.0f};
                 while (markingStart < quadLength) {
                     float markingEnd{0.0f};
@@ -1595,6 +1630,69 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
+                break;
+            }
+
+            case LaneMarking::SolidAndDashed:
+                [[fallthrough]];
+            case LaneMarking::DashedAndSolid: {
+                // decides which of the two center lines is shifted into which direction
+                float sign = (centerLine == LaneMarking::SolidAndDashed) ? 1.0F : -1.0F;
+
+                // solid line
+                float rCenter1Outer = radius + sign *(tracks.centerLineGap / 2 + tracks.markingWidth);
+                float rCenter1Inner = radius + sign * tracks.centerLineGap / 2;
+
+                vec0 = {cos(angle1) * rCenter1Outer, 0.0f, sin(angle1) * rCenter1Outer};
+                vec1 = {cos(angle1) * rCenter1Inner, 0.0f, sin(angle1) * rCenter1Inner};
+                vec2 = {cos(angle2) * rCenter1Inner, 0.0f, sin(angle2) * rCenter1Inner};
+                vec3 = {cos(angle2) * rCenter1Outer, 0.0f, sin(angle2) * rCenter1Outer};
+
+                appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+
+                // dashed line
+                float rCenter2Outer = radius - sign *(tracks.centerLineGap / 2 + tracks.markingWidth);
+                float rCenter2Inner = radius - sign * tracks.centerLineGap / 2;
+
+                glm::vec3 vecStartOuter(cos(angle1) * rCenter2Outer, 0.0f, sin(angle1) * rCenter2Outer);
+                glm::vec3 vecStartInner(cos(angle1) * rCenter2Inner, 0.0f, sin(angle1) * rCenter2Inner);
+                glm::vec3 vecEndInner(cos(angle2) * rCenter2Inner, 0.0f, sin(angle2) * rCenter2Inner);
+                glm::vec3 vecEndOuter(cos(angle2) * rCenter2Outer, 0.0f, sin(angle2) * rCenter2Outer);
+
+                float markingStart{0.0f};
+                while (markingStart < quadLength) {
+                    float markingEnd{0.0f};
+
+                    if (offset < tracks.centerLineLength) {
+                        markingEnd = markingStart + tracks.centerLineLength - offset;
+                        if (markingEnd > quadLength) {
+                            markingEnd = quadLength;
+                            offset += markingEnd - markingStart;
+                        } else {
+                            offset = tracks.centerLineLength;
+                        }
+
+                        // add quad from markingStart to markingEnd
+                        float tStart{markingStart / quadLength};
+                        float tEnd{markingEnd / quadLength};
+                        vec0 = (1.0f - tStart) * vecStartOuter + tStart * vecEndOuter;
+                        vec1 = (1.0f - tStart) * vecStartInner + tStart * vecEndInner;
+                        vec2 = (1.0f - tEnd) * vecStartInner + tEnd * vecEndInner;
+                        vec3 = (1.0f - tEnd) * vecStartOuter + tEnd * vecEndOuter;
+                        appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+                    } else {
+                        markingEnd = markingStart + tracks.centerLineLength
+                                     + tracks.centerLineInterrupt - offset;
+                        if (markingEnd > quadLength) {
+                            markingEnd = quadLength;
+                            offset += markingEnd - markingStart;
+                        } else {
+                            offset = 0.0f;
+                        }
+                    }
+
+                    markingStart = markingEnd;
+                }
                 break;
             }
         }

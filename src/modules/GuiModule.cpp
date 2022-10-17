@@ -763,9 +763,14 @@ void GuiModule::renderSceneWindow(Scene& scene) {
                     if (ImGui::RadioButton("Dashed", *centerLine == LaneMarking::Dashed)) {
                         *centerLine = LaneMarking::Dashed;
                         selection.changed = true;
-                    }
-                    if (ImGui::RadioButton("Double solid", *centerLine == LaneMarking::DoubleSolid)) {
+                    } else if (ImGui::RadioButton("Double solid", *centerLine == LaneMarking::DoubleSolid)) {
                         *centerLine = LaneMarking::DoubleSolid;
+                        selection.changed = true;
+                    } else if (ImGui::RadioButton("Dashed and solid", *centerLine == LaneMarking::DashedAndSolid)) {
+                        *centerLine = LaneMarking::DashedAndSolid;
+                        selection.changed = true;
+                    } else if (ImGui::RadioButton("Solid and dashed", *centerLine == LaneMarking::SolidAndDashed)) {
+                        *centerLine = LaneMarking::SolidAndDashed;
                         selection.changed = true;
                     }
                 }
