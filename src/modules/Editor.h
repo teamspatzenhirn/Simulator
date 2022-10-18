@@ -176,10 +176,10 @@ private:
 // model creation
 
     std::shared_ptr<Model> genTrackLineModel(const glm::vec2& start, const glm::vec2& end,
-            const LaneMarking centerLine, const Tracks& tracks);
+            LaneMarking centerLine, bool leftLineMissing, bool rightLineMissing, const Tracks& tracks);
     std::shared_ptr<Model> genTrackArcModel(const glm::vec2& start, const glm::vec2& end,
-            const glm::vec2& center, const float radius, const bool rightArc,
-            const LaneMarking centerLine, const Tracks& tracks);
+            const glm::vec2& center, float radius, bool rightArc,
+            LaneMarking centerLine, bool leftLineMissing, bool rightLineMissing, const Tracks& tracks);
     std::shared_ptr<Model> genTrackIntersectionModel(const TrackIntersection& intersection,
             const Tracks& tracks);
 
@@ -188,11 +188,13 @@ private:
     void genTrackMaterial(Model& model);
 
     void genPointVertices(Model& model);
-    void genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
-            const LaneMarking centerLine, const Tracks& tracks, Model& model);
+    void genTrackLineVertices(const glm::vec2 &start, const glm::vec2 &end,
+                              LaneMarking centerLine, bool leftLineMissing,
+                              bool rightLineMissing, const Tracks &tracks, Model &model);
     void genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
-            const glm::vec2& center, const float radius, const bool rightArc,
-            const LaneMarking centerLine, const Tracks& tracks, Model& model);
+            const glm::vec2& center, float radius, bool rightArc,
+            LaneMarking centerLine, bool leftLineMissing,
+            bool rightLineMissing, const Tracks& tracks, Model& model);
     void genTrackIntersectionVertices(const TrackIntersection& intersection,
             const Tracks& tracks, Model& model);
     void genTrackLineMarkerVertices(Model& model);

@@ -56,7 +56,7 @@ Model::Material makeTrackMaterial() {
     return material;
 }
 
-std::vector<Model::Vertex> makePointVertices() { 
+std::vector<Model::Vertex> makePointVertices() {
 
     std::vector<Model::Vertex> vertices;
 
@@ -99,7 +99,7 @@ std::vector<Model::Vertex> makeTrackLineVertices() {
     return vertices;
 }
 
-Editor::Editor() : 
+Editor::Editor() :
     markerDefaultMaterial{makeMarkerDefaultMaterial()},
     markerActiveMaterial{makeMarkerActiveMaterial()},
     trackMaterial{makeTrackMaterial()},
@@ -131,19 +131,25 @@ void Editor::updateInput(Camera& camera, Tracks& tracks, float groundSize) {
                 glm::vec2 start = line->start.lock()->coords;
                 glm::vec2 end = line->end.lock()->coords;
 
-                genTrackLineVertices(start, end, line->centerLine, tracks, *trackModels[track]);
+                genTrackLineVertices(start, end, line->centerLine, line->leftLineMissing,
+                                     line->rightLineMissing, tracks, *trackModels[track]);
                 trackModels[track]->upload();
 
-                genTrackLineVertices(start, end, line->centerLine, tracks, *activeTrackModel);
+                genTrackLineVertices(start, end, line->centerLine, line->leftLineMissing,
+                                     line->rightLineMissing, tracks, *activeTrackModel);
                 activeTrackModel->upload();
             } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track)) {
                 glm::vec2 start = arc->start.lock()->coords;
                 glm::vec2 end = arc->end.lock()->coords;
 
-                genTrackArcVertices(start, end, arc->center, arc->radius, arc->rightArc, arc->centerLine, tracks, *trackModels[track]);
+                genTrackArcVertices(start, end, arc->center, arc->radius, arc->rightArc,
+                                    arc->centerLine, arc->leftLineMissing, arc->rightLineMissing,
+                                    tracks, *trackModels[track]);
                 trackModels[track]->upload();
 
-                genTrackArcVertices(start, end, arc->center, arc->radius, arc->rightArc, arc->centerLine, tracks, *activeTrackModel);
+                genTrackArcVertices(start, end, arc->center, arc->radius, arc->rightArc,
+                                    arc->centerLine, arc->leftLineMissing, arc->rightLineMissing,
+                                    tracks, *activeTrackModel);
                 activeTrackModel->upload();
             }
         }
@@ -352,6 +358,8 @@ void Editor::renderScene(GLuint shaderProgramId, Model& groundModel, const Track
                         arc->radius,
                         arc->rightArc,
                         arc->centerLine,
+                        arc->leftLineMissing,
+                        arc->rightLineMissing,
                         tracks,
                         *model);
                 genTrackMaterial(*model);
@@ -366,6 +374,8 @@ void Editor::renderScene(GLuint shaderProgramId, Model& groundModel, const Track
                         line->start.lock()->coords,
                         line->end.lock()->coords,
                         line->centerLine,
+                        line->leftLineMissing,
+                        line->rightLineMissing,
                         tracks,
                         *model);
                 genTrackMaterial(*model);
@@ -464,10 +474,13 @@ void Editor::selectTrack(const std::shared_ptr<TrackBase>& track, Tracks& tracks
 
     if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track)) {
         genTrackLineVertices(line->start.lock()->coords, line->end.lock()->coords,
-                line->centerLine, tracks, *activeTrackModel);
+                             line->centerLine, line->leftLineMissing, line->rightLineMissing,
+                             tracks, *activeTrackModel);
     } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track)) {
         genTrackArcVertices(arc->start.lock()->coords, arc->end.lock()->coords,
-                arc->center, arc->radius, arc->rightArc, arc->centerLine, tracks, *activeTrackModel);
+                            arc->center, arc->radius, arc->rightArc, arc->centerLine,
+                            arc->leftLineMissing, arc->rightLineMissing, tracks,
+                            *activeTrackModel);
     } else {
         std::shared_ptr<TrackIntersection> intersection = std::dynamic_pointer_cast<TrackIntersection>(track);
         genTrackIntersectionVertices(*intersection, tracks, *activeTrackModel);
@@ -580,7 +593,8 @@ void Editor::addTrackLine(const std::shared_ptr<ControlPoint>& start,
     std::shared_ptr<TrackLine> track = tracks.addTrackLine(start, end);
 
     // create model
-    trackModels[track] = genTrackLineModel(start->coords, end->coords, track->centerLine, tracks);
+    trackModels[track] = genTrackLineModel(start->coords, end->coords, track->centerLine,
+                                           track->leftLineMissing, track->rightLineMissing, tracks);
     trackModelMats[track] = genTrackLineMatrix(start->coords, end->coords, trackYOffset);
 }
 
@@ -590,7 +604,9 @@ void Editor::addTrackArc(const std::shared_ptr<ControlPoint>& start, const std::
     std::shared_ptr<TrackArc> track = tracks.addTrackArc(start, end, center, radius, rightArc);
 
     // create model
-    trackModels[track] = genTrackArcModel(start->coords, end->coords, center, radius, rightArc, track->centerLine, tracks);
+    trackModels[track] = genTrackArcModel(start->coords, end->coords, center, radius, rightArc,
+                                          track->centerLine, track->leftLineMissing,
+                                          track->rightLineMissing, tracks);
     trackModelMats[track] = genTrackArcMatrix(center, trackYOffset);
 }
 
@@ -850,15 +866,22 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
         std::shared_ptr<ControlPoint> trackStart;
         std::shared_ptr<ControlPoint> trackEnd;
         LaneMarking centerLine{LaneMarking::Dashed};
+        bool leftLineMissing = false;
+        bool rightLineMissing = false;
+
         if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(track)) {
             trackStart = line->start.lock();
             trackEnd = line->end.lock();
             centerLine = line->centerLine;
+            leftLineMissing = line->leftLineMissing;
+            rightLineMissing = line->rightLineMissing;
         } else {
             std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(track);
             trackStart = arc->start.lock();
             trackEnd = arc->end.lock();
             centerLine = arc->centerLine;
+            leftLineMissing = arc->leftLineMissing;
+            rightLineMissing = arc->rightLineMissing;
         }
 
         glm::vec2 startCoords = getDraggedPosition(trackStart);
@@ -912,7 +935,10 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
                     trackModelMats[track] = dragState.trackModelMats[track];
                 } else {
                     // update temporary model
-                    dragState.trackModels[track] = genTrackArcModel(startCoords, endCoords, center, radius, rightArc, centerLine, tracks);
+                    dragState.trackModels[track] = genTrackArcModel(startCoords, endCoords, center,
+                                                                    radius, rightArc, centerLine,
+                                                                    leftLineMissing, rightLineMissing,
+                                                                    tracks);
                     dragState.trackModelMats[track] = genTrackArcMatrix(center, trackYOffset);
                 }
             } // TODO properly handle else case
@@ -923,8 +949,10 @@ void Editor::moveTracksAtControlPoint(const std::vector<std::shared_ptr<ControlP
                 trackModelMats[track] = dragState.trackModelMats[track];
             } else {
                 // update temporary model
-                dragState.trackModels[track] = genTrackLineModel(startCoords, endCoords, centerLine, tracks);
-                dragState.trackModelMats[track] = genTrackLineMatrix(startCoords, endCoords, trackYOffset);
+                dragState.trackModels[track] = genTrackLineModel(startCoords, endCoords, centerLine, leftLineMissing, rightLineMissing,
+                                                                 tracks);
+                dragState.trackModelMats[track] = genTrackLineMatrix(startCoords, endCoords,
+                                                                     trackYOffset);
             }
         }
     }
@@ -1081,7 +1109,7 @@ bool Editor::toGroundCoordinates(const double cursorX, const double cursorY, con
         return false;
     }
 
-    glm::vec3 cameraPos = camera.pose.position; 
+    glm::vec3 cameraPos = camera.pose.position;
 
     float t = -cameraPos.y / pick.y;
     if (t < 0) {
@@ -1366,23 +1394,30 @@ bool Editor::maybeDragging(const Tracks& tracks) {
     return dragState.dragging || (activeControlPoint && selectControlPoint(cursorPos, tracks) == activeControlPoint);
 }
 
-std::shared_ptr<Model> Editor::genTrackLineModel(const glm::vec2& start, const glm::vec2& end,
-        const LaneMarking centerLine, const Tracks& tracks) {
+std::shared_ptr<Model> Editor::genTrackLineModel(const glm::vec2 &start, const glm::vec2 &end,
+                                                 const LaneMarking centerLine,
+                                                 const bool leftLineMissing,
+                                                 const bool rightLineMissing,
+                                                 const Tracks &tracks) {
 
     std::shared_ptr<Model> model = std::make_shared<Model>();
-    genTrackLineVertices(start, end, centerLine, tracks, *model);
+    genTrackLineVertices(start, end, centerLine, leftLineMissing, rightLineMissing, tracks, *model);
     genTrackMaterial(*model);
     model->upload();
 
     return model;
 }
 
-std::shared_ptr<Model> Editor::genTrackArcModel(const glm::vec2& start, const glm::vec2& end,
-        const glm::vec2& center, const float radius, const bool rightArc,
-        const LaneMarking centerLine, const Tracks& tracks) {
+std::shared_ptr<Model> Editor::genTrackArcModel(const glm::vec2 &start, const glm::vec2 &end,
+                                                const glm::vec2 &center, const float radius,
+                                                const bool rightArc,
+                                                const LaneMarking centerLine,
+                                                const bool leftLineMissing,
+                                                const bool rightLineMissing,
+                                                const Tracks &tracks) {
 
     std::shared_ptr<Model> model = std::make_shared<Model>();
-    genTrackArcVertices(start, end, center, radius, rightArc, centerLine, tracks, *model);
+    genTrackArcVertices(start, end, center, radius, rightArc, centerLine, leftLineMissing, rightLineMissing, tracks, *model);
     genTrackMaterial(*model);
     model->upload();
 
@@ -1420,8 +1455,9 @@ void Editor::genPointVertices(Model& model) {
     model.vertices = pointVertices;
 }
 
-void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
-        const LaneMarking centerLine, const Tracks& tracks, Model& model) {
+void Editor::genTrackLineVertices(const glm::vec2 &start, const glm::vec2 &end,
+                                  const LaneMarking centerLine, const bool leftLineMissing,
+                                  const bool rightLineMissing, const Tracks &tracks, Model &model) {
 
     float dx{end.x - start.x};
     float dy{end.y - start.y};
@@ -1430,20 +1466,24 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
     model.vertices.clear();
 
     // left side
-    glm::vec3 vec0(0.0f, 0.0f, -tracks.trackWidth / 2);
-    glm::vec3 vec1(0.0f, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
-    glm::vec3 vec2(length, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
-    glm::vec3 vec3(length, 0.0f, -tracks.trackWidth / 2);
+    if (!leftLineMissing) {
+        glm::vec3 vec0(0.0f, 0.0f, -tracks.trackWidth / 2);
+        glm::vec3 vec1(0.0f, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
+        glm::vec3 vec2(length, 0.0f, -tracks.trackWidth / 2 + tracks.markingWidth);
+        glm::vec3 vec3(length, 0.0f, -tracks.trackWidth / 2);
 
-    appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+        appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+    }
 
     // right side
-    vec0 = {0.0f, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth};
-    vec1 = {0.0f, 0.0f, tracks.trackWidth / 2};
-    vec2 = {length, 0.0f, tracks.trackWidth / 2};
-    vec3 = {length, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth};
+    if (!rightLineMissing) {
+        glm::vec3 vec0 = {0.0f, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth};
+        glm::vec3 vec1 = {0.0f, 0.0f, tracks.trackWidth / 2};
+        glm::vec3 vec2 = {length, 0.0f, tracks.trackWidth / 2};
+        glm::vec3 vec3 = {length, 0.0f, tracks.trackWidth / 2 - tracks.markingWidth};
 
-    appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+        appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+    }
 
     // center line
     switch (centerLine) {
@@ -1455,10 +1495,10 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
                     xEnd = length;
                 }
 
-                vec0 = {x, 0.0f, -tracks.markingWidth / 2};
-                vec1 = {x, 0.0f, tracks.markingWidth / 2};
-                vec2 = {xEnd, 0.0f, tracks.markingWidth / 2};
-                vec3 = {xEnd, 0.0f, -tracks.markingWidth / 2};
+                glm::vec3 vec0 = {x, 0.0f, -tracks.markingWidth / 2};
+                glm::vec3 vec1 = {x, 0.0f, tracks.markingWidth / 2};
+                glm::vec3 vec2 = {xEnd, 0.0f, tracks.markingWidth / 2};
+                glm::vec3 vec3 = {xEnd, 0.0f, -tracks.markingWidth / 2};
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1469,10 +1509,10 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
         }
 
         case LaneMarking::DoubleSolid: {
-            vec0 = {0.0f, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth};
-            vec1 = {0.0f, 0.0f, -tracks.centerLineGap / 2};
-            vec2 = {length, 0.0f, -tracks.centerLineGap / 2};
-            vec3 = {length, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth};
+            glm::vec3 vec0 = {0.0f, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth};
+            glm::vec3 vec1 = {0.0f, 0.0f, -tracks.centerLineGap / 2};
+            glm::vec3 vec2 = {length, 0.0f, -tracks.centerLineGap / 2};
+            glm::vec3 vec3 = {length, 0.0f, -tracks.centerLineGap / 2 - tracks.markingWidth};
 
             appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1500,10 +1540,10 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
                     xEnd = length;
                 }
 
-                vec0 = {x, 0.0f, sign * 1.5F * tracks.markingWidth};
-                vec1 = {x, 0.0f, sign * 0.5F * tracks.markingWidth};
-                vec2 = {xEnd, 0.0f, sign * 0.5F * tracks.markingWidth};
-                vec3 = {xEnd, 0.0f, sign * 1.5F * tracks.markingWidth};
+                glm::vec3 vec0 = {x, 0.0f, sign * 1.5F * tracks.markingWidth};
+                glm::vec3 vec1 = {x, 0.0f, sign * 0.5F * tracks.markingWidth};
+                glm::vec3 vec2 = {xEnd, 0.0f, sign * 0.5F * tracks.markingWidth};
+                glm::vec3 vec3 = {xEnd, 0.0f, sign * 1.5F * tracks.markingWidth};
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1511,21 +1551,26 @@ void Editor::genTrackLineVertices(const glm::vec2& start, const glm::vec2& end,
             }
 
             // solid lane on the other side
-            vec0 = {0.0f, 0.0f, -sign * tracks.centerLineGap / 2};
-            vec1 = {0.0f, 0.0f, -sign * (tracks.centerLineGap / 2 + tracks.markingWidth)};
-            vec2 = {length, 0.0f, -sign * (tracks.centerLineGap / 2 + tracks.markingWidth)};
-            vec3 = {length, 0.0f, -sign * tracks.centerLineGap / 2};
+            glm::vec3 vec0 = {0.0f, 0.0f, -sign * tracks.centerLineGap / 2};
+            glm::vec3 vec1 = {0.0f, 0.0f, -sign * (tracks.centerLineGap / 2 + tracks.markingWidth)};
+            glm::vec3 vec2 = {length, 0.0f, -sign * (tracks.centerLineGap / 2 + tracks.markingWidth)};
+            glm::vec3 vec3 = {length, 0.0f, -sign * tracks.centerLineGap / 2};
 
             appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
             break;
         }
+
+        case LaneMarking::Missing:
+            // nothing to do as line marking should be missing anyway
+            break;
     }
 }
 
-void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
-        const glm::vec2& center, const float radius, const bool rightArc,
-        const LaneMarking centerLine, const Tracks& tracks, Model& model) {
+void Editor::genTrackArcVertices(const glm::vec2 &start, const glm::vec2 &end,
+                                 const glm::vec2 &center, const float radius, const bool rightArc,
+                                 const LaneMarking centerLine, const bool leftLineMissing,
+                                 const bool rightLineMissing, const Tracks &tracks, Model &model) {
 
     float baseAngle{0.0f};
     float angle{0.0f};
@@ -1550,20 +1595,24 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
         float angle2 = baseAngle + ((float)(i + 1) * angle) / (float)numQuads;
 
         // left side
-        glm::vec3 vec0(cos(angle1) * rOuterOuter, 0.0f, sin(angle1) * rOuterOuter);
-        glm::vec3 vec1(cos(angle1) * rOuterInner, 0.0f, sin(angle1) * rOuterInner);
-        glm::vec3 vec2(cos(angle2) * rOuterInner, 0.0f, sin(angle2) * rOuterInner);
-        glm::vec3 vec3(cos(angle2) * rOuterOuter, 0.0f, sin(angle2) * rOuterOuter);
+        if (!leftLineMissing) {
+            glm::vec3 vec0(cos(angle1) * rOuterOuter, 0.0f, sin(angle1) * rOuterOuter);
+            glm::vec3 vec1(cos(angle1) * rOuterInner, 0.0f, sin(angle1) * rOuterInner);
+            glm::vec3 vec2(cos(angle2) * rOuterInner, 0.0f, sin(angle2) * rOuterInner);
+            glm::vec3 vec3(cos(angle2) * rOuterOuter, 0.0f, sin(angle2) * rOuterOuter);
 
-        appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+            appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+        }
 
         // right side
-        vec0 = glm::vec3{cos(angle1) * rInnerOuter, 0.0f, sin(angle1) * rInnerOuter};
-        vec1 = glm::vec3{cos(angle1) * rInnerInner, 0.0f, sin(angle1) * rInnerInner};
-        vec2 = glm::vec3{cos(angle2) * rInnerInner, 0.0f, sin(angle2) * rInnerInner};
-        vec3 = glm::vec3{cos(angle2) * rInnerOuter, 0.0f, sin(angle2) * rInnerOuter};
+        if (!rightLineMissing) {
+            glm::vec3 vec0 = glm::vec3{cos(angle1) * rInnerOuter, 0.0f, sin(angle1) * rInnerOuter};
+            glm::vec3 vec1 = glm::vec3{cos(angle1) * rInnerInner, 0.0f, sin(angle1) * rInnerInner};
+            glm::vec3 vec2 = glm::vec3{cos(angle2) * rInnerInner, 0.0f, sin(angle2) * rInnerInner};
+            glm::vec3 vec3 = glm::vec3{cos(angle2) * rInnerOuter, 0.0f, sin(angle2) * rInnerOuter};
 
-        appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+            appendQuad(model.vertices, vec0, vec1, vec2, vec3);
+        }
 
         switch (centerLine) {
             case LaneMarking::Dashed: {
@@ -1588,10 +1637,10 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
                         // add quad from markingStart to markingEnd
                         float tStart{markingStart / quadLength};
                         float tEnd{markingEnd / quadLength};
-                        vec0 = (1.0f - tStart) * vecStartOuter + tStart * vecEndOuter;
-                        vec1 = (1.0f - tStart) * vecStartInner + tStart * vecEndInner;
-                        vec2 = (1.0f - tEnd) * vecStartInner + tEnd * vecEndInner;
-                        vec3 = (1.0f - tEnd) * vecStartOuter + tEnd * vecEndOuter;
+                        glm::vec3 vec0 = (1.0f - tStart) * vecStartOuter + tStart * vecEndOuter;
+                        glm::vec3 vec1 = (1.0f - tStart) * vecStartInner + tStart * vecEndInner;
+                        glm::vec3 vec2 = (1.0f - tEnd) * vecStartInner + tEnd * vecEndInner;
+                        glm::vec3 vec3 = (1.0f - tEnd) * vecStartOuter + tEnd * vecEndOuter;
                         appendQuad(model.vertices, vec0, vec1, vec2, vec3);
                     } else {
                         markingEnd = markingStart + tracks.centerLineLength
@@ -1613,10 +1662,10 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
                 float rCenter1Outer = radius + tracks.centerLineGap / 2 + tracks.markingWidth;
                 float rCenter1Inner = radius + tracks.centerLineGap / 2;
 
-                vec0 = {cos(angle1) * rCenter1Outer, 0.0f, sin(angle1) * rCenter1Outer};
-                vec1 = {cos(angle1) * rCenter1Inner, 0.0f, sin(angle1) * rCenter1Inner};
-                vec2 = {cos(angle2) * rCenter1Inner, 0.0f, sin(angle2) * rCenter1Inner};
-                vec3 = {cos(angle2) * rCenter1Outer, 0.0f, sin(angle2) * rCenter1Outer};
+                glm::vec3 vec0 = {cos(angle1) * rCenter1Outer, 0.0f, sin(angle1) * rCenter1Outer};
+                glm::vec3 vec1 = {cos(angle1) * rCenter1Inner, 0.0f, sin(angle1) * rCenter1Inner};
+                glm::vec3 vec2 = {cos(angle2) * rCenter1Inner, 0.0f, sin(angle2) * rCenter1Inner};
+                glm::vec3 vec3 = {cos(angle2) * rCenter1Outer, 0.0f, sin(angle2) * rCenter1Outer};
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1643,10 +1692,10 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
                 float rCenter1Outer = radius + sign *(tracks.centerLineGap / 2 + tracks.markingWidth);
                 float rCenter1Inner = radius + sign * tracks.centerLineGap / 2;
 
-                vec0 = {cos(angle1) * rCenter1Outer, 0.0f, sin(angle1) * rCenter1Outer};
-                vec1 = {cos(angle1) * rCenter1Inner, 0.0f, sin(angle1) * rCenter1Inner};
-                vec2 = {cos(angle2) * rCenter1Inner, 0.0f, sin(angle2) * rCenter1Inner};
-                vec3 = {cos(angle2) * rCenter1Outer, 0.0f, sin(angle2) * rCenter1Outer};
+                glm::vec3 vec0 = {cos(angle1) * rCenter1Outer, 0.0f, sin(angle1) * rCenter1Outer};
+                glm::vec3 vec1 = {cos(angle1) * rCenter1Inner, 0.0f, sin(angle1) * rCenter1Inner};
+                glm::vec3 vec2 = {cos(angle2) * rCenter1Inner, 0.0f, sin(angle2) * rCenter1Inner};
+                glm::vec3 vec3 = {cos(angle2) * rCenter1Outer, 0.0f, sin(angle2) * rCenter1Outer};
 
                 appendQuad(model.vertices, vec0, vec1, vec2, vec3);
 
@@ -1695,6 +1744,10 @@ void Editor::genTrackArcVertices(const glm::vec2& start, const glm::vec2& end,
                 }
                 break;
             }
+
+            case LaneMarking::Missing:
+                // nothing to do as line marking should be missing anyway
+                break;
         }
     }
 }
@@ -1907,7 +1960,7 @@ glm::mat4 Editor::genTrackLineMarkerMatrix(const glm::vec2& start,
 
 void Editor::appendGroundQuad(std::vector<Model::Vertex>& vertices, const glm::vec2& vec0,
         const glm::vec2& vec1, const glm::vec2& vec2, const glm::vec2& vec3) {
-    
+
     appendQuad(vertices,
             glm::vec3(vec0.x, 0.0f, vec0.y),
             glm::vec3(vec1.x, 0.0f, vec1.y),

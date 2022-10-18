@@ -750,29 +750,50 @@ void GuiModule::renderSceneWindow(Scene& scene) {
             if (selection.track) {
 
                 LaneMarking* centerLine{nullptr};
+                bool *leftLineMissing{nullptr};
+                bool *rightLineMissing{nullptr};
                 if (std::shared_ptr<TrackLine> line = std::dynamic_pointer_cast<TrackLine>(selection.track)) {
                     centerLine = &line->centerLine;
+                    leftLineMissing = &line->leftLineMissing;
+                    rightLineMissing = &line->rightLineMissing;
                 } else if (std::shared_ptr<TrackArc> arc = std::dynamic_pointer_cast<TrackArc>(selection.track)) {
                     centerLine = &arc->centerLine;
+                    leftLineMissing = &arc->leftLineMissing;
+                    rightLineMissing = &arc->rightLineMissing;
                 }
 
                 if (centerLine) {
-
+                    ImGui::PushID("Center");
                     ImGui::Text("Center line");
 
                     if (ImGui::RadioButton("Dashed", *centerLine == LaneMarking::Dashed)) {
                         *centerLine = LaneMarking::Dashed;
                         selection.changed = true;
-                    } else if (ImGui::RadioButton("Double solid", *centerLine == LaneMarking::DoubleSolid)) {
+                    } else if (ImGui::RadioButton("Double solid",
+                                                  *centerLine == LaneMarking::DoubleSolid)) {
                         *centerLine = LaneMarking::DoubleSolid;
                         selection.changed = true;
-                    } else if (ImGui::RadioButton("Dashed and solid", *centerLine == LaneMarking::DashedAndSolid)) {
+                    } else if (ImGui::RadioButton("Dashed and solid",
+                                                  *centerLine == LaneMarking::DashedAndSolid)) {
                         *centerLine = LaneMarking::DashedAndSolid;
                         selection.changed = true;
-                    } else if (ImGui::RadioButton("Solid and dashed", *centerLine == LaneMarking::SolidAndDashed)) {
+                    } else if (ImGui::RadioButton("Solid and dashed",
+                                                  *centerLine == LaneMarking::SolidAndDashed)) {
                         *centerLine = LaneMarking::SolidAndDashed;
                         selection.changed = true;
+                    } else if (ImGui::RadioButton("Missing", *centerLine == LaneMarking::Missing)) {
+                        *centerLine = LaneMarking::Missing;
+                        selection.changed = true;
                     }
+                    ImGui::PopID();
+                }
+
+                if (leftLineMissing && rightLineMissing) {
+                    ImGui::PushID("OuterLines");
+                    ImGui::Text("Outer lines");
+                    selection.changed |= ImGui::Checkbox("Hide left line",leftLineMissing);
+                    selection.changed |= ImGui::Checkbox("Hide right line",rightLineMissing);
+                    ImGui::PopID();
                 }
             }
 
