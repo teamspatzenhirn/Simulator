@@ -37,6 +37,19 @@ bool tryGet(const json& j, std::string name, T& variable) {
     return true;
 }
 
+static std::string lineTypeToStr(LaneMarking markingType) {
+    switch (markingType) {
+        case LaneMarking::Dashed:
+            return "Dashed";
+        case LaneMarking::DoubleSolid:
+            return "DoubleSolid";
+        case LaneMarking::DashedAndSolid:
+            return "DashedAndSolid";
+        case LaneMarking::SolidAndDashed:
+            return "SolidAndDashed";
+    }
+}
+
 namespace glm {
 
     /*
@@ -440,30 +453,12 @@ void to_json(json& j, const Tracks& t) {
             jsonTrack["center"] = arc->center;
             jsonTrack["radius"] = arc->radius;
             jsonTrack["rightArc"] = arc->rightArc;
-            switch (arc->centerLine) {
-                case LaneMarking::Dashed: {
-                    jsonTrack["centerLine"] = "Dashed";
-                    break;
-                }
-                case LaneMarking::DoubleSolid: {
-                    jsonTrack["centerLine"] = "DoubleSolid";
-                    break;
-                }
-            }
+            jsonTrack["centerLine"] = lineTypeToStr(arc->centerLine);
         } else {
             std::shared_ptr<TrackLine> line 
                 = std::dynamic_pointer_cast<TrackLine>(track);
             jsonTrack["type"] = "line";
-            switch (line->centerLine) {
-                case LaneMarking::Dashed: {
-                    jsonTrack["centerLine"] = "Dashed";
-                    break;
-                }
-                case LaneMarking::DoubleSolid: {
-                    jsonTrack["centerLine"] = "DoubleSolid";
-                    break;
-                }
-            }
+            jsonTrack["centerLine"] = lineTypeToStr(line->centerLine);
         }
 
         jsonTracks.push_back(jsonTrack);
@@ -546,6 +541,10 @@ void from_json(const json& j, Tracks& t) {
                     arc->centerLine = LaneMarking::Dashed;
                 } else if (centerLine == "DoubleSolid") {
                     arc->centerLine = LaneMarking::DoubleSolid;
+                } else if (centerLine == "DashedAndSolid") {
+                    arc->centerLine = LaneMarking::DashedAndSolid;
+                } else if (centerLine == "SolidAndDashed") {
+                    arc->centerLine = LaneMarking::SolidAndDashed;
                 }
             } catch (json::exception& e) {
                 // use default value
@@ -559,6 +558,10 @@ void from_json(const json& j, Tracks& t) {
                     line->centerLine = LaneMarking::Dashed;
                 } else if (centerLine == "DoubleSolid") {
                     line->centerLine = LaneMarking::DoubleSolid;
+                } else if (centerLine == "DashedAndSolid") {
+                    line->centerLine = LaneMarking::DashedAndSolid;
+                } else if (centerLine == "SolidAndDashed") {
+                    line->centerLine = LaneMarking::SolidAndDashed;
                 }
             } catch (json::exception& e) {
                 // use default value
