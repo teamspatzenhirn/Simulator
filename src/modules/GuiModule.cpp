@@ -763,9 +763,14 @@ void GuiModule::renderSceneWindow(Scene& scene) {
                     if (ImGui::RadioButton("Dashed", *centerLine == LaneMarking::Dashed)) {
                         *centerLine = LaneMarking::Dashed;
                         selection.changed = true;
-                    }
-                    if (ImGui::RadioButton("Double solid", *centerLine == LaneMarking::DoubleSolid)) {
+                    } else if (ImGui::RadioButton("Double solid", *centerLine == LaneMarking::DoubleSolid)) {
                         *centerLine = LaneMarking::DoubleSolid;
+                        selection.changed = true;
+                    } else if (ImGui::RadioButton("Dashed and solid", *centerLine == LaneMarking::DashedAndSolid)) {
+                        *centerLine = LaneMarking::DashedAndSolid;
+                        selection.changed = true;
+                    } else if (ImGui::RadioButton("Solid and dashed", *centerLine == LaneMarking::SolidAndDashed)) {
+                        *centerLine = LaneMarking::SolidAndDashed;
                         selection.changed = true;
                     }
                 }
@@ -931,8 +936,8 @@ void GuiModule::renderHelpWindow() {
         ImGui::Text("Use w a s d to move the camera");
         ImGui::Text("Press shift to to move the camera down");
         ImGui::Text("Press space to to move the camera up");
-        ImGui::Text("Use arrow keys to move the vehicle");
-        ImGui::Text("use h j k to control the rear axle steering");
+        ImGui::Text("Use arrow keys to move the vehicle (front axle)");
+        ImGui::Text("Use h j k to control the rear axle steering");
         ImGui::Text("Right click and drag to move the camera");
         ImGui::Text("Press c to switch car cameras");
         ImGui::Text("Press p to pause the simulation");
@@ -946,6 +951,7 @@ void GuiModule::renderHelpWindow() {
         ImGui::Text("Click anywhere on the floor to build a track");
         ImGui::Text("Press 1 to build straight tracks");
         ImGui::Text("Press 2 to build curves");
+        ImGui::Text("Press 3 to build intersections");
         ImGui::Text("Double/right click to exit track building");
 
         ImGui::Separator();
@@ -954,6 +960,10 @@ void GuiModule::renderHelpWindow() {
         ImGui::Text("Click again to cycle transformation modes");
         ImGui::Text("Press ESC or click anywhere to deselect");
         ImGui::Text("Press h to toggle marker visibility");
+
+        ImGui::Separator();
+        ImGui::Text("Select a track to modify the line markings");
+        ImGui::Text("in the Scene > Track menu");
 
         ImGui::End();
     }

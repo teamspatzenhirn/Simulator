@@ -20,7 +20,9 @@ struct ControlPoint {
 
 enum struct LaneMarking {
     Dashed,
-    DoubleSolid
+    DoubleSolid,
+    DashedAndSolid,
+    SolidAndDashed // same as above but with reversed order
 };
 
 struct TrackBase {
