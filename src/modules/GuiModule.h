@@ -8,7 +8,6 @@ class GuiModule {
 
     GLFWwindow* window;
 
-    bool showCreateItemsWindow = true;
     bool showSceneWindow = true;
     bool showSettingsWindow = false;
     bool showRuleWindow = true;

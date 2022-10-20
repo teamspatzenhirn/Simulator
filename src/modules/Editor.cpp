@@ -1384,7 +1384,7 @@ bool Editor::canCreateTrack(const Tracks& tracks) {
     return true;
 }
 
-bool Editor::isComplete(const ControlPoint& cp) const {
+bool Editor::isComplete(const ControlPoint& /*cp*/) const {
 
     return false;
 }
