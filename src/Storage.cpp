@@ -47,7 +47,32 @@ static std::string lineTypeToStr(LaneMarking markingType) {
             return "DashedAndSolid";
         case LaneMarking::SolidAndDashed:
             return "SolidAndDashed";
+        case LaneMarking::Missing:
+            return "Missing";
     }
+}
+
+template <typename Track>
+static void overrideLineTypes(const std::shared_ptr<Track> &track, const json &jsonTrack) {
+    // center line
+    std::string centerLine = "None";
+    tryGet(jsonTrack, "centerLine", centerLine);
+
+    if (centerLine == "Dashed") {
+        track->centerLine = LaneMarking::Dashed;
+    } else if (centerLine == "DoubleSolid") {
+        track->centerLine = LaneMarking::DoubleSolid;
+    } else if (centerLine == "DashedAndSolid") {
+        track->centerLine = LaneMarking::DashedAndSolid;
+    } else if (centerLine == "SolidAndDashed") {
+        track->centerLine = LaneMarking::SolidAndDashed;
+    } else if (centerLine == "Missing") {
+        track->centerLine = LaneMarking::Missing;
+    }
+
+    // outer lines
+    tryGet(jsonTrack, "leftLineMissing", track->leftLineMissing);
+    tryGet(jsonTrack, "rightLineMissing", track->rightLineMissing);
 }
 
 namespace glm {
@@ -454,11 +479,15 @@ void to_json(json& j, const Tracks& t) {
             jsonTrack["radius"] = arc->radius;
             jsonTrack["rightArc"] = arc->rightArc;
             jsonTrack["centerLine"] = lineTypeToStr(arc->centerLine);
+            jsonTrack["leftLineMissing"] = arc->leftLineMissing;
+            jsonTrack["rightLineMissing"] = arc->rightLineMissing;
         } else {
             std::shared_ptr<TrackLine> line 
                 = std::dynamic_pointer_cast<TrackLine>(track);
             jsonTrack["type"] = "line";
             jsonTrack["centerLine"] = lineTypeToStr(line->centerLine);
+            jsonTrack["leftLineMissing"] = line->leftLineMissing;
+            jsonTrack["rightLineMissing"] = line->rightLineMissing;
         }
 
         jsonTracks.push_back(jsonTrack);
@@ -535,37 +564,13 @@ void from_json(const json& j, Tracks& t) {
             std::shared_ptr<TrackArc> arc = 
                 t.addTrackArc(start, end, center, radius, rightArc);
 
-            try {
-                std::string centerLine = jsonTrack.at("centerLine").get<std::string>();
-                if (centerLine == "Dashed") {
-                    arc->centerLine = LaneMarking::Dashed;
-                } else if (centerLine == "DoubleSolid") {
-                    arc->centerLine = LaneMarking::DoubleSolid;
-                } else if (centerLine == "DashedAndSolid") {
-                    arc->centerLine = LaneMarking::DashedAndSolid;
-                } else if (centerLine == "SolidAndDashed") {
-                    arc->centerLine = LaneMarking::SolidAndDashed;
-                }
-            } catch (json::exception& e) {
-                // use default value
-            }
+            // set the line types according to the stored values
+            overrideLineTypes(arc, jsonTrack);
         } else {
             std::shared_ptr<TrackLine> line = t.addTrackLine(start, end);
 
-            try {
-                std::string centerLine = jsonTrack.at("centerLine").get<std::string>();
-                if (centerLine == "Dashed") {
-                    line->centerLine = LaneMarking::Dashed;
-                } else if (centerLine == "DoubleSolid") {
-                    line->centerLine = LaneMarking::DoubleSolid;
-                } else if (centerLine == "DashedAndSolid") {
-                    line->centerLine = LaneMarking::DashedAndSolid;
-                } else if (centerLine == "SolidAndDashed") {
-                    line->centerLine = LaneMarking::SolidAndDashed;
-                }
-            } catch (json::exception& e) {
-                // use default value
-            }
+            // set the line types according to the stored values
+            overrideLineTypes(line, jsonTrack);
         }
     }
 }

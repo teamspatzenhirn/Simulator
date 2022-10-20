@@ -18,11 +18,15 @@ struct ControlPoint {
     ControlPoint(glm::vec2 coords);
 };
 
+/**
+ * Describes the possible line types for the center line of a track.
+ */
 enum struct LaneMarking {
     Dashed,
     DoubleSolid,
     DashedAndSolid,
-    SolidAndDashed // same as above but with reversed order
+    SolidAndDashed, // same as above but with reversed order,
+    Missing
 };
 
 struct TrackBase {
@@ -41,7 +45,9 @@ struct TrackLine : TrackBase {
     std::weak_ptr<ControlPoint> start;
     std::weak_ptr<ControlPoint> end;
 
-    LaneMarking centerLine{LaneMarking::Dashed};
+    LaneMarking centerLine = LaneMarking::Dashed;
+    bool rightLineMissing = false;
+    bool leftLineMissing = false;
 
     TrackLine(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end);
 
@@ -61,7 +67,9 @@ struct TrackArc : TrackBase {
     float radius{0};
     bool rightArc{false};
 
-    LaneMarking centerLine{LaneMarking::Dashed};
+    LaneMarking centerLine = LaneMarking::Dashed;
+    bool rightLineMissing = false;
+    bool leftLineMissing = false;
 
     TrackArc(const std::shared_ptr<ControlPoint>& start, const std::shared_ptr<ControlPoint>& end,
             const glm::vec2& center, const float radius, const bool rightArc);
