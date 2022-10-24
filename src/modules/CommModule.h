@@ -83,8 +83,6 @@ class CommModule {
 
     int vescFailCounter = 0;
 
-    DepthCameraImage* lastDepthObj = nullptr;
-
     SimulatorSHM::SHMComm<MainCameraImage> txMainCamera; 
     SimulatorSHM::SHMComm<DepthCameraImage> txDepthCamera; 
     SimulatorSHM::SHMComm<CarState> txCarState; 

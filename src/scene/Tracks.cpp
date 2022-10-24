@@ -153,7 +153,7 @@ std::vector<glm::vec2> TrackIntersection::getDirections(const ControlPoint& cont
     return directions;
 }
 
-std::vector<glm::vec2> TrackIntersection::getPoints(float pointDistance) {
+std::vector<glm::vec2> TrackIntersection::getPoints(float /*pointDistance*/) {
 
     std::vector<glm::vec2> pathPoints;
     return pathPoints;
