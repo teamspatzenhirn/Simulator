@@ -88,6 +88,7 @@ set(SOURCE_FILES
     ./src/helpers/FollowCamera.cpp
     ./src/helpers/FpsCamera.cpp
     ./src/helpers/CinematicCamera.cpp
+    ./src/helpers/OrthoCamera.cpp
     ./src/helpers/FrameBuffer.cpp
     ./src/helpers/Clock.cpp
     ./src/helpers/Id.cpp

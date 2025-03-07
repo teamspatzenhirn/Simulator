@@ -25,7 +25,7 @@ public:
      */
     Pose pose;
 
-    glm::mat4 getProjectionMatrix();
+    virtual glm::mat4 getProjectionMatrix();
 
     /*
      * This sets the uniform variables "view" "projection"

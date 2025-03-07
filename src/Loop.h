@@ -45,6 +45,7 @@ public:
         CINEMATIC_CAMERA,
         FOLLOW_CAMERA,
         MAIN_CAMERA,
+        ORTHO_CAMERA,
         DEPTH_CAMERA,
     } selectedCamera = FPS_CAMERA;
 
