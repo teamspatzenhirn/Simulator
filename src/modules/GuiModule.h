@@ -8,9 +8,9 @@ class GuiModule {
 
     GLFWwindow* window;
 
-    bool showSceneWindow = true;
+    bool showSceneWindow = false;
     bool showSettingsWindow = false;
-    bool showRuleWindow = true;
+    bool showRuleWindow = false;
     bool showHelpWindow = false;
     bool showAboutWindow = false;
 

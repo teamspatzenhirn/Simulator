@@ -38,6 +38,11 @@ int main (int argc, char* argv[]) {
         .implicit_value(true)
         .help("enables automatic continuous track generation");
 
+    parser.add_argument("-e", "--record")
+            .default_value(false)
+            .implicit_value(true)
+            .help("preselection suitable for recording");
+
     try {
         parser.parse_args(argc, argv);
     } catch (const std::runtime_error& err) {
@@ -56,6 +61,7 @@ int main (int argc, char* argv[]) {
     bool argPauseOnStartup = parser.get<bool>("-p");
     bool argFullscreen = parser.get<bool>("-f");
     bool argEnableAutoTracks = parser.get<bool>("-a");
+    bool argRecord = parser.get<bool>("-e");
 
     // Setting up objects, initiating main loop
 
@@ -104,6 +110,9 @@ int main (int argc, char* argv[]) {
 
     if (scene.enableAutoTracks) {
         loop.selectedCamera = Loop::CINEMATIC_CAMERA;
+    }
+    if(argRecord){
+        loop.selectedCamera = Loop::ORTHO_CAMERA;
     }
 
     loop.loop(scene);
