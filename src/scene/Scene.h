@@ -101,6 +101,11 @@ enum ItemType {
     SIGN_80_END,
     SIGN_90_END,
     START_BOX_SIGNS,
+    LANDMARK_1,
+    LANDMARK_2,
+    LANDMARK_3,
+    LANDMARK_4,
+    LANDMARK_5,
     LAST_ELEMENT
 };
 
@@ -121,7 +126,7 @@ struct Scene {
      * Increment this, whenever there were changes made to Scene.
      * A changelog describing the changes can be found at the end of this file.
      */
-    static const unsigned int VERSION = 5;
+    static const unsigned int VERSION = 6;
 
     /*
      * This is the actual version of the scene object.
