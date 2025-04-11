@@ -195,6 +195,28 @@ void from_json(const json& j, FpsCamera& o) {
 }
 
 /*
+ * OrthoCamera
+ */
+
+void to_json(json& j, const OrthoCamera& o) {
+
+    j = json({
+                     {"yaw", o.yaw},
+                     {"fov", o.fov},
+                     {"aspectRatio", o.aspectRatio},
+                     {"pose", o.pose}
+             });
+}
+
+void from_json(const json& j, OrthoCamera& o) {
+
+    o.yaw = j.at("yaw").get<float>();
+    o.fov = j.at("fov").get<float>();
+    o.aspectRatio = j.at("aspectRatio").get<float>();
+    o.pose = j.at("pose").get<Pose>();
+}
+
+/*
  * Car::SystemParams
  */
 
@@ -687,6 +709,7 @@ void to_json(json& j, const Scene& s) {
             {"version", s.version},
             {"paused", s.paused},
             {"fpsCamera", s.fpsCamera},
+            {"orthoCamera", s.orthoCamera},
             {"car", s.car},
             {"tracks", s.tracks},
             {"items", s.items},
@@ -704,6 +727,8 @@ void from_json(const json& j, Scene& s) {
     s.car = j.at("car").get<Car>();
     s.tracks = j.at("tracks").get<Tracks>();
     s.items = j.at("items").get<std::vector<Scene::Item>>();
+    s.orthoCamera = j.at("orthoCamera").get<OrthoCamera>();
+
 
     try {
         s.rules = j.at("rules").get<Scene::Rules>();

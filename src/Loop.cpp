@@ -177,12 +177,14 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
             scene.followCamera.update(scene.car.modelPose);
         } else if (CINEMATIC_CAMERA == selectedCamera) {
             scene.cinematicCamera.update(scene.car.modelPose);
+        } else if (ORTHO_CAMERA == selectedCamera) {
+            scene.orthoCamera.update(window, settings.updateDeltaTime);
         }
     }
 
     for(KeyEvent& e : getKeyEvents()) {
         if (e.key == GLFW_KEY_C && e.action == GLFW_PRESS) {
-            selectedCamera = (SelectedCamera) ((((int) selectedCamera) + 1) % 4);
+            selectedCamera = (SelectedCamera) ((((int) selectedCamera) + 1) % 5);
             if(selectedCamera == CINEMATIC_CAMERA){
                 scene.cinematicCamera.pose = scene.fpsCamera.pose;
             }
@@ -217,6 +219,11 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
                 (float) settings.windowWidth / (float) settings.windowHeight;
     }
 
+    if (ORTHO_CAMERA == selectedCamera) {
+
+        scene.orthoCamera.aspectRatio =
+                (float)settings.windowWidth / (float)settings.windowHeight;
+    }
 
     // actual simulation updates
     
@@ -460,6 +467,8 @@ void Loop::renderFpsView(Scene& scene) {
         scene.followCamera.render(fpsShaderProgram.id);
     } else if (selectedCamera == CINEMATIC_CAMERA) {
         scene.cinematicCamera.render(fpsShaderProgram.id);
+    } else if (selectedCamera == ORTHO_CAMERA) {
+        scene.orthoCamera.render(fpsShaderProgram.id);
     }
 
     renderScene(scene, fpsShaderProgram.id);

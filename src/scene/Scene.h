@@ -17,6 +17,7 @@
 
 #include "scene/Tracks.h"
 #include "scene/Car.h"
+#include "helpers/OrthoCamera.h"
 
 /*
  * For easier access (less typing, that is) the enum
@@ -158,6 +159,8 @@ struct Scene {
      * This is the free camera that is used in the editor.
      */
     FpsCamera fpsCamera{{0, 1, 1.5}, 0.5, 0, (float)M_PI * 0.3f, 4.0f/3.0f};
+
+    OrthoCamera orthoCamera{{0, 1, 1.5}, 0, (float)M_PI * 0.3f, 4.0f/3.0f};
 
     /*
      * This is a top view camera that is following the car.
