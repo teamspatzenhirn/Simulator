@@ -727,8 +727,12 @@ void from_json(const json& j, Scene& s) {
     s.car = j.at("car").get<Car>();
     s.tracks = j.at("tracks").get<Tracks>();
     s.items = j.at("items").get<std::vector<Scene::Item>>();
-    s.orthoCamera = j.at("orthoCamera").get<OrthoCamera>();
 
+    try {
+        s.orthoCamera = j.at("orthoCamera").get<OrthoCamera>();
+    } catch (std::exception& e) {
+        std::cout << "Loading defaults for OrthoCamera" << std::endl;
+    }
 
     try {
         s.rules = j.at("rules").get<Scene::Rules>();
