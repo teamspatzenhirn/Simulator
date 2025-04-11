@@ -69,7 +69,13 @@ void OrthoCamera::update(GLFWwindow* window, float dt) {
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
         if (prevMouseX > 0) {
+            float old_yaw = yaw;
+
             yaw += std::asin(((float)mouseX - prevMouseX) * dt);
+
+            if (std::isnan(yaw)) {
+                yaw = old_yaw;
+            }
         }
 
         prevMouseX = (float)mouseX;
