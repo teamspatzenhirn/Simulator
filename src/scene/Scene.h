@@ -100,6 +100,11 @@ enum ItemType {
     SIGN_70_END,
     SIGN_80_END,
     SIGN_90_END,
+    LANDMARK_1,
+    LANDMARK_2,
+    LANDMARK_3,
+    LANDMARK_4,
+    LANDMARK_5,
     START_BOX_SIGNS,
     LAST_ELEMENT
 };

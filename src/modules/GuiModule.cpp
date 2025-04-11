@@ -536,6 +536,32 @@ void GuiModule::renderCreateMenu(Scene& scene) {
         ImGui::EndMenu();
     }
 
+    if (ImGui::BeginMenu("QR Landmark")) {
+
+        if (ImGui::MenuItem("Landmark 1")) {
+            newType = LANDMARK_1;
+            newName = "landmark_1";
+        }
+        if (ImGui::MenuItem("Landmark 2")) {
+            newType = LANDMARK_2;
+            newName = "landmark_2";
+        }
+        if (ImGui::MenuItem("Landmark 3")) {
+            newType = LANDMARK_3;
+            newName = "landmark_3";
+        }
+        if (ImGui::MenuItem("Landmark 4")) {
+            newType = LANDMARK_4;
+            newName = "landmark_4";
+        }
+        if (ImGui::MenuItem("Landmark 5")) {
+            newType = LANDMARK_5;
+            newName = "landmark_5";
+        }
+
+        ImGui::EndMenu();
+    }
+
     if (NONE != newType) {
         scene.items.emplace_back(Scene::Item(newType, newName));
     }

@@ -109,6 +109,13 @@ struct ModelStore {
             Model{resPath + "models/signs/sign_speedlimit_70_end.obj"},
             Model{resPath + "models/signs/sign_speedlimit_80_end.obj"},
             Model{resPath + "models/signs/sign_speedlimit_90_end.obj"},
+
+            Model{resPath + "models/signs/landmark_1.obj"},
+            Model{resPath + "models/signs/landmark_2.obj"},
+            Model{resPath + "models/signs/landmark_3.obj"},
+            Model{resPath + "models/signs/landmark_4.obj"},
+            Model{resPath + "models/signs/landmark_5.obj"},
+
             Model{resPath + "models/start_box_signs.obj"},
          } {
     }
