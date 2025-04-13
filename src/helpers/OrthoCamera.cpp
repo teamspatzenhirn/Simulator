@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "OrthoCamera.h"
 
 glm::mat4 OrthoCamera::getProjectionMatrix() {
@@ -25,7 +26,7 @@ void OrthoCamera::update(GLFWwindow* window, float dt) {
     glm::mat4 view = pose.getInverseMatrix();
 
     glm::vec3 eye = glm::normalize(
-            glm::vec3(view[0][2], 0.0f, view[2][2]));
+            glm::vec3(view[0][1], 0.0f, view[2][1]));
 
     glm::vec3 right = glm::normalize(
             glm::vec3(view[0][0], 0.0f, view[2][0]));
@@ -43,13 +44,13 @@ void OrthoCamera::update(GLFWwindow* window, float dt) {
     }
 
     if (GLFW_PRESS == getKey(GLFW_KEY_W)) {
-        pose.position -= eye * speed;
+        pose.position += eye * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_A)) {
         pose.position -= right * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_S)) {
-        pose.position += eye * speed;
+        pose.position -= eye * speed;
     }
     if (GLFW_PRESS == getKey(GLFW_KEY_D)) {
         pose.position += right * speed;
@@ -69,7 +70,7 @@ void OrthoCamera::update(GLFWwindow* window, float dt) {
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
         if (prevMouseX > 0) {
-            yaw += std::asin(((float)mouseX - prevMouseX) * dt);
+            yaw += std::asin(std::clamp(((float)mouseX - prevMouseX) * dt, -1.0f, 1.0f));
         }
 
         prevMouseX = (float)mouseX;

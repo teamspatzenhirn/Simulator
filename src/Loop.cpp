@@ -194,35 +194,31 @@ void Loop::step(Scene& scene, float frameDeltaTime) {
         }
     }
 
+    float aspectRatio = (float)settings.windowWidth / (float)settings.windowHeight;
+    switch(selectedCamera) {
+        case FPS_CAMERA:
+            scene.fpsCamera.aspectRatio = aspectRatio;
+            break;
+        case FOLLOW_CAMERA:
+            scene.followCamera.aspectRatio = aspectRatio;
+            break;
+        case CINEMATIC_CAMERA:
+            scene.cinematicCamera.aspectRatio = aspectRatio;
+            break;
+        case ORTHO_CAMERA:
+            scene.orthoCamera.aspectRatio = aspectRatio;
+            break;
+        default:
+            break;
+    }
+
     if (FPS_CAMERA == selectedCamera) {
-
-        scene.fpsCamera.aspectRatio = 
-            (float)settings.windowWidth / (float)settings.windowHeight;
-
         if (settings.showMarkers) {
             markerModule.update(window, scene.fpsCamera, scene.selection);
             editor.updateInput(scene.fpsCamera, scene.tracks, scene.groundSize);
         }
 
         itemsModule.update(scene.items, scene.selection.pose);
-    }
-
-    if (FOLLOW_CAMERA == selectedCamera) {
-
-        scene.followCamera.aspectRatio = 
-            (float)settings.windowWidth / (float)settings.windowHeight;
-    }
-
-    if (CINEMATIC_CAMERA == selectedCamera) {
-
-        scene.cinematicCamera.aspectRatio =
-                (float) settings.windowWidth / (float) settings.windowHeight;
-    }
-
-    if (ORTHO_CAMERA == selectedCamera) {
-
-        scene.orthoCamera.aspectRatio =
-                (float)settings.windowWidth / (float)settings.windowHeight;
     }
 
     // actual simulation updates

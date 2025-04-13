@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "FpsCamera.h"
 
 FpsCamera::FpsCamera() {
@@ -57,7 +58,7 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
     if (GLFW_PRESS == getKey(GLFW_KEY_LEFT_SHIFT)) {
         pose.position -= up * speed;
     }
-    
+
     int rightMouseBtnState = getMouseButton(GLFW_MOUSE_BUTTON_RIGHT);
 
     if (GLFW_PRESS == rightMouseBtnState) {
@@ -66,11 +67,10 @@ void FpsCamera::update(GLFWwindow* window, float dt) {
         glfwGetCursorPos(window, &mouseX, &mouseY);
 
         if (prevMouseX > 0 && prevMouseY > 0) {
+            pitch += std::asin(std::clamp(((float)mouseY - prevMouseY) * dt, -1.0f, 1.0f));
+            pitch = std::clamp(pitch, -1.56f, 1.56f);
 
-            pitch += std::asin(((float)mouseY - prevMouseY) * dt);
-            pitch = std::min(1.56f, std::max(-1.56f, pitch));
-
-            yaw += std::asin(((float)mouseX - prevMouseX) * dt);
+            yaw += std::asin(std::clamp(((float)mouseX - prevMouseX) * dt, -1.0f, 1.0f));
         }
 
         prevMouseX = (float)mouseX;
