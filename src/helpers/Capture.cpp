@@ -28,7 +28,7 @@ bool Capture::capture(
 
     if (pboWidth != width || pboHeight != height) {
         pboHeight = height;
-        pboHeight = width;
+        pboWidth = width;
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[0]);
         glBufferData(GL_PIXEL_PACK_BUFFER, dataSize, nullptr, GL_STREAM_READ);
         glBindBuffer(GL_PIXEL_PACK_BUFFER, pboIds[1]);
